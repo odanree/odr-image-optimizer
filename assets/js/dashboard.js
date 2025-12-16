@@ -66,7 +66,7 @@
 			images.forEach(image => {
 				html += `
 					<div class="image-optimizer-card">
-						<img src="${image.url}" alt="${image.title}" class="image-optimizer-thumbnail" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22200%22/%3E%3C/svg%3E'">
+						<img src="${image.url}" alt="${image.title}" width="200" height="200" class="image-optimizer-thumbnail" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22200%22/%3E%3C/svg%3E'">
 						<h3>${image.title}</h3>
 						<p>Size: ${formatBytes(image.size)}</p>
 						<div class="image-optimizer-actions">

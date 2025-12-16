@@ -302,6 +302,8 @@ add_action('rest_api_init', function() {
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history
 - **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)** - Developer guide and architecture
 - **[docs/COMMIT_CONVENTION.md](docs/COMMIT_CONVENTION.md)** - Git commit standards
+- **[docs/PERFORMANCE_CASE_STUDY.md](docs/PERFORMANCE_CASE_STUDY.md)** - Before/after optimization metrics
+- **[docs/LIGHTHOUSE_OPTIMIZATIONS.md](docs/LIGHTHOUSE_OPTIMIZATIONS.md)** - Lighthouse audit fixes
 
 ## 🚀 Roadmap
 

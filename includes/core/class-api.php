@@ -141,7 +141,7 @@ class API {
 	public function get_statistics( $request ) {
 		$stats = Database::get_statistics();
 
-		return rest_ensure_response(
+		$response = rest_ensure_response(
 			array(
 				'total_optimized'     => (int) $stats->total_optimized,
 				'total_original_size' => (int) $stats->total_original_size,
@@ -151,6 +151,15 @@ class API {
 				'webp_count'          => (int) $stats->webp_count,
 			)
 		);
+
+		// Cache for 1 hour (3600 seconds)
+		$response->set_headers(
+			array(
+				'Cache-Control' => 'public, max-age=3600',
+			)
+		);
+
+		return $response;
 	}
 
 	/**
@@ -231,7 +240,7 @@ class API {
 			);
 		}
 
-		return rest_ensure_response(
+		$response = rest_ensure_response(
 			array(
 				'images' => $images,
 				'paged'  => $paged,
@@ -239,6 +248,15 @@ class API {
 				'pages'  => $query->max_num_pages,
 			)
 		);
+
+		// Cache for 30 minutes (1800 seconds) for image lists
+		$response->set_headers(
+			array(
+				'Cache-Control' => 'public, max-age=1800',
+			)
+		);
+
+		return $response;
 	}
 
 	/**
