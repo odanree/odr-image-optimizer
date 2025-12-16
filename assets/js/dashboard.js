@@ -69,7 +69,14 @@
 						<img src="${image.url}" alt="${image.title}" class="image-optimizer-thumbnail" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22200%22/%3E%3C/svg%3E'">
 						<h3>${image.title}</h3>
 						<p>Size: ${formatBytes(image.size)}</p>
-						${image.optimized ? `<p class="status-optimized">✓ Optimized</p>` : `<button class="optimize-btn" data-id="${image.id}">Optimize</button>`}
+						<div class="image-optimizer-actions">
+							${image.optimized ? `
+								<p class="status-optimized">✓ Optimized</p>
+								<button class="revert-btn" data-id="${image.id}">Revert</button>
+							` : `
+								<button class="optimize-btn" data-id="${image.id}">Optimize</button>
+							`}
+						</div>
 					</div>
 				`;
 			});
@@ -81,6 +88,13 @@
 			document.querySelectorAll('.optimize-btn').forEach(btn => {
 				btn.addEventListener('click', function() {
 					optimizeImage(this.dataset.id);
+				});
+			});
+
+			// Add event listeners for revert buttons
+			document.querySelectorAll('.revert-btn').forEach(btn => {
+				btn.addEventListener('click', function() {
+					revertImage(this.dataset.id);
 				});
 			});
 		})
@@ -124,4 +138,36 @@
 			alert('Error optimizing image');
 		});
 	}
+
+	// Revert image optimization
+	function revertImage(id) {
+		if (!confirm('Are you sure you want to revert this image to its original version?')) {
+			return;
+		}
+
+		const restUrl = imageOptimizerData.rest_url || '/wp-json/image-optimizer/v1/';
+		
+		fetch(restUrl + 'revert/' + id, {
+			method: 'POST',
+			headers: {
+				'X-WP-Nonce': imageOptimizerData.nonce,
+				'Content-Type': 'application/json'
+			}
+		})
+		.then(response => response.json())
+		.then(data => {
+			if (data.success) {
+				alert('Image reverted successfully!\nRestored size: ' + formatBytes(data.restored_size) + '\nSpace freed: ' + formatBytes(data.freed_space));
+				location.reload();
+			} else {
+				alert('Error: ' + (data.message || 'Unknown error'));
+			}
+		})
+		.catch(error => {
+			console.error('Error reverting image:', error);
+			alert('Error reverting image');
+		});
+	}
 })();
+
+```

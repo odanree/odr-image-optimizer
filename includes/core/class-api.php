@@ -104,6 +104,23 @@ class API {
 				),
 			)
 		);
+
+		// Revert optimization
+		register_rest_route(
+			self::NAMESPACE,
+			'/revert/(?P<attachment_id>\d+)',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'revert_image' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'attachment_id' => array(
+						'type'     => 'integer',
+						'required' => true,
+					),
+				),
+			)
+		);
 	}
 
 	/**
@@ -242,6 +259,29 @@ class API {
 		}
 
 		return new \WP_Error( 'optimization_failed', $result['error'], array( 'status' => 400 ) );
+	}
+
+	/**
+	 * Revert image optimization
+	 *
+	 * @param \WP_REST_Request $request The request object.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function revert_image( $request ) {
+		$attachment_id = $request['attachment_id'];
+
+		if ( ! get_post( $attachment_id ) ) {
+			return new \WP_Error( 'invalid_attachment', 'Invalid attachment ID', array( 'status' => 404 ) );
+		}
+
+		$optimizer = new Optimizer();
+		$result = $optimizer->revert_optimization( $attachment_id );
+
+		if ( $result['success'] ) {
+			return rest_ensure_response( $result );
+		}
+
+		return new \WP_Error( 'revert_failed', $result['error'], array( 'status' => 400 ) );
 	}
 
 	/**

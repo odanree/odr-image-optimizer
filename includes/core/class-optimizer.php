@@ -134,6 +134,9 @@ class Optimizer {
 
 			$original_size = filesize( $file );
 
+			// Create backup before optimization
+			$backup_file = $this->create_backup( $file, $attachment_id );
+
 			// Get optimization method based on file type
 			$method = $this->get_optimization_method( $file );
 
@@ -167,6 +170,7 @@ class Optimizer {
 					'method'         => $method,
 					'webp_available' => $webp_available,
 					'status'         => 'completed',
+					'backup_file'    => $backup_file,
 				)
 			);
 
@@ -445,5 +449,118 @@ class Optimizer {
 		);
 
 		return $levels[ $level ] ?? 7;
+	}
+
+	/**
+	 * Create a backup of the original file before optimization
+	 *
+	 * @param string $file_path The file path.
+	 * @param int    $attachment_id The attachment ID.
+	 * @return string The backup file path, or empty string if backup failed.
+	 */
+	private function create_backup( $file_path, $attachment_id ) {
+		$backup_dir = dirname( $file_path ) . '/.backups';
+		
+		if ( ! wp_mkdir_p( $backup_dir ) ) {
+			return '';
+		}
+
+		$file_info = pathinfo( $file_path );
+		$backup_file = $backup_dir . '/' . $file_info['filename'] . '-' . $attachment_id . '-backup.' . $file_info['extension'];
+
+		// Only create backup if it doesn't already exist
+		if ( ! file_exists( $backup_file ) ) {
+			if ( ! copy( $file_path, $backup_file ) ) {
+				return '';
+			}
+		}
+
+		return $backup_file;
+	}
+
+	/**
+	 * Revert an optimized image to its original backup
+	 *
+	 * @param int $attachment_id The attachment ID.
+	 * @return array
+	 */
+	public function revert_optimization( $attachment_id ) {
+		try {
+			$file = get_attached_file( $attachment_id );
+
+			if ( ! $file || ! file_exists( $file ) ) {
+				return array(
+					'success' => false,
+					'error'   => 'File not found',
+				);
+			}
+
+			// Get backup file path
+			$file_info = pathinfo( $file );
+			$backup_dir = dirname( $file ) . '/.backups';
+			$backup_file = $backup_dir . '/' . $file_info['filename'] . '-' . $attachment_id . '-backup.' . $file_info['extension'];
+
+			if ( ! file_exists( $backup_file ) ) {
+				return array(
+					'success' => false,
+					'error'   => 'No backup found for this image',
+				);
+			}
+
+			$optimized_size = filesize( $file );
+
+			// Restore from backup
+			if ( ! copy( $backup_file, $file ) ) {
+				return array(
+					'success' => false,
+					'error'   => 'Failed to restore backup',
+				);
+			}
+
+			$restored_size = filesize( $file );
+
+			// Delete WebP versions if they exist
+			$this->delete_webp_version( $file );
+
+			// Update optimization result to mark as reverted
+			Database::save_optimization_result(
+				$attachment_id,
+				array(
+					'original_size'  => $restored_size,
+					'optimized_size' => $optimized_size,
+					'compression_ratio' => 0,
+					'method'         => 'reverted',
+					'webp_available' => false,
+					'status'         => 'reverted',
+				)
+			);
+
+			return array(
+				'success'      => true,
+				'restored_size' => $restored_size,
+				'freed_space'  => $optimized_size - $restored_size,
+			);
+		} catch ( \Exception $e ) {
+			return array(
+				'success' => false,
+				'error'   => $e->getMessage(),
+			);
+		}
+	}
+
+	/**
+	 * Delete WebP version of an image
+	 *
+	 * @param string $file_path The file path.
+	 * @return bool
+	 */
+	private function delete_webp_version( $file_path ) {
+		$webp_file = $file_path . '.webp';
+
+		if ( file_exists( $webp_file ) ) {
+			return unlink( $webp_file );
+		}
+
+		return true;
 	}
 }

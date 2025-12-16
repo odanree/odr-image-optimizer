@@ -267,3 +267,31 @@
 .image-optimizer-card .optimize-btn:active {
 	background: #004572;
 }
+
+.image-optimizer-card .revert-btn {
+	display: block;
+	width: calc(100% - 24px);
+	margin: 8px 12px;
+	padding: 8px 12px;
+	background: #dc3545;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 12px;
+	font-weight: 600;
+	transition: background 0.2s;
+}
+
+.image-optimizer-card .revert-btn:hover {
+	background: #c82333;
+}
+
+.image-optimizer-card .revert-btn:active {
+	background: #bd2130;
+}
+
+.image-optimizer-actions {
+	margin-top: 8px;
+}
+
