@@ -1,0 +1,60 @@
+/* Settings Page Styles */
+.image-optimizer-settings-wrap {
+	max-width: 800px;
+	margin: 20px auto;
+	background: white;
+	border-radius: 8px;
+	padding: 30px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.image-optimizer-settings-wrap h1 {
+	color: #333;
+	margin-bottom: 30px;
+	border-bottom: 3px solid #0073aa;
+	padding-bottom: 10px;
+}
+
+.image-optimizer-settings-wrap .form-table {
+	margin: 20px 0;
+}
+
+.image-optimizer-settings-wrap .form-table th {
+	padding: 15px;
+	text-align: right;
+	font-weight: 600;
+	color: #333;
+	border-bottom: 1px solid #eee;
+}
+
+.image-optimizer-settings-wrap .form-table td {
+	padding: 15px;
+	border-bottom: 1px solid #eee;
+}
+
+.image-optimizer-settings-wrap select,
+.image-optimizer-settings-wrap input[type="checkbox"] {
+	padding: 8px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 14px;
+}
+
+.image-optimizer-settings-wrap select {
+	width: 100%;
+	max-width: 400px;
+}
+
+.image-optimizer-settings-wrap .description {
+	display: block;
+	margin-top: 8px;
+	color: #666;
+	font-size: 13px;
+	line-height: 1.5;
+}
+
+.image-optimizer-settings-wrap .submit {
+	margin-top: 30px;
+	padding-top: 20px;
+	border-top: 1px solid #eee;
+}

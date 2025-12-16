@@ -1,0 +1,40 @@
+{
+	"name": "odanree/image-optimizer",
+	"description": "Professional WordPress image optimization plugin with compression, lazy loading, and WebP conversion",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0+",
+	"authors": [
+		{
+			"name": "Danh Le",
+			"email": "hello@danhle.net",
+			"homepage": "https://danhle.net"
+		}
+	],
+	"require": {
+		"php": ">=7.4"
+	},
+	"require-dev": {
+		"dealerdirect/phpcodesniffer-composer-installer": "^0.7.0",
+		"wp-coding-standards/wpcs": "^2.3",
+		"squizlabs/php_codesniffer": "^3.5"
+	},
+	"scripts": {
+		"phpcs": "phpcs --standard=WordPress image-optimizer.php includes/ --colors",
+		"phpcbf": "phpcbf --standard=WordPress image-optimizer.php includes/"
+	},
+	"keywords": [
+		"wordpress",
+		"plugin",
+		"image",
+		"optimization",
+		"compression",
+		"webp",
+		"lazy-loading",
+		"performance"
+	],
+	"homepage": "https://github.com/odanree/image-optimizer",
+	"support": {
+		"issues": "https://github.com/odanree/image-optimizer/issues",
+		"source": "https://github.com/odanree/image-optimizer"
+	}
+}
