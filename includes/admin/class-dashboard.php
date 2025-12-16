@@ -42,7 +42,7 @@ class Dashboard {
 		wp_enqueue_script(
 			'image-optimizer-dashboard',
 			IMAGE_OPTIMIZER_URL . 'assets/js/dashboard.js',
-			array( 'wp-api-fetch', 'wp-element', 'wp-components' ),
+			array(),
 			IMAGE_OPTIMIZER_VERSION,
 			true
 		);
