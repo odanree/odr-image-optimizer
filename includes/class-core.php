@@ -95,10 +95,10 @@ class Core {
 	 * Initialize admin components
 	 */
 	private function init_admin() {
-		if ( is_admin() ) {
-			new Dashboard();
-			new Settings();
-		}
+		// Initialize admin classes - Settings needs to be instantiated to register admin_init hooks
+		// even before is_admin() fully evaluates (during early plugin loading)
+		new Dashboard();
+		new Settings();
 	}
 
 	/**
