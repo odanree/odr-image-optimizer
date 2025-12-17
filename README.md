@@ -13,6 +13,14 @@ Image Optimizer is a production-ready WordPress plugin demonstrating enterprise-
 
 **Perfect for:** Portfolio showcasing, job interviews, freelance projects, or WordPress.org marketplace submission.
 
+## 📸 Visual Preview
+
+**Desktop Dashboard** | **Mobile Responsive**
+---|---
+![Desktop Dashboard](./desktop.png) | ![Mobile Dashboard](./mobile.png)
+
+The admin dashboard provides real-time statistics, visual library view, and one-click optimization for individual or bulk operations.
+
 ## ✨ Key Features
 
 ### 🖼️ Image Compression
