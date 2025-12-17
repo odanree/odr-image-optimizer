@@ -36,5 +36,10 @@
 	"support": {
 		"issues": "https://github.com/odanree/image-optimizer/issues",
 		"source": "https://github.com/odanree/image-optimizer"
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
 	}
 }
