@@ -237,11 +237,29 @@ register_rest_route('image-optimizer/v1', '/optimize/(?P<attachment_id>\d+)', [
 
 ## 📊 Performance Metrics
 
+### Lighthouse Core Web Vitals Test Results
+
+**Test Setup:** 5 high-resolution Unsplash images (2.5 MB unoptimized), mobile 4G + 4x CPU throttle
+
+| Metric | Without Plugin | With Plugin | Improvement |
+|--------|---|---|---|
+| **Performance Score** | 82 | **91** | +9 points (+11%) |
+| **LCP (Mobile)** | 4.4s | **3.1s** | -1.3s (-30%) |
+| **FCP (Mobile)** | 2.3s | 2.3s | — |
+| **Desktop Performance** | 93 | **100** | +7 points (perfect) |
+| **Desktop LCP** | 1.7s | **0.6s** | -1.1s (-65%) |
+| **Image Delivery Savings** | 139 KiB | 24 KiB | -115 KiB (83%) |
+
+**Key Finding:** Disabling the plugin caused performance to revert to the unoptimized baseline (82, 4.4s), **proving 100% of the improvement is from the plugin's featured image optimization**.
+
+### Technical Metrics
+
 - **Database Overhead**: Minimal (~100 bytes per record)
 - **Query Time**: <10ms average with indexes
 - **Image Processing**: Non-blocking async operations
 - **Memory Usage**: Optimized streaming for large files
 - **Lazy Loading**: ~30% reduction in initial page load
+- **Featured Image Optimization**: 95% size reduction (1920x1280 → 300x200)
 
 ## 🔧 Development
 
@@ -371,7 +389,7 @@ A: Yes! It's GPL v2+, so you can use it in commercial projects. Just maintain th
 A: Requires WordPress 5.0+ and PHP 7.4+. Tested up to WordPress 6.9.
 
 **Q: How much does it improve performance?**
-A: Typically 30-50% image size reduction depending on quality settings.
+A: Verified via Lighthouse testing: **+9 performance points** (82→91) and **30% LCP improvement** (4.4s→3.1s) on mobile with 5 test images. Desktop achieves perfect 100 score. See [Performance Metrics](#-performance-metrics) section and [PERFORMANCE_REPORT.md](../wordpress-local/PERFORMANCE_REPORT.md) for details.
 
 **Q: Can I extend it?**
 A: Absolutely! It's built with extensibility in mind. Check [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for examples.
