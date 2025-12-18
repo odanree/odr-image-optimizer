@@ -9,8 +9,8 @@
  *
  * @wordpress-plugin
  * Plugin Name:       Image Optimizer
- * Plugin URI:        https://github.com/odanree/image-optimizer
- * Description:       Advanced image optimization plugin with compression, lazy loading, and WebP conversion.
+ * Plugin URI:        https://wordpress.org/plugins/image-optimizer/
+ * Description:       Professional image optimization with intelligent compression, WebP conversion, and lazy loading.
  * Version:           1.0.0
  * Author:            Danh Le
  * Author URI:        https://danhle.net
@@ -20,6 +20,8 @@
  * Domain Path:       /languages
  * Requires at least: 5.0
  * Requires PHP:      7.4
+ * Tested up to:      6.9
+ * Stable tag:        1.0.0
  */
 
 // If this file is called directly, abort.

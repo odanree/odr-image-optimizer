@@ -169,6 +169,17 @@ class Core {
 			IMAGE_OPTIMIZER_VERSION,
 			true
 		);
+
+		// Localize script with plugin settings
+		$settings = get_option( 'image_optimizer_settings', array() );
+		wp_localize_script(
+			'image-optimizer-lazy',
+			'imageOptimizerSettings',
+			array(
+				'enable_lazy_load' => ! empty( $settings['enable_lazy_load'] ),
+				'enable_webp'      => ! empty( $settings['enable_webp'] ),
+			)
+		);
 	}
 
 	/**

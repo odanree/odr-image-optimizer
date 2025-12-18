@@ -154,10 +154,14 @@ class Optimizer {
 			$savings = $original_size - $optimized_size;
 			$compression_ratio = $savings > 0 ? ( $savings / $original_size ) * 100 : 0;
 
-			// Check if WebP version can be created
-			$webp_available = $this->can_create_webp( $file );
-			if ( $webp_available ) {
-				$this->create_webp_version( $file );
+			// Check if WebP conversion is enabled and can be created
+			$settings = get_option( 'image_optimizer_settings', array() );
+			$webp_available = false;
+			if ( ! empty( $settings['enable_webp'] ) ) {
+				$webp_available = $this->can_create_webp( $file );
+				if ( $webp_available ) {
+					$this->create_webp_version( $file );
+				}
 			}
 
 			// Save optimization result
