@@ -40,25 +40,25 @@ class API {
 			)
 		);
 
-		// Get optimization statistics
+		// Get optimization statistics - requires admin permission
 		register_rest_route(
 			self::NAMESPACE,
 			'/stats',
 			array(
 				'methods'             => 'GET',
 				'callback'            => array( $this, 'get_statistics' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( $this, 'check_admin_permission' ),
 			)
 		);
 
-		// Get image optimization history
+		// Get image optimization history - requires admin permission
 		register_rest_route(
 			self::NAMESPACE,
 			'/history/(?P<attachment_id>\d+)',
 			array(
 				'methods'             => 'GET',
 				'callback'            => array( $this, 'get_history' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( $this, 'check_admin_permission' ),
 				'args'                => array(
 					'attachment_id' => array(
 						'type'     => 'integer',
@@ -68,14 +68,14 @@ class API {
 			)
 		);
 
-		// Bulk get images
+		// Bulk get images - requires admin permission
 		register_rest_route(
 			self::NAMESPACE,
 			'/images',
 			array(
 				'methods'             => 'GET',
 				'callback'            => array( $this, 'get_images' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( $this, 'check_admin_permission' ),
 				'args'                => array(
 					'paged'  => array(
 						'type'    => 'integer',
@@ -88,14 +88,14 @@ class API {
 			)
 		);
 
-		// Optimize single image
+		// Optimize single image - requires admin permission
 		register_rest_route(
 			self::NAMESPACE,
 			'/optimize/(?P<attachment_id>\d+)',
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( $this, 'optimize_image' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( $this, 'check_admin_permission' ),
 				'args'                => array(
 					'attachment_id' => array(
 						'type'     => 'integer',
@@ -105,14 +105,14 @@ class API {
 			)
 		);
 
-		// Revert optimization
+		// Revert optimization - requires admin permission
 		register_rest_route(
 			self::NAMESPACE,
 			'/revert/(?P<attachment_id>\d+)',
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( $this, 'revert_image' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( $this, 'check_admin_permission' ),
 				'args'                => array(
 					'attachment_id' => array(
 						'type'     => 'integer',
