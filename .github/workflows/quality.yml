@@ -1,0 +1,94 @@
+name: Code Quality & Tests
+
+on:
+  push:
+    branches: [ main, refactor/modern-php-srp, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    strategy:
+      matrix:
+        php-version: ['8.2', '8.3']
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: gd, mbstring, curl
+          coverage: xdebug
+          tools: composer:latest
+
+      - name: Validate Composer
+        run: composer validate --strict
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php-version }}-
+            ${{ runner.os }}-php-
+
+      - name: Install Dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Run Format Check
+        run: composer run format -- --dry-run --diff
+
+      - name: Run Static Analysis
+        run: composer run analyze
+
+      - name: Run Tests
+        run: composer run test -- --coverage-text
+
+  markdown:
+    name: Markdown Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check Markdown
+        uses: nosborn/github-action-markdown-cli@v3.3.0
+        with:
+          files: .
+
+  code-coverage:
+    name: Code Coverage Report
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: quality
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: gd, mbstring, curl
+          coverage: xdebug
+          tools: composer:latest
+
+      - name: Install Dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Generate Coverage Report
+        run: composer run test -- --coverage-clover=coverage.xml
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false

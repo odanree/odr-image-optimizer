@@ -2,10 +2,11 @@
 
 > Professional WordPress image optimization plugin showcasing advanced PHP, OOP, and WordPress development skills.
 
+[![Code Quality & Tests](https://github.com/odanree/odr-image-optimizer/actions/workflows/quality.yml/badge.svg)](https://github.com/odanree/odr-image-optimizer/actions/workflows/quality.yml)
 [![License](https://img.shields.io/badge/license-GPL%20v2%2B-blue.svg)](LICENSE)
 [![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-blue.svg)]()
-[![PHP](https://img.shields.io/badge/PHP-7.4%2B-blue.svg)]()
-[![Code Standards](https://img.shields.io/badge/Code%20Standards-WordPress-brightgreen.svg)]()
+[![PHP](https://img.shields.io/badge/PHP-8.2%2B-blue.svg)]()
+[![Code Standards](https://img.shields.io/badge/Code%20Standards-PSR12%20%2B%20PHPStan-brightgreen.svg)]()
 
 ## 🎯 Overview
 
