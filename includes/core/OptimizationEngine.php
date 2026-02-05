@@ -12,7 +12,7 @@ namespace ImageOptimizer\Core;
 use ImageOptimizer\Backup\BackupManager;
 use ImageOptimizer\Configuration\OptimizationConfig;
 use ImageOptimizer\Exception\OptimizationFailedException;
-use ImageOptimizer\Processor\ImageProcessorInterface;
+use ImageOptimizer\Processor\ProcessorCollection;
 use ImageOptimizer\Repository\DatabaseRepository;
 
 readonly class OptimizationEngine
@@ -20,12 +20,12 @@ readonly class OptimizationEngine
     /**
      * @param BackupManager $backupManager
      * @param DatabaseRepository $repository
-     * @param ImageProcessorInterface[] $processors
+     * @param ProcessorCollection $processors
      */
     public function __construct(
         private BackupManager $backupManager,
         private DatabaseRepository $repository,
-        private array $processors,
+        private ProcessorCollection $processors,
     ) {}
 
     /**
@@ -58,7 +58,7 @@ readonly class OptimizationEngine
             $backupPath = $this->backupManager->createBackup($filePath, $identifier);
 
             // Find appropriate processor
-            $processor = $this->findProcessor($filePath);
+            $processor = $this->processors->findByFile($filePath);
             if ($processor === null) {
                 throw new OptimizationFailedException("No processor available for file type: {$filePath}");
             }
@@ -147,31 +147,14 @@ readonly class OptimizationEngine
     }
 
     /**
-     * Find the appropriate processor for a file
-     *
-     * @param string $filePath
-     * @return ImageProcessorInterface|null
-     */
-    private function findProcessor(string $filePath): ?ImageProcessorInterface
-    {
-        foreach ($this->processors as $processor) {
-            if ($processor->supports($filePath)) {
-                return $processor;
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * Get quality/compression parameters for a processor
      *
-     * @param ImageProcessorInterface $processor
+     * @param \ImageOptimizer\Processor\ImageProcessorInterface $processor
      * @param OptimizationConfig $config
      * @return int
      */
     private function getQualityForProcessor(
-        ImageProcessorInterface $processor,
+        \ImageOptimizer\Processor\ImageProcessorInterface $processor,
         OptimizationConfig $config,
     ): int {
         return match ($processor->getMimeType()) {
