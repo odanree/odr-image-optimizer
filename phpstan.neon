@@ -9,3 +9,8 @@ parameters:
     - includes/Repository/**
     - includes/Configuration/**
   reportUnmatchedIgnoredErrors: false
+  ignoreErrors:
+    - identifier: class.notFound
+      message: '#ImageOptimizer\\Core\\OptimizationEngine#'
+    - identifier: return.type
+      message: '#ImageOptimizer\\Core\\OptimizationEngine#'
