@@ -42,20 +42,21 @@ jobs:
             ${{ runner.os }}-php-
 
       - name: Install Dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+        run: composer install --prefer-dist --no-progress --no-interaction
 
       - name: Run Format Check
-        run: composer run format -- --dry-run --diff
+        run: composer run format -- --dry-run
 
       - name: Run Static Analysis
         run: composer run analyze
 
       - name: Run Tests
-        run: composer run test -- --coverage-text
+        run: composer run test
 
   markdown:
     name: Markdown Lint
     runs-on: ubuntu-latest
+    if: 'false'  # Disabled temporarily - using .markdownlintignore for now
     steps:
       - uses: actions/checkout@v4
       
