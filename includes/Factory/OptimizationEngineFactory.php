@@ -11,13 +11,14 @@ namespace ImageOptimizer\Factory;
 
 use ImageOptimizer\Backup\BackupManager;
 use ImageOptimizer\Core\OptimizationEngine;
+use ImageOptimizer\Conversion\WebpConverter;
 use ImageOptimizer\Processor\ProcessorRegistry;
 use ImageOptimizer\Repository\DatabaseRepository;
 
 class OptimizationEngineFactory
 {
     /**
-     * Create an OptimizationEngine with default processors
+     * Create an OptimizationEngine with default processors and WebP converter
      *
      * @return OptimizationEngine
      */
@@ -29,6 +30,7 @@ class OptimizationEngineFactory
             new BackupManager('.backups'),
             new DatabaseRepository($wpdb),
             ProcessorRegistry::default(),
+            new WebpConverter(),
         );
     }
 
@@ -46,6 +48,7 @@ class OptimizationEngineFactory
             new BackupManager($backupDir),
             new DatabaseRepository($wpdb),
             ProcessorRegistry::default(),
+            new WebpConverter(),
         );
     }
 
@@ -63,6 +66,7 @@ class OptimizationEngineFactory
             new BackupManager('.backups'),
             new DatabaseRepository($wpdb),
             ProcessorRegistry::fromMorphMap($mimeTypeMap),
+            new WebpConverter(),
         );
     }
 
@@ -71,11 +75,13 @@ class OptimizationEngineFactory
      *
      * @param ProcessorRegistry $registry
      * @param BackupManager|null $backupManager
+     * @param WebpConverter|null $webpConverter
      * @return OptimizationEngine
      */
     public static function createCustom(
         ProcessorRegistry $registry,
         ?BackupManager $backupManager = null,
+        ?WebpConverter $webpConverter = null,
     ): OptimizationEngine {
         global $wpdb;
 
@@ -83,6 +89,7 @@ class OptimizationEngineFactory
             $backupManager ?? new BackupManager('.backups'),
             new DatabaseRepository($wpdb),
             $registry,
+            $webpConverter ?? new WebpConverter(),
         );
     }
 }

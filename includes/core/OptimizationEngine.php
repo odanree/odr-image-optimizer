@@ -21,12 +21,16 @@ readonly class OptimizationEngine
      * @param BackupManager $backupManager
      * @param DatabaseRepository $repository
      * @param ProcessorRegistry $processors
+     * @param \ImageOptimizer\Conversion\WebpConverter|null $webpConverter
      */
     public function __construct(
         private BackupManager $backupManager,
         private DatabaseRepository $repository,
         private ProcessorRegistry $processors,
-    ) {}
+        private ?\ImageOptimizer\Conversion\WebpConverter $webpConverter = null,
+    ) {
+        $this->webpConverter ??= new \ImageOptimizer\Conversion\WebpConverter();
+    }
 
     /**
      * Optimize an image file
@@ -80,8 +84,14 @@ readonly class OptimizationEngine
 
             // Try to create WebP version if enabled
             $webpAvailable = false;
-            if ($config->enableWebp) {
-                $webpAvailable = $this->tryCreateWebpVersion($filePath, $config);
+            if ($config->enableWebp && $this->webpConverter !== null) {
+                try {
+                    $this->webpConverter->convert($filePath, $config->webpQuality);
+                    $webpAvailable = true;
+                } catch (OptimizationFailedException) {
+                    // WebP conversion failed, but don't fail the entire optimization
+                    $webpAvailable = false;
+                }
             }
 
             return [
@@ -127,9 +137,8 @@ readonly class OptimizationEngine
             }
 
             // Delete WebP version if it exists
-            $webpPath = $filePath . '.webp';
-            if (file_exists($webpPath)) {
-                @unlink($webpPath);
+            if ($this->webpConverter !== null) {
+                $this->webpConverter->deleteWebpVersion($filePath);
             }
 
             $freedSpace = $optimizedSize - $restoredSize;
@@ -200,48 +209,5 @@ readonly class OptimizationEngine
 
         // Ensure within valid range
         return max(0, min(9, $level));
-    }
-
-    /**
-     * Attempt to create a WebP version of the image
-     *
-     * @param string $filePath
-     * @param OptimizationConfig $config
-     * @return bool
-     */
-    private function tryCreateWebpVersion(string $filePath, OptimizationConfig $config): bool
-    {
-        try {
-            if (!extension_loaded('gd') || !function_exists('imagewebp')) {
-                return false;
-            }
-
-            // Only create WebP for JPEG and PNG
-            $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
-            if (!in_array($extension, ['jpg', 'jpeg', 'png'], true)) {
-                return false;
-            }
-
-            $webpPath = $filePath . '.webp';
-            if (file_exists($webpPath)) {
-                return true; // Already exists
-            }
-
-            $image = match ($extension) {
-                'png' => imagecreatefrompng($filePath),
-                default => imagecreatefromjpeg($filePath),
-            };
-
-            if ($image === false) {
-                return false;
-            }
-
-            $result = imagewebp($image, $webpPath, $config->webpQuality);
-            imagedestroy($image);
-
-            return $result !== false;
-        } catch (\Throwable) {
-            return false;
-        }
     }
 }
