@@ -5,8 +5,9 @@ parameters:
   excludePaths:
     - tests
     - includes/Repository/**
-    - includes/core/**
     - includes/admin/**
-    - includes/class-*.php
+    - includes/core/**
+    - includes/Core/class-*.php
     - includes/Configuration/**
+    - includes/class-*.php
   reportUnmatchedIgnoredErrors: false
