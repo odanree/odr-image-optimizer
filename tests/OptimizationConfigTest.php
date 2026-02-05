@@ -36,10 +36,10 @@ class OptimizationConfigTest extends TestCase
     public function testConfigFromArray(): void
     {
         $data = [
-            'autoOptimize' => true,
-            'enableWebp' => false,
-            'compressionLevel' => 'low',
-            'jpegQuality' => 60,
+            'auto_optimize' => true,
+            'enable_webp' => false,
+            'compression_level' => 'low',
+            'jpeg_quality' => 60,
         ];
 
         $config = OptimizationConfig::fromArray($data);

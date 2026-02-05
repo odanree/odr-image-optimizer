@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -74,7 +75,7 @@ readonly class BackupManager
         }
 
         if (!@copy($backupPath, $filePath)) {
-            throw new BackupFailedException("Failed to restore file from backup");
+            throw new BackupFailedException('Failed to restore file from backup');
         }
 
         return true;
@@ -121,7 +122,8 @@ readonly class BackupManager
     {
         $pathinfo = pathinfo($filePath);
         $backupDirectory = dirname($filePath) . '/' . $this->backupDir;
-        $filename = $pathinfo['filename'] . self::BACKUP_SUFFIX . '-' . $identifier . '.' . $pathinfo['extension'];
+        $extension = $pathinfo['extension'] ?? '';
+        $filename = $pathinfo['filename'] . self::BACKUP_SUFFIX . '-' . $identifier . '.' . $extension;
 
         return $backupDirectory . '/' . $filename;
     }

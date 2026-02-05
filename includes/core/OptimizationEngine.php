@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -76,7 +77,7 @@ readonly class OptimizationEngine
             // Get optimized file size
             $optimizedSize = filesize($filePath);
             if ($optimizedSize === false) {
-                throw new OptimizationFailedException("Cannot determine optimized file size");
+                throw new OptimizationFailedException('Cannot determine optimized file size');
             }
 
             $savings = $originalSize - $optimizedSize;
@@ -133,7 +134,7 @@ readonly class OptimizationEngine
 
             $restoredSize = filesize($filePath);
             if ($restoredSize === false) {
-                throw new OptimizationFailedException("Cannot determine restored file size");
+                throw new OptimizationFailedException('Cannot determine restored file size');
             }
 
             // Delete WebP version if it exists

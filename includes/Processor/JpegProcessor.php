@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -31,7 +32,7 @@ class JpegProcessor implements ImageProcessorInterface
 
             // Apply progressive encoding for better compression and perceived performance
             imageinterlace($image, true);
-            
+
             $result = imagejpeg($image, $filePath, $quality);
             imagedestroy($image);
 

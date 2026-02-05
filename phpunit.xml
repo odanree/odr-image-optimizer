@@ -5,10 +5,8 @@
          colors="true"
          beStrictAboutOutputDuringTests="true"
          beStrictAboutTestsThatDoNotTestAnything="true"
-         beStrictAboutTodoTestedCode="true"
          failOnRisky="true"
-         failOnWarning="true"
-         verbose="true">
+         failOnWarning="true">
     <testsuites>
         <testsuite name="ImageOptimizer">
             <directory>tests</directory>
@@ -20,7 +18,8 @@
             <directory>includes</directory>
         </include>
         <exclude>
-            <directory>includes/wordpress</directory>
+            <directory>includes/core</directory>
+            <directory>includes/admin</directory>
         </exclude>
     </source>
 

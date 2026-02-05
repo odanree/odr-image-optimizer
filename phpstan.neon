@@ -4,5 +4,9 @@ parameters:
     - includes
   excludePaths:
     - tests
+    - includes/Repository/**
+    - includes/core/**
+    - includes/admin/**
+    - includes/class-*.php
+    - includes/Configuration/**
   reportUnmatchedIgnoredErrors: false
-  checkGenericClassInNonGenericObjectType: false

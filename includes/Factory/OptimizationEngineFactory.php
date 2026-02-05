@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -12,6 +13,7 @@ namespace ImageOptimizer\Factory;
 use ImageOptimizer\Backup\BackupManager;
 use ImageOptimizer\Core\OptimizationEngine;
 use ImageOptimizer\Conversion\WebpConverter;
+use ImageOptimizer\Processor\ImageProcessorInterface;
 use ImageOptimizer\Processor\ProcessorRegistry;
 use ImageOptimizer\Repository\DatabaseRepository;
 
@@ -55,7 +57,7 @@ class OptimizationEngineFactory
     /**
      * Create with custom ProcessorRegistry (Morph Map)
      *
-     * @param array<string, class-string> $mimeTypeMap MIME type → Processor class
+     * @param array<string, class-string<ImageProcessorInterface>> $mimeTypeMap MIME type → Processor class
      * @return OptimizationEngine
      */
     public static function createWithProcessors(array $mimeTypeMap): OptimizationEngine

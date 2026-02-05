@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -34,7 +35,7 @@ class PngProcessor implements ImageProcessorInterface
 
             // Apply interlacing for progressive display
             imageinterlace($image, true);
-            
+
             $result = imagepng($image, $filePath, $level);
             imagedestroy($image);
 

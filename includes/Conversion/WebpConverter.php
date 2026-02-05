@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -31,12 +32,12 @@ readonly class WebpConverter
      * Convert an image to WebP format
      *
      * @param string $sourceFilePath Path to source image
-     * @param int $quality WebP quality (0-100)
+     * @param int|null $quality WebP quality (0-100), null to use default
      * @return string Path to created WebP file
      *
      * @throws OptimizationFailedException
      */
-    public function convert(string $sourceFilePath, int $quality = null): string
+    public function convert(string $sourceFilePath, ?int $quality = null): string
     {
         $quality ??= $this->quality;
 
@@ -63,12 +64,12 @@ readonly class WebpConverter
 
             $image = $this->loadImage($sourceFilePath);
             if ($image === false) {
-                throw new OptimizationFailedException("Failed to load image for WebP conversion");
+                throw new OptimizationFailedException('Failed to load image for WebP conversion');
             }
 
             if (!imagewebp($image, $webpPath, $quality)) {
                 imagedestroy($image);
-                throw new OptimizationFailedException("Failed to create WebP file");
+                throw new OptimizationFailedException('Failed to create WebP file');
             }
 
             imagedestroy($image);

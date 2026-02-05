@@ -1,9 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 /**
  * ProcessorRegistry - Morph Map equivalent with Collection behavior
- * 
+ *
  * A veteran's approach: single responsibility but two well-defined concerns:
  * 1. MIME type discovery (registry/morph map)
  * 2. Collection behavior (iteration, counting)
@@ -19,9 +20,11 @@ use Iterator;
 /**
  * @implements Iterator<string, ImageProcessorInterface>
  */
-readonly class ProcessorRegistry implements Iterator, Countable
+class ProcessorRegistry implements Iterator, Countable
 {
-    /** @var array<string, ImageProcessorInterface> */
+    /**
+     * @var array<string, ImageProcessorInterface>
+     */
     private array $processors;
 
     private int $position = 0;
@@ -58,7 +61,7 @@ readonly class ProcessorRegistry implements Iterator, Countable
 
             if (!is_subclass_of($processorClass, ImageProcessorInterface::class)) {
                 throw new \InvalidArgumentException(
-                    "Processor must implement ImageProcessorInterface: {$processorClass}"
+                    "Processor must implement ImageProcessorInterface: {$processorClass}",
                 );
             }
 
@@ -88,6 +91,7 @@ readonly class ProcessorRegistry implements Iterator, Countable
     private function __construct(array $processors)
     {
         $this->processors = $processors;
+        $this->position = 0;
     }
 
     /**

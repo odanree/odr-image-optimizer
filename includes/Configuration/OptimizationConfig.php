@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -20,15 +21,28 @@ readonly class OptimizationConfig
         public int $webpQuality = 60,
     ) {}
 
+    /**
+     * Create from associative array
+     *
+     * @param array<string, mixed> $data Configuration data
+     * @return self
+     */
     public static function fromArray(array $data): self
     {
+        /** @var int $jpegQuality */
+        $jpegQuality = (int) ($data['jpeg_quality'] ?? 70);
+        /** @var int $pngCompressionLevel */
+        $pngCompressionLevel = (int) ($data['png_compression_level'] ?? 8);
+        /** @var int $webpQuality */
+        $webpQuality = (int) ($data['webp_quality'] ?? 60);
+
         return new self(
             autoOptimize: (bool) ($data['auto_optimize'] ?? false),
             enableWebp: (bool) ($data['enable_webp'] ?? false),
             compressionLevel: (string) ($data['compression_level'] ?? 'medium'),
-            jpegQuality: (int) ($data['jpeg_quality'] ?? 70),
-            pngCompressionLevel: (int) ($data['png_compression_level'] ?? 8),
-            webpQuality: (int) ($data['webp_quality'] ?? 60),
+            jpegQuality: $jpegQuality,
+            pngCompressionLevel: $pngCompressionLevel,
+            webpQuality: $webpQuality,
         );
     }
 }

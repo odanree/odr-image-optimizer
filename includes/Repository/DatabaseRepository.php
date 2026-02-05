@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -57,7 +58,7 @@ readonly class DatabaseRepository
         ) {$charsetCollate};";
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-        
+
         try {
             dbDelta($historySql);
             dbDelta($cacheSql);
@@ -105,7 +106,7 @@ readonly class DatabaseRepository
                 'status'              => $status,
                 'error_message'       => $errorMessage,
             ],
-            ['%d', '%d', '%d', '%f', '%s', '%d', '%s', '%s']
+            ['%d', '%d', '%d', '%f', '%s', '%d', '%s', '%s'],
         );
     }
 
@@ -122,9 +123,9 @@ readonly class DatabaseRepository
         $result = $this->wpdb->get_row(
             $this->wpdb->prepare(
                 "SELECT * FROM {$table} WHERE attachment_id = %d ORDER BY optimized_at DESC LIMIT 1",
-                $attachmentId
+                $attachmentId,
             ),
-            ARRAY_A
+            ARRAY_A,
         );
 
         return $result ? (array) $result : null;
@@ -147,7 +148,7 @@ readonly class DatabaseRepository
                 AVG(compression_ratio) as average_compression,
                 SUM(webp_available) as webp_count
             FROM {$table} 
-            WHERE status = 'completed'"
+            WHERE status = 'completed'",
         );
 
         return (array) ($result ?? []);
@@ -173,7 +174,7 @@ readonly class DatabaseRepository
                 'cache_value' => maybe_serialize($value),
                 'expires_at'  => $expiresAt,
             ],
-            ['%s', '%s', '%s']
+            ['%s', '%s', '%s'],
         );
 
         return $result !== false;
@@ -192,8 +193,8 @@ readonly class DatabaseRepository
         $result = $this->wpdb->get_row(
             $this->wpdb->prepare(
                 "SELECT cache_value FROM {$table} WHERE cache_key = %s AND (expires_at IS NULL OR expires_at > NOW())",
-                $key
-            )
+                $key,
+            ),
         );
 
         return $result ? maybe_unserialize($result->cache_value) : null;
