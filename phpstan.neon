@@ -3,11 +3,9 @@ parameters:
   paths:
     - includes
   excludePaths:
-    - tests
-    - includes/Repository/**
-    - includes/admin/**
     - includes/core/**
-    - includes/Core/class-*.php
-    - includes/Configuration/**
+    - includes/admin/**
     - includes/class-*.php
+    - includes/Repository/**
+    - includes/Configuration/**
   reportUnmatchedIgnoredErrors: false
