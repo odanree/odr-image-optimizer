@@ -11,17 +11,13 @@ namespace ImageOptimizer\Factory;
 
 use ImageOptimizer\Backup\BackupManager;
 use ImageOptimizer\Core\OptimizationEngine;
-use ImageOptimizer\Processor\JpegProcessor;
-use ImageOptimizer\Processor\PngProcessor;
-use ImageOptimizer\Processor\ProcessorCollection;
 use ImageOptimizer\Processor\ProcessorRegistry;
-use ImageOptimizer\Processor\WebpProcessor;
 use ImageOptimizer\Repository\DatabaseRepository;
 
 class OptimizationEngineFactory
 {
     /**
-     * Create an OptimizationEngine with all dependencies
+     * Create an OptimizationEngine with default processors
      *
      * @return OptimizationEngine
      */
@@ -29,17 +25,11 @@ class OptimizationEngineFactory
     {
         global $wpdb;
 
-        $backupManager = new BackupManager('.backups');
-        $repository = new DatabaseRepository($wpdb);
-
-        // Use default processors
-        $processors = new ProcessorCollection(
-            new JpegProcessor(),
-            new PngProcessor(),
-            new WebpProcessor(),
+        return new OptimizationEngine(
+            new BackupManager('.backups'),
+            new DatabaseRepository($wpdb),
+            ProcessorRegistry::default(),
         );
-
-        return new OptimizationEngine($backupManager, $repository, $processors);
     }
 
     /**
@@ -52,51 +42,47 @@ class OptimizationEngineFactory
     {
         global $wpdb;
 
-        $backupManager = new BackupManager($backupDir);
-        $repository = new DatabaseRepository($wpdb);
-
-        $processors = new ProcessorCollection(
-            new JpegProcessor(),
-            new PngProcessor(),
-            new WebpProcessor(),
+        return new OptimizationEngine(
+            new BackupManager($backupDir),
+            new DatabaseRepository($wpdb),
+            ProcessorRegistry::default(),
         );
-
-        return new OptimizationEngine($backupManager, $repository, $processors);
     }
 
     /**
-     * Create with custom processors via registry (Morph Map pattern)
+     * Create with custom ProcessorRegistry (Morph Map)
      *
-     * @param ProcessorRegistry $registry
+     * @param array<string, class-string> $mimeTypeMap MIME type → Processor class
      * @return OptimizationEngine
      */
-    public static function createWithRegistry(ProcessorRegistry $registry): OptimizationEngine
+    public static function createWithProcessors(array $mimeTypeMap): OptimizationEngine
     {
         global $wpdb;
 
-        $backupManager = new BackupManager('.backups');
-        $repository = new DatabaseRepository($wpdb);
-
-        // Build ProcessorCollection from registry
-        $processors = new ProcessorCollection(
-            ...array_map(
-                fn(string $mimeType) => $registry->create($mimeType),
-                $registry->getSupportedMimeTypes()
-            )
+        return new OptimizationEngine(
+            new BackupManager('.backups'),
+            new DatabaseRepository($wpdb),
+            ProcessorRegistry::fromMorphMap($mimeTypeMap),
         );
-
-        return new OptimizationEngine($backupManager, $repository, $processors);
     }
 
     /**
-     * Create with custom registry configuration
+     * Create with fully custom configuration
      *
-     * @param array<string, class-string> $registryMap MIME type → Processor class mapping
+     * @param ProcessorRegistry $registry
+     * @param BackupManager|null $backupManager
      * @return OptimizationEngine
      */
-    public static function createWithCustomRegistry(array $registryMap): OptimizationEngine
-    {
-        $registry = new ProcessorRegistry($registryMap);
-        return self::createWithRegistry($registry);
+    public static function createCustom(
+        ProcessorRegistry $registry,
+        ?BackupManager $backupManager = null,
+    ): OptimizationEngine {
+        global $wpdb;
+
+        return new OptimizationEngine(
+            $backupManager ?? new BackupManager('.backups'),
+            new DatabaseRepository($wpdb),
+            $registry,
+        );
     }
 }

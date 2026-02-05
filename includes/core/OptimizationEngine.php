@@ -12,7 +12,7 @@ namespace ImageOptimizer\Core;
 use ImageOptimizer\Backup\BackupManager;
 use ImageOptimizer\Configuration\OptimizationConfig;
 use ImageOptimizer\Exception\OptimizationFailedException;
-use ImageOptimizer\Processor\ProcessorCollection;
+use ImageOptimizer\Processor\ProcessorRegistry;
 use ImageOptimizer\Repository\DatabaseRepository;
 
 readonly class OptimizationEngine
@@ -20,12 +20,12 @@ readonly class OptimizationEngine
     /**
      * @param BackupManager $backupManager
      * @param DatabaseRepository $repository
-     * @param ProcessorCollection $processors
+     * @param ProcessorRegistry $processors
      */
     public function __construct(
         private BackupManager $backupManager,
         private DatabaseRepository $repository,
-        private ProcessorCollection $processors,
+        private ProcessorRegistry $processors,
     ) {}
 
     /**
