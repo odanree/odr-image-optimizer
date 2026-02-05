@@ -47,6 +47,8 @@ require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-optimizer.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-api.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/admin/class-dashboard.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/admin/class-settings.php';
+require_once IMAGE_OPTIMIZER_PATH . 'includes/Frontend/WebpDelivery.php';
+require_once IMAGE_OPTIMIZER_PATH . 'includes/Frontend/ResponsiveImages.php';
 
 /**
  * The main plugin class
@@ -77,6 +79,12 @@ register_deactivation_hook( __FILE__, array( Core::class, 'deactivate' ) );
  */
 add_action( 'init', function() {
 	Core::get_instance();
+	
+	// Initialize WebP delivery
+	new \ImageOptimizer\Frontend\WebpDelivery();
+	
+	// Initialize responsive images
+	new \ImageOptimizer\Frontend\ResponsiveImages();
 }, 20 );
 
 /**
