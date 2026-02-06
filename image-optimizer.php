@@ -75,16 +75,21 @@ register_activation_hook( __FILE__, array( Core::class, 'activate' ) );
 register_deactivation_hook( __FILE__, array( Core::class, 'deactivate' ) );
 
 /**
- * Initialize the plugin
+ * Initialize WebP delivery early (plugins_loaded)
  */
-add_action( 'init', function() {
-	Core::get_instance();
-	
-	// Initialize WebP delivery
+add_action( 'plugins_loaded', function() {
+	// Initialize WebP delivery FIRST - needs to hook early
 	new \ImageOptimizer\Frontend\WebpDelivery();
 	
 	// Initialize responsive images
 	new \ImageOptimizer\Frontend\ResponsiveImages();
+}, 1 );
+
+/**
+ * Initialize the plugin
+ */
+add_action( 'init', function() {
+	Core::get_instance();
 }, 20 );
 
 /**
