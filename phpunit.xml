@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.0/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         colors="true"
+         beStrictAboutOutputDuringTests="true"
+         beStrictAboutTestsThatDoNotTestAnything="true"
+         failOnRisky="true"
+         failOnWarning="true">
+    <testsuites>
+        <testsuite name="ImageOptimizer">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <directory>includes</directory>
+        </include>
+        <exclude>
+            <directory>includes/core</directory>
+            <directory>includes/admin</directory>
+        </exclude>
+    </source>
+
+    <php>
+        <ini name="error_reporting" value="-1"/>
+        <ini name="display_errors" value="On"/>
+    </php>
+</phpunit>

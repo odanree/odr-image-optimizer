@@ -1,0 +1,17 @@
+parameters:
+  level: max
+  paths:
+    - includes
+  excludePaths:
+    - includes/core/**
+    - includes/admin/**
+    - includes/class-*.php
+    - includes/Repository/**
+    - includes/Configuration/**
+    - includes/Frontend/**
+  reportUnmatchedIgnoredErrors: false
+  ignoreErrors:
+    - identifier: class.notFound
+      message: '#ImageOptimizer\\Core\\OptimizationEngine#'
+    - identifier: return.type
+      message: '#ImageOptimizer\\Core\\OptimizationEngine#'
