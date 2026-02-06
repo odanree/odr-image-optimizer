@@ -8,6 +8,7 @@ parameters:
     - includes/class-*.php
     - includes/Repository/**
     - includes/Configuration/**
+    - includes/Frontend/**
   reportUnmatchedIgnoredErrors: false
   ignoreErrors:
     - identifier: class.notFound
