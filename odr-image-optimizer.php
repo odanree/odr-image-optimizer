@@ -22,11 +22,12 @@
  * Requires PHP:      7.4
  * Tested up to:      6.9
  * Stable tag:        1.0.0
+ * Tags:              image optimization, performance, wordpress plugin, caching, compression
  */
 
 // If this file is called directly, abort.
-if ( ! defined( 'WPINC' ) ) {
-	die;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit( 'Direct access denied.' );
 }
 
 // Define plugin constants
