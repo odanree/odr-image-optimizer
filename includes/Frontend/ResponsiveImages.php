@@ -1,10 +1,13 @@
 <?php
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit( 'Direct access denied.' );
-}
-
 declare(strict_types=1);
+
+
+
+
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 
 /**
  * Responsive Images - Generate srcset and sizes attributes for optimized images

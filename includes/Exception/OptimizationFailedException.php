@@ -1,10 +1,13 @@
 <?php
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit( 'Direct access denied.' );
-}
-
 declare(strict_types=1);
+
+
+
+
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 
 /**
  * Exception thrown when image optimization fails

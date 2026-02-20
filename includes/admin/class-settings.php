@@ -1,9 +1,5 @@
 <?php
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit( 'Direct access denied.' );
-}
-
 /**
  * Plugin Settings
  *
@@ -214,5 +210,10 @@ class Settings
 			</form>
 		</div>
 		<?php
+
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
+
     }
 }
