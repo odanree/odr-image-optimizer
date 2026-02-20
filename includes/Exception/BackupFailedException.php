@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit( 'Direct access denied.' );
+}
+
 declare(strict_types=1);
 
 /**
