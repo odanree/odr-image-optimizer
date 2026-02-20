@@ -1,9 +1,6 @@
 <?php
 
 declare(strict_types=1);
-if (! defined('ABSPATH')) {
-    exit('Direct access denied.');
-}
 
 /**
  * Responsive Images - Generate srcset and sizes attributes for optimized images
@@ -14,6 +11,9 @@ if (! defined('ABSPATH')) {
 
 namespace ImageOptimizer\Frontend;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 /**
  * Responsive Images class - Handles srcset generation for WebP images
  */

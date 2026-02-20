@@ -1,9 +1,6 @@
 <?php
 
 declare(strict_types=1);
-if (! defined('ABSPATH')) {
-    exit('Direct access denied.');
-}
 
 /**
  * Backup Manager - Handles image backups
@@ -13,6 +10,9 @@ if (! defined('ABSPATH')) {
 
 namespace ImageOptimizer\Backup;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 use ImageOptimizer\Exception\BackupFailedException;
 
 readonly class BackupManager

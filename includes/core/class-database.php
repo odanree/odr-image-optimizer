@@ -1,9 +1,6 @@
 <?php
 
 declare(strict_types=1);
-if (! defined('ABSPATH')) {
-    exit('Direct access denied.');
-}
 
 /**
  * Database management class
@@ -14,6 +11,9 @@ if (! defined('ABSPATH')) {
 
 namespace ImageOptimizer\Core;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 /**
  * Database class for managing plugin tables
  */

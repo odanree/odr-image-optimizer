@@ -1,9 +1,6 @@
 <?php
 
 declare(strict_types=1);
-if (! defined('ABSPATH')) {
-    exit('Direct access denied.');
-}
 
 /**
  * JPEG Image Processor
@@ -13,6 +10,9 @@ if (! defined('ABSPATH')) {
 
 namespace ImageOptimizer\Processor;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 use ImageOptimizer\Exception\OptimizationFailedException;
 
 class JpegProcessor implements ImageProcessorInterface

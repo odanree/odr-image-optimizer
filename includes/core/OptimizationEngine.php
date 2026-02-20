@@ -1,9 +1,6 @@
 <?php
 
 declare(strict_types=1);
-if (! defined('ABSPATH')) {
-    exit('Direct access denied.');
-}
 
 /**
  * Main Optimization Engine - SRP compliant, fully decoupled
@@ -13,6 +10,9 @@ if (! defined('ABSPATH')) {
 
 namespace ImageOptimizer\Core;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 use ImageOptimizer\Backup\BackupManager;
 use ImageOptimizer\Configuration\OptimizationConfig;
 use ImageOptimizer\Exception\OptimizationFailedException;

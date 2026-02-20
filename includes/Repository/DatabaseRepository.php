@@ -1,9 +1,6 @@
 <?php
 
 declare(strict_types=1);
-if (! defined('ABSPATH')) {
-    exit('Direct access denied.');
-}
 
 /**
  * Database Repository - Decoupled from WordPress global functions
@@ -13,6 +10,9 @@ if (! defined('ABSPATH')) {
 
 namespace ImageOptimizer\Repository;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 use ImageOptimizer\Exception\OptimizationFailedException;
 
 readonly class DatabaseRepository

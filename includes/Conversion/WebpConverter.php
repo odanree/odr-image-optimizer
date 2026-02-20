@@ -1,9 +1,6 @@
 <?php
 
 declare(strict_types=1);
-if (! defined('ABSPATH')) {
-    exit('Direct access denied.');
-}
 
 /**
  * WebP Converter - Converts images to WebP format
@@ -13,6 +10,9 @@ if (! defined('ABSPATH')) {
 
 namespace ImageOptimizer\Conversion;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 use ImageOptimizer\Exception\OptimizationFailedException;
 
 readonly class WebpConverter

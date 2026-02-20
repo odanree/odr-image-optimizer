@@ -1,9 +1,6 @@
 <?php
 
 declare(strict_types=1);
-if (! defined('ABSPATH')) {
-    exit('Direct access denied.');
-}
 
 /**
  * WebP Delivery - Serves WebP images when available and browser supports it
@@ -14,6 +11,9 @@ if (! defined('ABSPATH')) {
 
 namespace ImageOptimizer\Frontend;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 /**
  * WebP Delivery class - Handles WebP format serving to browsers
  */

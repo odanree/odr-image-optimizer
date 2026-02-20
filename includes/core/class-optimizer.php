@@ -2,9 +2,6 @@
 
 declare(strict_types=1);
 
-if (! defined('ABSPATH')) {
-    exit('Direct access denied.');
-}
 
 /**
  * Image optimization engine
@@ -15,6 +12,9 @@ if (! defined('ABSPATH')) {
 
 namespace ImageOptimizer\Core;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 /**
  * Main image optimizer class
  */

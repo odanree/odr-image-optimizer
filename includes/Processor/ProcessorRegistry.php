@@ -1,9 +1,6 @@
 <?php
 
 declare(strict_types=1);
-if (! defined('ABSPATH')) {
-    exit('Direct access denied.');
-}
 
 /**
  * ProcessorRegistry - Morph Map equivalent with Collection behavior
@@ -17,6 +14,9 @@ if (! defined('ABSPATH')) {
 
 namespace ImageOptimizer\Processor;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 use Countable;
 use Iterator;
 

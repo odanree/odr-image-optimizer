@@ -1,9 +1,6 @@
 <?php
 
 declare(strict_types=1);
-if (! defined('ABSPATH')) {
-    exit('Direct access denied.');
-}
 
 /**
  * Configuration object for the Optimization Engine
@@ -13,6 +10,9 @@ if (! defined('ABSPATH')) {
 
 namespace ImageOptimizer\Configuration;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 readonly class OptimizationConfig
 {
     public function __construct(

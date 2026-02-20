@@ -1,9 +1,6 @@
 <?php
 
 declare(strict_types=1);
-if (! defined('ABSPATH')) {
-    exit('Direct access denied.');
-}
 
 /**
  * REST API endpoints for Image Optimizer
@@ -14,6 +11,9 @@ if (! defined('ABSPATH')) {
 
 namespace ImageOptimizer\Core;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 /**
  * REST API class
  */

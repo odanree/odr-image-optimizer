@@ -1,9 +1,6 @@
 <?php
 
 declare(strict_types=1);
-if (! defined('ABSPATH')) {
-    exit('Direct access denied.');
-}
 
 /**
  * Exception thrown when backup operations fail
@@ -13,6 +10,9 @@ if (! defined('ABSPATH')) {
 
 namespace ImageOptimizer\Exception;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 class BackupFailedException extends \Exception
 {
     public function __construct(

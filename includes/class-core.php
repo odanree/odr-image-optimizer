@@ -1,9 +1,6 @@
 <?php
 
 declare(strict_types=1);
-if (! defined('ABSPATH')) {
-    exit('Direct access denied.');
-}
 
 /**
  * The main plugin class
@@ -14,6 +11,9 @@ if (! defined('ABSPATH')) {
 
 namespace ImageOptimizer;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 use ImageOptimizer\Admin\Dashboard;
 use ImageOptimizer\Admin\Settings;
 use ImageOptimizer\Core\Optimizer;

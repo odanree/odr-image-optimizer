@@ -1,9 +1,6 @@
 <?php
 
 declare(strict_types=1);
-if (! defined('ABSPATH')) {
-    exit('Direct access denied.');
-}
 
 /**
  * Image Processor Strategy Interface
@@ -13,6 +10,9 @@ if (! defined('ABSPATH')) {
 
 namespace ImageOptimizer\Processor;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 interface ImageProcessorInterface
 {
     /**
