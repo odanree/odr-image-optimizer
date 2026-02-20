@@ -1,7 +1,7 @@
 === ODR Image Optimizer ===
 Contributors: odanree
 Donate link: https://danhle.net/
-Tags: image-optimization, image-compression, webp, lazy-loading, performance, odr-image-optimizer, optimization
+Tags: image-optimization, image-compression, webp, lazy-loading, performance
 Requires at least: 5.0
 Tested up to: 6.9
 Stable tag: 1.0.0
