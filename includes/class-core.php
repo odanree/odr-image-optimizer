@@ -233,26 +233,18 @@ class Core
             return false;
         }
 
-        // Check if directory is writable
+        // Already writable, nothing to do
         if (is_writable($base_dir)) {
-            return true;  // Already writable, nothing to do
+            return true;
         }
 
         // Try to make it writable
         @chmod($base_dir, 0775);
 
-        // Recursively fix subdirectories
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($base_dir, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
-        );
-
-        foreach ($iterator as $item) {
-            if ($item->isDir()) {
-                @chmod($item->getPathname(), 0775);
-            } else {
-                @chmod($item->getPathname(), 0644);
-            }
+        // Also ensure the parent directory is writable
+        $parent = dirname($base_dir);
+        if (is_dir($parent) && ! is_writable($parent)) {
+            @chmod($parent, 0775);
         }
 
         return is_writable($base_dir);
