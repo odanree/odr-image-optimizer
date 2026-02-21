@@ -198,7 +198,7 @@ Initial release. Install and activate to get started with professional image opt
 
 **Author:** Danh Le
 **Website:** https://danhle.net/
-**Email:** hello@danhle.net
+**Email:** danhle@danhle.net
 
 == Special Thanks ==
 
