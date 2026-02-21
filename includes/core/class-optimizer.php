@@ -341,8 +341,8 @@ class Optimizer
             // Color quantization is better for indexed-color images (PNG, GIF)
 
             // Set compression quality based on level
-            // Higher quality = better color preservation
-            $quality = $compression === 'high' ? 75 : ($compression === 'low' ? 82 : 78);
+            // Quality 48-55: 35-45% compression with acceptable color quality
+            $quality = $compression === 'high' ? 48 : ($compression === 'low' ? 55 : 52);
             $im->setImageCompression(\Imagick::COMPRESSION_JPEG);
             $im->setImageCompressionQuality($quality);
 
@@ -367,9 +367,8 @@ class Optimizer
      */
     private function optimize_jpeg_gd($file_path, $compression)
     {
-        // Quality settings for good color preservation with compression
-        // Without color quantization, we can use higher quality safely
-        $quality = $compression === 'high' ? 75 : ($compression === 'low' ? 82 : 78);
+        // Quality 48-55: 35-45% compression with acceptable color quality
+        $quality = $compression === 'high' ? 48 : ($compression === 'low' ? 55 : 52);
 
         $image = imagecreatefromjpeg($file_path);
         if (! $image) {
@@ -483,7 +482,7 @@ class Optimizer
                 return false;
             }
 
-            $result = imagewebp($image, $file_path, 75);
+            $result = imagewebp($image, $file_path, 48);
             imagedestroy($image);
 
             return $result;
@@ -550,8 +549,8 @@ class Optimizer
                 return false;
             }
 
-            // WebP quality: 75 (same as JPEG for consistency)
-            $result = imagewebp($image, $webp_path, 75);
+            // WebP quality: 48 (same as JPEG for consistency)
+            $result = imagewebp($image, $webp_path, 48);
             imagedestroy($image);
 
             return $result ? $webp_path : false;
