@@ -30,6 +30,9 @@ class WebPFrontendDelivery
      */
     public static function init(): void
     {
+        // Filter wp_get_attachment_image_attributes to inject responsive srcset/sizes
+        add_filter('wp_get_attachment_image_attributes', [self::class, 'inject_responsive_attributes'], 10, 2);
+
         // Filter the_content to serve responsive images with WebP
         add_filter('the_content', [self::class, 'filter_post_images'], 10);
 
@@ -38,6 +41,37 @@ class WebPFrontendDelivery
 
         // Filter featured image rendering
         add_filter('post_thumbnail_html', [self::class, 'add_webp_to_thumbnail'], 10, 5);
+    }
+
+    /**
+     * Inject responsive srcset and sizes attributes into attachment images
+     *
+     * This filter ensures that WordPress serves the appropriate size variants
+     * and responsive attributes to the browser, enabling proper responsive image loading.
+     *
+     * @param array   $attrs      Image attributes.
+     * @param WP_Post $attachment The attachment object.
+     * @return array Modified attributes with srcset and sizes.
+     */
+    public static function inject_responsive_attributes(array $attrs, \WP_Post $attachment): array
+    {
+        $attachment_id = $attachment->ID;
+        
+        // Generate responsive srcset for medium_large size
+        $srcset = wp_get_attachment_image_srcset($attachment_id, 'medium_large');
+        
+        if ($srcset) {
+            $attrs['srcset'] = $srcset;
+            
+            // Add sizes attribute so browser knows the container width
+            // This tells the browser: on viewports up to 645px, image is 100vw
+            // on larger viewports, image is limited to 645px
+            if (! isset($attrs['sizes']) || empty($attrs['sizes'])) {
+                $attrs['sizes'] = '(max-width: 645px) 100vw, 645px';
+            }
+        }
+        
+        return $attrs;
     }
 
     /**

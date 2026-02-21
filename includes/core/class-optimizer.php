@@ -786,7 +786,7 @@ class Optimizer implements OptimizerInterface
         }
 
         $base_dir = dirname($attached_file);
-        $optimized_count = 0;
+        $metadata_updated = false;
 
         // Optimize each subsize
         foreach ($metadata['sizes'] as $size_name => $size_data) {
@@ -801,12 +801,19 @@ class Optimizer implements OptimizerInterface
                 $result = $this->optimize_file($subsize_file, 'standard');
 
                 if ($result) {
-                    $optimized_count++;
-
                     // Create WebP version of subsize if configured
                     if ($this->config->should_create_webp()) {
                         if ($this->can_create_webp($subsize_file)) {
                             $this->create_webp_version($subsize_file);
+                            
+                            // Update metadata to track WebP version
+                            $original_file = $size_data['file'];
+                            $webp_file = str_replace(['.jpg', '.jpeg', '.png'], '.webp', $original_file);
+                            
+                            if (! isset($metadata['sizes'][ $size_name ]['webp'])) {
+                                $metadata['sizes'][ $size_name ]['webp'] = $webp_file;
+                                $metadata_updated = true;
+                            }
                         }
                     }
                 }
@@ -814,6 +821,11 @@ class Optimizer implements OptimizerInterface
                 // Log error but continue with other subsizes
                 error_log("Failed to optimize subsize {$size_name}: " . $e->getMessage());
             }
+        }
+
+        // Update metadata with WebP tracking
+        if ($metadata_updated) {
+            wp_update_attachment_metadata($attachment_id, $metadata);
         }
 
         return true;
