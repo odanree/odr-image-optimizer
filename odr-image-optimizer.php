@@ -64,6 +64,7 @@ require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-isolation-audit.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-permission-enforcement-audit.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-hook-complexity-analyzer.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-api.php';
+require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-size-selector.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-responsive-image-service.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-webp-frontend-delivery.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/admin/class-dashboard.php';
