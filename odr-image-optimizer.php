@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /**
  * Image Optimizer Plugin
  *
@@ -26,15 +28,15 @@
  */
 
 // If this file is called directly, abort.
-if ( ! defined( 'ABSPATH' ) ) {
-	exit( 'Direct access denied.' );
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
 }
 
 // Define plugin constants
-define( 'IMAGE_OPTIMIZER_VERSION', time() ); // Cache buster
-define( 'IMAGE_OPTIMIZER_PATH', plugin_dir_path( __FILE__ ) );
-define( 'IMAGE_OPTIMIZER_URL', plugin_dir_url( __FILE__ ) );
-define( 'IMAGE_OPTIMIZER_BASENAME', plugin_basename( __FILE__ ) );
+define('IMAGE_OPTIMIZER_VERSION', time()); // Cache buster
+define('IMAGE_OPTIMIZER_PATH', plugin_dir_path(__FILE__));
+define('IMAGE_OPTIMIZER_URL', plugin_dir_url(__FILE__));
+define('IMAGE_OPTIMIZER_BASENAME', plugin_basename(__FILE__));
 
 // Include the autoloader
 require_once IMAGE_OPTIMIZER_PATH . 'includes/class-autoloader.php';
@@ -88,57 +90,57 @@ use ImageOptimizer\Services\SizeRegistry;
  */
 add_action(
     'after_setup_theme',
-    function() {
+    function () {
         $registry = new SizeRegistry();
         $registry->register_optimized_sizes();
 
         // Hook custom sizes into srcset calculation
         add_filter('wp_calculate_image_srcset_meta', [ $registry, 'add_to_srcset' ]);
-    }
+    },
 );
 
 /**
  * Initialize REST API early
  */
-add_action( 'rest_api_init', function() {
-	$api = new API();
-	$api->register_routes();
-}, 1 );
+add_action('rest_api_init', function () {
+    $api = new API();
+    $api->register_routes();
+}, 1);
 
 /**
  * Activate the plugin
  */
-register_activation_hook( __FILE__, array( Core::class, 'activate' ) );
+register_activation_hook(__FILE__, [ Core::class, 'activate' ]);
 
 /**
  * Deactivate the plugin
  */
-register_deactivation_hook( __FILE__, array( Core::class, 'deactivate' ) );
+register_deactivation_hook(__FILE__, [ Core::class, 'deactivate' ]);
 
 /**
  * Initialize WebP delivery early (plugins_loaded)
  */
-add_action( 'plugins_loaded', function() {
-	// Initialize WebP delivery FIRST - needs to hook early
-	new \ImageOptimizer\Frontend\WebpDelivery();
-	
-	// Initialize responsive images
-	new \ImageOptimizer\Frontend\ResponsiveImages();
-}, 1 );
+add_action('plugins_loaded', function () {
+    // Initialize WebP delivery FIRST - needs to hook early
+    new \ImageOptimizer\Frontend\WebpDelivery();
+
+    // Initialize responsive images
+    new \ImageOptimizer\Frontend\ResponsiveImages();
+}, 1);
 
 /**
  * Initialize the plugin
  */
-add_action( 'init', function() {
-	Core::get_instance();
-}, 20 );
+add_action('init', function () {
+    Core::get_instance();
+}, 20);
 
 // Initialize frontend WebP delivery for public-facing posts
-add_action( 'wp', function() {
-	if ( ! is_admin() ) {
-		\ImageOptimizer\Frontend\WebPFrontendDelivery::init();
-	}
-} );
+add_action('wp', function () {
+    if (! is_admin()) {
+        \ImageOptimizer\Frontend\WebPFrontendDelivery::init();
+    }
+});
 
 /**
  * Copyright (C) 2025 Danh Le
