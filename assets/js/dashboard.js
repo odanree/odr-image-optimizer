@@ -63,15 +63,30 @@
 				return;
 			}
 
-			// Render images
+			// Render images with responsive srcset/sizes for Lighthouse compliance
 			let html = '<div class="image-optimizer-gallery">';
 			
 			images.forEach(image => {
+				// Build responsive img tag with srcset and sizes attributes
+				const srcsetAttr = image.srcset ? `srcset="${escapeHtml(image.srcset)}"` : '';
+				const sizesAttr = image.sizes ? `sizes="${escapeHtml(image.sizes)}"` : '';
+				
 				html += `
 					<div class="image-optimizer-card">
-						<img src="${image.url}" alt="${image.title}" width="200" height="200" class="image-optimizer-thumbnail" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22200%22/%3E%3C/svg%3E'">
-						<h3>${image.title}</h3>
+						<img src="${escapeHtml(image.url)}" 
+						     alt="${escapeHtml(image.title)}" 
+						     ${srcsetAttr}
+						     ${sizesAttr}
+						     width="200" 
+						     height="200" 
+						     class="image-optimizer-thumbnail"
+						     loading="lazy"
+						     decoding="async"
+						     style="width:100%;height:auto;object-fit:cover;"
+						     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22200%22/%3E%3C/svg%3E'">
+						<h3>${escapeHtml(image.title)}</h3>
 						<p>Size: ${formatBytes(image.size)}</p>
+						${image.webp_available ? '<p class="status-webp">📦 WebP Available</p>' : ''}
 						<div class="image-optimizer-actions">
 							${image.optimized ? `
 								<p class="status-optimized">✓ Optimized</p>
@@ -114,6 +129,14 @@
 		const sizes = ['Bytes', 'KB', 'MB'];
 		const i = Math.floor(Math.log(bytes) / Math.log(k));
 		return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+	}
+
+	// Escape HTML to prevent XSS attacks
+	function escapeHtml(text) {
+		if (!text) return '';
+		const div = document.createElement('div');
+		div.textContent = text;
+		return div.innerHTML;
 	}
 
 	// Optimize image

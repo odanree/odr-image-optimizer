@@ -64,6 +64,8 @@ require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-isolation-audit.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-permission-enforcement-audit.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-hook-complexity-analyzer.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-api.php';
+require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-responsive-image-service.php';
+require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-webp-frontend-delivery.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/admin/class-dashboard.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/admin/class-settings.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Frontend/WebpDelivery.php';
@@ -110,6 +112,13 @@ add_action( 'plugins_loaded', function() {
 add_action( 'init', function() {
 	Core::get_instance();
 }, 20 );
+
+// Initialize frontend WebP delivery for public-facing posts
+add_action( 'wp', function() {
+	if ( ! is_admin() ) {
+		\ImageOptimizer\Frontend\WebPFrontendDelivery::init();
+	}
+} );
 
 /**
  * Copyright (C) 2025 Danh Le
