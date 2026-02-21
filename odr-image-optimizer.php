@@ -165,9 +165,13 @@ add_action('template_redirect', function () {
  */
 add_action('wp_head', function () {
     if (! is_admin()) {
-        // Inject LCP preload hint (tell browser to download 704px image immediately)
         $priority_service = new \ImageOptimizer\Services\PriorityService();
+
+        // Inject LCP preload hint (tell browser to download 704px image immediately)
         $priority_service->inject_preload();
+
+        // Preload theme's primary font to reduce FCP variance
+        $priority_service->preload_theme_font();
 
         // Inline small CSS to eliminate render-blocking request
         $asset_manager = new \ImageOptimizer\Services\AssetManager();
