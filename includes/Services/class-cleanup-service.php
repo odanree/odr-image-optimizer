@@ -57,6 +57,7 @@ class CleanupService
         wp_dequeue_script('wp-lazy-loading');
 
         // Dequeue this plugin's own lazy-load script (native loading="lazy" is sufficient)
+        wp_dequeue_script('image-optimizer-lazy');
         wp_dequeue_script('image-optimizer-lazy-js');
 
         // Remove jQuery migrate (for WordPress backward compat, not needed for modern sites)
