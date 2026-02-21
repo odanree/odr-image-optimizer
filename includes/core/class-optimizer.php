@@ -296,7 +296,7 @@ class Optimizer
             }
 
             // Set compression quality based on level
-            $quality = $compression === 'high' ? 45 : ($compression === 'low' ? 75 : 60);
+            $quality = $compression === 'high' ? 70 : ($compression === 'low' ? 80 : 75);
             $im->setImageCompression(\Imagick::COMPRESSION_JPEG);
             $im->setImageCompressionQuality($quality);
 
@@ -321,8 +321,8 @@ class Optimizer
      */
     private function optimize_jpeg_gd($file_path, $compression)
     {
-        // Aggressive quality settings for 40%+ compression
-        $quality = $compression === 'high' ? 48 : ($compression === 'low' ? 75 : 60);
+        // Quality settings for balanced compression and visual quality
+        $quality = $compression === 'high' ? 70 : ($compression === 'low' ? 80 : 75);
 
         $image = imagecreatefromjpeg($file_path);
         if (! $image) {
