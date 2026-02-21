@@ -65,6 +65,7 @@ require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-permission-enforcement-
 require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-hook-complexity-analyzer.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-api.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-size-selector.php';
+require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-size-registry.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-responsive-image-service.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-webp-frontend-delivery.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/admin/class-dashboard.php';
@@ -77,6 +78,24 @@ require_once IMAGE_OPTIMIZER_PATH . 'includes/Frontend/ResponsiveImages.php';
  */
 use ImageOptimizer\Core;
 use ImageOptimizer\Core\API;
+use ImageOptimizer\Services\SizeRegistry;
+
+/**
+ * Initialize custom image size registry early
+ *
+ * Register custom image sizes (odr_mobile_optimized, odr_tablet_optimized)
+ * that bridge the gap between mobile and desktop breakpoints.
+ */
+add_action(
+    'after_setup_theme',
+    function() {
+        $registry = new SizeRegistry();
+        $registry->register_optimized_sizes();
+
+        // Hook custom sizes into srcset calculation
+        add_filter('wp_calculate_image_srcset_meta', [ $registry, 'add_to_srcset' ]);
+    }
+);
 
 /**
  * Initialize REST API early
