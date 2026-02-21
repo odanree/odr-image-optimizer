@@ -18,7 +18,7 @@ if (! defined('ABSPATH')) {
 /**
  * Main image optimizer class
  */
-class Optimizer
+class Optimizer implements OptimizerInterface
 {
     /**
      * Compression levels
