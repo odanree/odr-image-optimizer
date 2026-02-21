@@ -136,6 +136,9 @@ class Optimizer
                 ];
             }
 
+            // Ensure permissions are correct before attempting optimization
+            \ImageOptimizer\Core::ensure_uploads_permissions();
+
             if (! $this->is_optimizable($file)) {
                 return [
                     'success' => false,
@@ -641,6 +644,9 @@ class Optimizer
                     'error'   => 'File not found: ' . ($file ?: 'no path'),
                 ];
             }
+
+            // Ensure permissions are correct before attempting restore
+            \ImageOptimizer\Core::ensure_uploads_permissions();
 
             // Get backup file path
             $file_info = pathinfo($file);

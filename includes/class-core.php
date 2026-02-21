@@ -208,8 +208,54 @@ class Core
             ]);
         }
 
+        // Fix uploads directory permissions (CRITICAL)
+        self::ensure_uploads_permissions();
+
         // Flush rewrite rules
         flush_rewrite_rules();
+    }
+
+    /**
+     * Ensure uploads directory has correct permissions
+     * 
+     * This is required for the plugin to write/restore image files.
+     * Without proper permissions, backup restore will fail with:
+     * "Cannot write to image directory"
+     * 
+     * @return bool True if permissions are correct or fixed, false otherwise
+     */
+    public static function ensure_uploads_permissions()
+    {
+        $uploads_dir = wp_upload_dir();
+        $base_dir = $uploads_dir['basedir'];
+
+        if (! is_dir($base_dir)) {
+            return false;
+        }
+
+        // Check if directory is writable
+        if (is_writable($base_dir)) {
+            return true;  // Already writable, nothing to do
+        }
+
+        // Try to make it writable
+        @chmod($base_dir, 0775);
+
+        // Recursively fix subdirectories
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($base_dir, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($iterator as $item) {
+            if ($item->isDir()) {
+                @chmod($item->getPathname(), 0775);
+            } else {
+                @chmod($item->getPathname(), 0644);
+            }
+        }
+
+        return is_writable($base_dir);
     }
 
     /**
