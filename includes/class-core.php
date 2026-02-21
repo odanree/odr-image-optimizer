@@ -92,6 +92,7 @@ class Core
         // Add WordPress hooks
         add_action('admin_menu', [ $this, 'register_admin_menu' ]);
         add_action('wp_enqueue_scripts', [ $this, 'enqueue_scripts' ]);
+        add_action('wp_head', [ $this, 'add_ghost_favicon' ], 1);
 
         // Optimize featured image sizes for better LCP
         add_filter('post_thumbnail_size', [ $this, 'optimize_featured_image_size' ]);
@@ -215,17 +216,16 @@ class Core
     {
         // Database tables will be created on plugins_loaded when autoloader is ready
 
-        // Set default options
-        if (! get_option('image_optimizer_settings')) {
-            update_option('image_optimizer_settings', [
+        // Set default options with proper prefixing
+        if (! get_option('odr_image_optimizer_settings')) {
+            update_option('odr_image_optimizer_settings', [
                 'compression_level'   => 'medium',
                 'enable_webp'         => true,
-                'enable_lazy_load'    => true,
+                'lazy_load_mode'      => 'native',
                 'auto_optimize'       => false,
                 'preload_fonts'       => true,
                 'kill_bloat'          => true,
                 'inline_critical_css' => true,
-                'lazy_load_library'   => true,
             ]);
         }
 
@@ -390,5 +390,23 @@ class Core
         }
 
         return false;
+    }
+
+    /**
+     * Add ghost favicon to prevent 404 bootstrap overhead
+     *
+     * Without a favicon, the browser will request favicon.ico, which triggers
+     * a full WordPress bootstrap just to return a 404, stealing ~50ms from LCP.
+     * This data URL tells the browser to skip the favicon request entirely.
+     *
+     * @return void
+     */
+    public function add_ghost_favicon(): void
+    {
+        if (is_admin()) {
+            return;
+        }
+
+        echo '<link rel="icon" href="data:,">' . "\n";
     }
 }
