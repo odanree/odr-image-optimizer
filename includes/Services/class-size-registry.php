@@ -27,23 +27,42 @@ if (! defined('ABSPATH')) {
 class SizeRegistry
 {
     /**
-     * Define custom image sizes optimized for mobile/tablet devices
+     * Define custom image sizes optimized for the theme's specific layout
      *
-     * These sizes are registered with WordPress to ensure they're generated
-     * when images are uploaded or optimized.
+     * Instead of hardcoding sizes, this reads the theme's $content_width
+     * and registers sizes that match the actual layout exactly.
      *
-     * - odr_mobile_optimized (450px): Fills gap between 300px and 768px
-     *   Perfect for 365px-400px viewports (mobile landscape, small tablets)
+     * This ensures:
+     * - Desktop gets the exact size the theme needs
+     * - Retina displays (2x/3x) get appropriately upscaled versions
+     * - Mobile devices get responsive variants without waste
      *
-     * - odr_tablet_optimized (600px): Bridges mobile to tablet
-     *   Optimal for 550px-700px viewports before full 768px desktop size
+     * Example (Twenty Twenty-Five):
+     * - Theme width: 645px
+     * - Registered: odr_content_optimized (645px)
+     * - Registered: odr_content_retina (1290px for 2x displays)
      */
     public function register_optimized_sizes(): void
     {
-        // The "Mobile Hero" size - perfect for 365px-400px viewports
+        global $content_width;
+
+        // Use the theme's defined width as the "Gold Standard"
+        // This ensures we register sizes that exactly match the layout
+        $target_width = ! empty($content_width) ? (int) $content_width : 704;
+
+        // Register a size that is EXACTLY what the theme needs
+        // This size becomes the "primary" responsive option
+        add_image_size('odr_content_optimized', $target_width, 0, false);
+
+        // Register a "Retina" version (2x) for high-DPI mobile/desktop
+        // Ensures crisp rendering on 2x and 3x displays
+        add_image_size('odr_content_retina', $target_width * 2, 0, false);
+
+        // Keep the mobile-optimized sizes for small viewports
+        // 450px bridges the gap for 365px-400px viewports
         add_image_size('odr_mobile_optimized', 450, 0, false);
 
-        // The "Tablet" size - bridges mobile to 768px desktop size
+        // 600px bridges mobile to tablet
         add_image_size('odr_tablet_optimized', 600, 0, false);
     }
 
@@ -51,22 +70,36 @@ class SizeRegistry
      * Ensure custom sizes are included in srcset calculations
      *
      * WordPress calculates srcset based on intermediate image sizes.
-     * This filter ensures our custom sizes are available for the responsive calculation.
+     * This filter ensures our custom theme-aware sizes are available for responsive calculation.
      *
      * @param array<string, array<string, mixed>> $sizes Image size data for srcset calculation.
      * @return array<string, array<string, mixed>> Modified sizes array with custom sizes included.
      */
     public function add_to_srcset(array $sizes): array
     {
-        // Add our custom sizes to the srcset calculation
-        // This ensures browsers receive these width options in the responsive image tag
+        global $content_width;
+
+        // Calculate the theme-aware sizes
+        $target_width = ! empty($content_width) ? (int) $content_width : 704;
+
+        // Add our dynamically-registered custom sizes to the srcset calculation
         $custom_sizes = [
-            'odr_mobile_optimized' => [
+            'odr_content_optimized' => [
+                'width'  => $target_width,
+                'height' => 0,
+                'crop'   => false,
+            ],
+            'odr_content_retina'     => [
+                'width'  => $target_width * 2,
+                'height' => 0,
+                'crop'   => false,
+            ],
+            'odr_mobile_optimized'   => [
                 'width'  => 450,
                 'height' => 0,
                 'crop'   => false,
             ],
-            'odr_tablet_optimized'  => [
+            'odr_tablet_optimized'   => [
                 'width'  => 600,
                 'height' => 0,
                 'crop'   => false,
@@ -79,19 +112,24 @@ class SizeRegistry
     /**
      * Get the container width recommendation for frontend delivery
      *
-     * Used by SizeSelector to determine the optimal image size based on layout.
-     * Can be overridden via filter for custom layouts.
+     * Reads the global $content_width variable that themes define.
+     * This ensures the plugin adapts to any theme layout automatically.
      *
-     * @return int Container width in pixels.
+     * Used by LayoutPolicy and SizeSelector to determine the optimal image size.
+     *
+     * @return int Theme's content width in pixels. Defaults to 704px if not defined.
      */
     public function get_container_width(): int
     {
-        /**
-         * Filter to customize the responsive image container width
-         *
-         * @param int $width Default width (645px for post content).
-         * @return int Modified width in pixels.
-         */
-        return (int) apply_filters('odr_container_width', 645);
+        global $content_width;
+
+        // If theme defines $content_width, use it
+        if (! empty($content_width)) {
+            return (int) $content_width;
+        }
+
+        // Fallback to 704px (conservative default)
+        // This is the median width for most WordPress themes
+        return 704;
     }
 }
