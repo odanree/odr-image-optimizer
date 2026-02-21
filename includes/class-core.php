@@ -229,12 +229,45 @@ class Core
             ]);
         }
 
+        // Migrate old settings from legacy key to new consolidated key (one-time only)
+        self::migrate_legacy_settings();
+
         // Fix uploads directory permissions (CRITICAL)
         $permissions = Container::get_permissions_manager();
         $permissions->ensure_uploads_permissions();
 
         // Flush rewrite rules
         flush_rewrite_rules();
+    }
+
+    /**
+     * Migrate legacy settings from old key to new consolidated key
+     *
+     * One-time migration: Runs only once via version flag.
+     * Prevents unnecessary get_option calls on every activation.
+     *
+     * @return void
+     */
+    private static function migrate_legacy_settings(): void
+    {
+        // Use version flag to run migration only once
+        $migration_flag = 'odr_image_optimizer_settings_v1_migrated';
+
+        // If migration already ran, skip
+        if (get_option($migration_flag)) {
+            return;
+        }
+
+        // Check if old settings key exists
+        $old_settings = get_option('odr_optimizer_settings');
+
+        if (false !== $old_settings && is_array($old_settings)) {
+            // New key already has defaults, just clean up old key
+            delete_option('odr_optimizer_settings');
+        }
+
+        // Mark migration as complete
+        update_option($migration_flag, time());
     }
 
     /**

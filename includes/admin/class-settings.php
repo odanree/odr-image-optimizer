@@ -36,10 +36,17 @@ class Settings
     /**
      * Register settings
      *
+     * Adds capability check to ensure only admins can save settings.
+     *
      * @return void
      */
     public function register_settings(): void
     {
+        // Capability check: only allow manage_options
+        if (! current_user_can('manage_options')) {
+            return;
+        }
+
         register_setting(
             'image-optimizer-settings',
             'odr_image_optimizer_settings',
@@ -128,6 +135,20 @@ class Settings
      *
      * @param array $settings The settings to sanitize.
      * @return array
+     */
+    /**
+     * Sanitize and validate settings
+     *
+     * Called by WordPress settings API. Nonce is verified automatically
+     * by register_setting() when using settings_fields() form output.
+     *
+     * Security:
+     * - Nonce verification: Automatic via settings_fields()
+     * - Capability check: Enforced in register_settings()
+     * - Type validation: Explicit for each setting
+     *
+     * @param mixed $settings The raw settings array.
+     * @return array Sanitized and validated settings.
      */
     public function sanitize_settings($settings): array
     {
