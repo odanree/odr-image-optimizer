@@ -41,7 +41,7 @@ class Autoloader
         // Convert namespace to file path with kebab-case for class names
         $parts = explode('\\', $class_name);
         $file_name = 'class-' . strtolower(str_replace('_', '-', array_pop($parts))) . '.php';
-        
+
         // Build directory path from remaining namespace parts
         $dir_path = '';
         if (! empty($parts)) {
