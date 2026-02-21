@@ -1,4 +1,4 @@
-# LCP Guard Tests - Pest Test Suite
+# LCP Guard Tests - PHPUnit Test Suite
 
 This test file validates the core LCP (Largest Contentful Paint) optimization features of the ODR Image Optimizer plugin.
 
@@ -29,12 +29,7 @@ Removing unnecessary scripts frees up the main thread and reduces rendering dela
 
 ## Running the Tests
 
-### With Pest (recommended, modern syntax)
-```bash
-composer test-pest
-```
-
-### With PHPUnit (traditional)
+### With PHPUnit (standard)
 ```bash
 composer test
 ```
@@ -44,18 +39,24 @@ composer test
 composer check
 ```
 
+### Run with verbose output
+```bash
+vendor/bin/phpunit --colors=always --verbose tests/LcpGuardTest.php
+```
+
 ## Test Structure
 
 Each test follows the **Arrange → Act → Assert** pattern:
 
 1. **Arrange**: Set up conditions (update settings, enqueue scripts)
-2. **Act**: Execute the service method
+2. **Act**: Execute the service method being tested
 3. **Assert**: Verify the behavior matches expectations
 
 ## Example Test Flow
 
 ```php
-test('priority service injects preload when enabled', function () {
+public function test_priority_service_injects_preload_when_enabled(): void
+{
     // ARRANGE: Enable preloading setting
     update_option('odr_image_optimizer_settings', ['preload_fonts' => '1']);
     
@@ -67,46 +68,42 @@ test('priority service injects preload when enabled', function () {
     $output = ob_get_clean();
     
     // ASSERT: Verify preload tags are in output
-    expect($output)->toContain('rel="preload"')->toContain('fetchpriority="high"');
-});
+    $this->assertStringContainsString('rel="preload"', $output);
+    $this->assertStringContainsString('fetchpriority="high"', $output);
+}
 ```
 
 ## Key Test Cases
 
 | Test | Validates |
 |------|-----------|
-| `priority service injects high-priority preload tags` | LCP preload with fetchpriority |
-| `cleanup service removes emoji bloat when enabled` | Emoji script removal |
-| `cleanup service dequeues lazy-load script` | Dequeue redundant lazy-load.js |
-| `priority service respects preload setting when disabled` | Setting respected (disabled = no output) |
-| `cleanup service respects kill_bloat setting when disabled` | Setting respected (disabled = scripts remain) |
+| `test_priority_service_injects_high_priority_preload_tags` | LCP preload with fetchpriority |
+| `test_cleanup_service_removes_emoji_bloat_when_enabled` | Emoji script removal |
+| `test_cleanup_service_dequeues_lazy_load_script` | Dequeue redundant lazy-load.js |
+| `test_priority_service_respects_preload_setting_when_disabled` | Setting respected (disabled = no output) |
+| `test_cleanup_service_respects_kill_bloat_setting_when_disabled` | Setting respected (disabled = scripts remain) |
 
-## Pest vs PHPUnit Syntax
+## PHPUnit Test Assertions
 
-Pest provides a more elegant, expressive syntax:
+Modern PHPUnit provides expressive assertions:
 
-**PHPUnit:**
 ```php
-public function test_it_does_something() {
-    $this->assertTrue($result);
-    $this->assertStringContains($output, 'expected');
-}
-```
+// String assertions
+$this->assertStringContainsString('needle', $haystack);
+$this->assertStringNotContainsString('needle', $haystack);
 
-**Pest:**
-```php
-test('it does something', function () {
-    expect($result)->toBeTrue();
-    expect($output)->toContain('expected');
-});
-```
+// Boolean assertions
+$this->assertTrue($condition);
+$this->assertFalse($condition);
 
-Pest is fully compatible with PHPUnit, so both syntaxes work. Pest just provides a more fluent API.
+// Action/Hook assertions (WordPress-specific)
+$has_action = has_action('hook_name', 'callback');
+$this->assertFalse($has_action);
+```
 
 ## Dependencies
 
-- `pestphp/pest: ^2.0` - Modern test framework (built on PHPUnit)
-- `phpunit/phpunit: ^11.0` - Test runner
+- `phpunit/phpunit: ^10.5` - Test framework
 - WordPress testing environment (via bootstrap.php)
 
 ## Adding New Tests
@@ -115,25 +112,39 @@ When adding new optimization features:
 
 1. Create a test following the AAA pattern (Arrange, Act, Assert)
 2. Test both **enabled** and **disabled** settings
-3. Use descriptive test names
+3. Use descriptive test names (snake_case with test_ prefix)
 4. Verify output/behavior, not implementation details
 
 Example:
 ```php
-test('my new feature works when enabled', function () {
+public function test_my_new_feature_works_when_enabled(): void
+{
     update_option('odr_image_optimizer_settings', ['my_feature' => '1']);
     // ... test enabled behavior
-});
+}
 
-test('my new feature respects disabled setting', function () {
+public function test_my_new_feature_respects_disabled_setting(): void
+{
     update_option('odr_image_optimizer_settings', ['my_feature' => '0']);
     // ... verify disabled behavior
-});
+}
+```
+
+## Expected Test Output
+
+```bash
+$ composer test
+
+PHPUnit 10.5.63 by Sebastian Bergmann and contributors.
+
+...... 5 passed, 0 failures in 2.34s
+
+OK (5 tests, 5 assertions)
 ```
 
 ---
 
 **File**: `tests/LcpGuardTest.php`  
 **Author**: Danh Le  
-**Framework**: Pest (PHPUnit-compatible)  
+**Framework**: PHPUnit 10.5  
 **Coverage**: PriorityService, CleanupService, Settings integration

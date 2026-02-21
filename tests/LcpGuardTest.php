@@ -4,109 +4,149 @@ declare(strict_types=1);
 
 use ImageOptimizer\Services\PriorityService;
 use ImageOptimizer\Services\CleanupService;
+use PHPUnit\Framework\TestCase;
 
-test('priority service injects high-priority preload tags', function () {
-    // 1. Arrange: Mock the settings to ensure preloading is enabled
-    update_option('odr_image_optimizer_settings', [
-        'preload_fonts' => '1',
-    ]);
+class LcpGuardTest extends TestCase
+{
+    /**
+     * Priority service injects high-priority preload tags
+     *
+     * Tests that the PriorityService correctly injects preload tags
+     * with fetchpriority="high" to force LCP optimization.
+     *
+     * @return void
+     */
+    public function test_priority_service_injects_high_priority_preload_tags(): void
+    {
+        // Arrange: Enable preloading setting
+        update_option('odr_image_optimizer_settings', [
+            'preload_fonts' => '1',
+        ]);
 
-    $service = new PriorityService();
+        $service = new PriorityService();
 
-    // 2. Act: Trigger the detection and injection
-    // First, we need to set up a post with a featured image
-    $post_id = wp_insert_post([
-        'post_type'    => 'post',
-        'post_status'  => 'publish',
-        'post_title'   => 'Test Post',
-        'post_content' => 'Test content',
-    ]);
+        // Act: Detect LCP and buffer preload output
+        $service->detect_lcp_id();
 
-    set_post_thumbnail($post_id, 0); // Set featured image (normally an attachment ID)
+        ob_start();
+        $service->inject_preload();
+        $output = ob_get_clean();
 
-    // Detect LCP candidate
-    $service->detect_lcp_id();
+        // Assert: Verify preload tags are present
+        $this->assertStringContainsString('rel="preload"', $output);
+        $this->assertStringContainsString('as="image"', $output);
+        $this->assertStringContainsString('fetchpriority="high"', $output);
+    }
 
-    // Buffer the preload injection
-    ob_start();
-    $service->inject_preload();
-    $output = ob_get_clean();
+    /**
+     * Cleanup service removes emoji bloat when enabled
+     *
+     * Tests that the CleanupService correctly removes emoji detection
+     * script when the kill_bloat setting is enabled.
+     *
+     * @return void
+     */
+    public function test_cleanup_service_removes_emoji_bloat_when_enabled(): void
+    {
+        // Arrange: Enable bloat removal setting
+        update_option('odr_image_optimizer_settings', [
+            'kill_bloat' => '1',
+        ]);
 
-    // 3. Assert: Verify the LCP-optimizing tags are present
-    expect($output)->toContain('rel="preload"')
-        ->toContain('as="image"')
-        ->toContain('fetchpriority="high"');
+        // Act: Trigger cleanup
+        $cleanup = new CleanupService();
+        $cleanup->remove_bloat();
 
-    // Cleanup
-    wp_delete_post($post_id, true);
-});
+        // Assert: Verify emoji actions are removed
+        $has_emoji_action = has_action('wp_head', 'print_emoji_detection_script');
+        $this->assertFalse($has_emoji_action, 'Emoji detection script should be removed');
+    }
 
-test('cleanup service removes emoji bloat when enabled', function () {
-    // 1. Arrange: Ensure the setting is active
-    update_option('odr_image_optimizer_settings', [
-        'kill_bloat' => '1',
-    ]);
+    /**
+     * Cleanup service dequeues lazy-load script
+     *
+     * Tests that the CleanupService correctly dequeues the WordPress
+     * lazy-load script, which is redundant with native loading="lazy".
+     *
+     * @return void
+     */
+    public function test_cleanup_service_dequeues_lazy_load_script(): void
+    {
+        // Arrange: Enqueue the lazy-load script
+        wp_enqueue_script('wp-lazy-load', '//example.com/lazy-load.js', [], null);
+        $this->assertTrue(wp_script_is('wp-lazy-load', 'enqueued'), 'Script should be enqueued');
 
-    // Mock that we're on the frontend (not admin)
-    $this->assertTrue(! is_admin(), 'Should be on frontend for this test');
+        // Act: Trigger cleanup
+        $cleanup = new CleanupService();
+        $cleanup->remove_bloat();
 
-    // 2. Act: Trigger cleanup
-    $cleanup = new CleanupService();
-    $cleanup->remove_bloat();
+        // Assert: Verify script is dequeued
+        $this->assertFalse(
+            wp_script_is('wp-lazy-load', 'enqueued'),
+            'wp-lazy-load should be dequeued'
+        );
+    }
 
-    // 3. Assert: Verify emoji actions are removed
-    // When the setting is enabled, remove_bloat() removes the emoji actions
-    $has_emoji_action = has_action('wp_head', 'print_emoji_detection_script');
-    expect($has_emoji_action)->toBeFalse();
-});
+    /**
+     * Priority service respects preload setting when disabled
+     *
+     * Tests that the PriorityService respects user settings
+     * and does NOT emit preload tags when disabled.
+     *
+     * @return void
+     */
+    public function test_priority_service_respects_preload_setting_when_disabled(): void
+    {
+        // Arrange: Disable preloading
+        update_option('odr_image_optimizer_settings', [
+            'preload_fonts' => '0',
+        ]);
 
-test('cleanup service dequeues lazy-load script', function () {
-    // 1. Arrange: Enqueue the lazy-load script
-    wp_enqueue_script('wp-lazy-load', '//example.com/lazy-load.js', [], null);
-    expect(wp_script_is('wp-lazy-load', 'enqueued'))->toBeTrue();
+        $service = new PriorityService();
 
-    // 2. Act: Trigger cleanup
-    $cleanup = new CleanupService();
-    $cleanup->remove_bloat();
+        // Act: Buffer preload output
+        ob_start();
+        $service->inject_preload();
+        $output = ob_get_clean();
 
-    // 3. Assert: Verify the script is dequeued
-    expect(wp_script_is('wp-lazy-load', 'enqueued'))->toBeFalse();
-});
+        // Assert: Verify preload tags are NOT emitted
+        $this->assertStringNotContainsString(
+            'rel="preload"',
+            $output,
+            'Preload tags should not be emitted when disabled'
+        );
+    }
 
-test('priority service respects preload setting when disabled', function () {
-    // 1. Arrange: Disable preloading
-    update_option('odr_image_optimizer_settings', [
-        'preload_fonts' => '0',
-    ]);
+    /**
+     * Cleanup service respects kill_bloat setting when disabled
+     *
+     * Tests that the CleanupService respects user settings
+     * and does NOT remove emoji scripts when disabled.
+     *
+     * @return void
+     */
+    public function test_cleanup_service_respects_kill_bloat_setting_when_disabled(): void
+    {
+        // Arrange: Disable bloat removal
+        update_option('odr_image_optimizer_settings', [
+            'kill_bloat' => '0',
+        ]);
 
-    $service = new PriorityService();
+        // Add the emoji action back for testing
+        add_action('wp_head', 'print_emoji_detection_script', 7);
 
-    // 2. Act: Buffer the preload injection
-    ob_start();
-    $service->inject_preload();
-    $output = ob_get_clean();
+        // Act: Trigger cleanup
+        $cleanup = new CleanupService();
+        $cleanup->remove_bloat();
 
-    // 3. Assert: Verify preload tags are NOT emitted
-    expect($output)->not->toContain('rel="preload"');
-});
+        // Assert: Verify emoji action is still present (NOT removed)
+        $has_emoji_action = has_action('wp_head', 'print_emoji_detection_script');
+        $this->assertNotFalse(
+            $has_emoji_action,
+            'Emoji detection script should NOT be removed when setting is disabled'
+        );
 
-test('cleanup service respects kill_bloat setting when disabled', function () {
-    // 1. Arrange: Disable bloat removal
-    update_option('odr_image_optimizer_settings', [
-        'kill_bloat' => '0',
-    ]);
-
-    // Add the emoji action back for testing
-    add_action('wp_head', 'print_emoji_detection_script', 7);
-
-    // 2. Act: Trigger cleanup
-    $cleanup = new CleanupService();
-    $cleanup->remove_bloat();
-
-    // 3. Assert: Verify emoji action is still present (NOT removed)
-    $has_emoji_action = has_action('wp_head', 'print_emoji_detection_script');
-    expect($has_emoji_action)->not->toBeFalse();
-
-    // Cleanup
-    remove_action('wp_head', 'print_emoji_detection_script', 7);
-});
+        // Cleanup
+        remove_action('wp_head', 'print_emoji_detection_script', 7);
+    }
+}
