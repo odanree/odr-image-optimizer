@@ -53,8 +53,8 @@ class SizeRegistry
      * WordPress calculates srcset based on intermediate image sizes.
      * This filter ensures our custom sizes are available for the responsive calculation.
      *
-     * @param array $sizes Image size data for srcset calculation.
-     * @return array Modified sizes array with custom sizes included.
+     * @param array<string, array<string, mixed>> $sizes Image size data for srcset calculation.
+     * @return array<string, array<string, mixed>> Modified sizes array with custom sizes included.
      */
     public function add_to_srcset(array $sizes): array
     {

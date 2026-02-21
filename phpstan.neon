@@ -15,3 +15,6 @@ parameters:
       message: '#ImageOptimizer\\Core\\OptimizationEngine#'
     - identifier: return.type
       message: '#ImageOptimizer\\Core\\OptimizationEngine#'
+    # WordPress function stubs for Services
+    - identifier: function.notFound
+      message: '#(add_image_size|apply_filters|wp_get_attachment_metadata|wp_get_attachment_image_url|wp_get_attachment_image_srcset)#'
