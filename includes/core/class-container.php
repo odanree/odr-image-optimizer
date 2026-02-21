@@ -44,12 +44,12 @@ class Container
             if (! $tool_registry) {
                 $tool_registry = self::get_tool_registry();
             }
-            
+
             // If no config provided, load from WordPress options
             if (! $config) {
                 $config = OptimizerConfig::from_wordpress_options();
             }
-            
+
             self::$instances['optimizer'] = new Optimizer($tool_registry, $config);
         }
         return self::$instances['optimizer'];

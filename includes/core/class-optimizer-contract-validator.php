@@ -91,7 +91,7 @@ class OptimizerContractValidator
             } elseif ((string) $return_type !== Result::class) {
                 $errors[] = sprintf(
                     'optimize_attachment() must return Result, got: %s',
-                    (string) $return_type
+                    (string) $return_type,
                 );
             }
         }
@@ -106,7 +106,7 @@ class OptimizerContractValidator
             } elseif ((string) $return_type !== Result::class) {
                 $errors[] = sprintf(
                     'revert_optimization() must return Result, got: %s',
-                    (string) $return_type
+                    (string) $return_type,
                 );
             }
         }

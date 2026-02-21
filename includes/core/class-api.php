@@ -287,7 +287,7 @@ class API
             return new \WP_Error(
                 'optimization_exception',
                 'Optimization exception: ' . $e->getMessage(),
-                [ 'status' => 500 ]
+                [ 'status' => 500 ],
             );
         }
     }

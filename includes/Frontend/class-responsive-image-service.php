@@ -40,7 +40,7 @@ class ResponsiveImageService
     public static function render_responsive_image(
         int $attachment_id,
         string $size = 'medium',
-        array $attr = []
+        array $attr = [],
     ): string {
         // Default attributes for responsive behavior
         $default_attr = [
@@ -68,7 +68,7 @@ class ResponsiveImageService
      */
     public static function get_responsive_attributes(
         int $attachment_id,
-        string $size = 'medium'
+        string $size = 'medium',
     ): array {
         $image_meta = wp_get_attachment_metadata($attachment_id);
 
@@ -100,7 +100,7 @@ class ResponsiveImageService
     public static function render_picture_element(
         int $attachment_id,
         string $size = 'medium',
-        array $attr = []
+        array $attr = [],
     ): string {
         $jpg_srcset = wp_get_attachment_image_srcset($attachment_id, $size);
 
@@ -108,11 +108,11 @@ class ResponsiveImageService
         if (!$jpg_srcset) {
             $jpg_srcset = self::manually_build_srcset($attachment_id, 'jpg');
         }
-        
+
         // ALWAYS use our responsive sizes (ignore WordPress sizes)
         // WordPress sizes are often too restrictive for responsive design
         $jpg_sizes = self::generate_default_sizes($attachment_id);
-        
+
         if (!$jpg_srcset || !$jpg_sizes) {
             // Fallback to simple responsive image
             return self::render_responsive_image($attachment_id, $size, $attr);
@@ -220,7 +220,7 @@ HTML;
         //
         // This allows browser to select appropriate subsize from srcset
         // for any viewport width up to the maximum subsize available
-        return "(max-width: 640px) 100vw, (max-width: 1024px) 90vw, (max-width: 1536px) 80vw, 70vw";
+        return '(max-width: 640px) 100vw, (max-width: 1024px) 90vw, (max-width: 1536px) 80vw, 70vw';
     }
 
     /**
@@ -238,7 +238,7 @@ HTML;
         return (string) preg_replace(
             '/(\S+)\.(jpg|jpeg|png)(?=\s+\d+w)/i',
             '$1.webp',
-            $jpeg_srcset
+            $jpeg_srcset,
         ) ?: $jpeg_srcset;
     }
 

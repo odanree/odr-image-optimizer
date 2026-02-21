@@ -60,7 +60,7 @@ class DipAudit
 
         return [
             'optimizer'  => get_class($optimizer),
-            'valid'      => empty(array_filter($warnings, fn($w) => $w['level'] === 'error')),
+            'valid'      => empty(array_filter($warnings, fn ($w) => $w['level'] === 'error')),
             'warnings'   => $warnings,
             'timestamp'  => current_time('mysql'),
         ];
@@ -85,7 +85,7 @@ class DipAudit
 
         foreach ($required_context_hooks as $hook => $expected_type) {
             $hookCallbacks = $GLOBALS['wp_filter'][$hook] ?? [];
-            
+
             if (empty($hookCallbacks)) {
                 // No callbacks yet, that's fine
                 continue;
@@ -108,9 +108,9 @@ class DipAudit
     {
         $audit = self::audit($optimizer);
         $report = "=== Dependency Injection Audit Report ===\n\n";
-        $report .= "Optimizer: " . $audit['optimizer'] . "\n";
-        $report .= "Valid: " . ($audit['valid'] ? 'YES ✅' : 'NO ❌') . "\n";
-        $report .= "Warnings: " . count($audit['warnings']) . "\n\n";
+        $report .= 'Optimizer: ' . $audit['optimizer'] . "\n";
+        $report .= 'Valid: ' . ($audit['valid'] ? 'YES ✅' : 'NO ❌') . "\n";
+        $report .= 'Warnings: ' . count($audit['warnings']) . "\n\n";
 
         if (empty($audit['warnings'])) {
             $report .= "No DIP violations detected.\n";
@@ -123,7 +123,7 @@ class DipAudit
                     strtoupper($warning['level']),
                     $warning['category'],
                     $warning['issue'],
-                    $warning['suggestion']
+                    $warning['suggestion'],
                 );
             }
         }

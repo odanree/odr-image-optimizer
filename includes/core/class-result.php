@@ -101,7 +101,7 @@ class Result
         return new self(
             false,
             'Exception: ' . $exception->getMessage() . ' (Line: ' . $exception->getLine() . ')',
-            array_merge($data, ['exception_code' => $exception->getCode()])
+            array_merge($data, ['exception_code' => $exception->getCode()]),
         );
     }
 
@@ -192,7 +192,7 @@ class Result
         return new \WP_Error(
             'optimization_failed',
             $this->message,
-            $this->data
+            $this->data,
         );
     }
 

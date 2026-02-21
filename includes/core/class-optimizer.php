@@ -175,7 +175,7 @@ class Optimizer implements OptimizerInterface
     private function get_memory_available()
     {
         $memory_limit = WP_MEMORY_LIMIT;
-        
+
         // Convert format like "256M" to bytes
         if (function_exists('wp_convert_hr_to_bytes')) {
             $limit_bytes = wp_convert_hr_to_bytes($memory_limit);
@@ -184,7 +184,7 @@ class Optimizer implements OptimizerInterface
             $memory_limit = (string) $memory_limit;
             $value = (int) $memory_limit;
             $unit = strtoupper(substr($memory_limit, -1));
-            
+
             switch ($unit) {
                 case 'K':
                     $value *= 1024;
@@ -198,7 +198,7 @@ class Optimizer implements OptimizerInterface
             }
             $limit_bytes = $value;
         }
-        
+
         $memory_used = memory_get_usage(true);
         return max(0, $limit_bytes - $memory_used);
     }
@@ -208,7 +208,7 @@ class Optimizer implements OptimizerInterface
         try {
             // Check memory before attempting optimization
             $memory_available = $this->get_memory_available();
-            
+
             // Need at least 100MB free for safe optimization
             if ($memory_available < 100 * 1024 * 1024) {
                 return Result::failure('Insufficient memory. Please increase WP_MEMORY_LIMIT');
@@ -225,12 +225,12 @@ class Optimizer implements OptimizerInterface
             }
 
             $original_size = filesize($file);
-            
+
             // Get image dimensions
             $image_info = @getimagesize($file);
             $width = $image_info[0] ?? 0;
             $height = $image_info[1] ?? 0;
-            
+
             // Create image context for hooks
             $context = new ImageContext(
                 $file,
@@ -241,9 +241,9 @@ class Optimizer implements OptimizerInterface
                     'original_size' => $original_size,
                     'mime_type' => $image_info['mime'] ?? mime_content_type($file),
                     'compression_level' => 'medium', // Default
-                ]
+                ],
             );
-            
+
             /**
              * Fires before image optimization starts
              *
@@ -270,7 +270,7 @@ class Optimizer implements OptimizerInterface
             $optimized_size = filesize($file);
             $savings = $original_size - $optimized_size;
             $compression_ratio = $savings > 0 ? ($savings / $original_size) * 100 : 0;
-            
+
             // Update context with optimization results
             $context->set('optimized_size', $optimized_size);
             $context->set('savings', $savings);
@@ -300,7 +300,7 @@ class Optimizer implements OptimizerInterface
                     'backup_file'    => $backup_file,
                 ],
             );
-            
+
             /**
              * Fires after successful image optimization
              *
@@ -325,8 +325,8 @@ class Optimizer implements OptimizerInterface
                 ],
                 sprintf(
                     'Image optimized: %.1f%% compression',
-                    $compression_ratio
-                )
+                    $compression_ratio,
+                ),
             );
         } catch (\Exception $e) {
             Database::save_optimization_result(
@@ -600,7 +600,7 @@ class Optimizer implements OptimizerInterface
 
         // Check available memory before WebP conversion (expensive operation)
         $memory_available = $this->get_memory_available();
-        
+
         // Skip WebP if less than 100MB available (safe margin)
         if ($memory_available < 100 * 1024 * 1024) {
             return false;  // Memory too tight for WebP conversion
@@ -754,7 +754,7 @@ class Optimizer implements OptimizerInterface
             if (! copy($file_path, $backup_file)) {
                 return '';
             }
-            
+
             // Fix permissions so www-data can read the backup during revert
             // Use 0644 (readable by all, writable by owner only)
             @chmod($backup_file, 0644);
@@ -805,11 +805,11 @@ class Optimizer implements OptimizerInterface
                     if ($this->config->should_create_webp()) {
                         if ($this->can_create_webp($subsize_file)) {
                             $this->create_webp_version($subsize_file);
-                            
+
                             // Update metadata to track WebP version
                             $original_file = $size_data['file'];
                             $webp_file = str_replace(['.jpg', '.jpeg', '.png'], '.webp', $original_file);
-                            
+
                             if (! isset($metadata['sizes'][ $size_name ]['webp'])) {
                                 $metadata['sizes'][ $size_name ]['webp'] = $webp_file;
                                 $metadata_updated = true;
@@ -859,7 +859,7 @@ class Optimizer implements OptimizerInterface
             if (! is_readable($backup_file)) {
                 // Try to fix permissions if backup is not readable
                 @chmod($backup_file, 0644);
-                
+
                 // Check again after chmod attempt
                 if (! is_readable($backup_file)) {
                     return Result::failure('Backup file is not readable and cannot fix permissions');
@@ -871,12 +871,12 @@ class Optimizer implements OptimizerInterface
             }
 
             $optimized_size = filesize($file);
-            
+
             // Get image info from current (optimized) file
             $image_info = @getimagesize($file);
             $width = $image_info[0] ?? 0;
             $height = $image_info[1] ?? 0;
-            
+
             // Create image context for hooks
             $context = new ImageContext(
                 $file,
@@ -887,9 +887,9 @@ class Optimizer implements OptimizerInterface
                     'original_size' => $optimized_size,
                     'mime_type' => $image_info['mime'] ?? mime_content_type($file),
                     'backup_file' => $backup_file,
-                ]
+                ],
             );
-            
+
             /**
              * Fires before reverting an optimization
              *
@@ -902,7 +902,7 @@ class Optimizer implements OptimizerInterface
 
             // Restore from backup with detailed error handling
             $copy_result = @copy($backup_file, $file);
-            
+
             if (! $copy_result) {
                 $error_msg = 'Failed to copy backup file. ';
                 if (function_exists('error_get_last')) {
@@ -940,7 +940,7 @@ class Optimizer implements OptimizerInterface
                     'status'         => 'reverted',
                 ],
             );
-            
+
             /**
              * Fires after successful revert of optimization
              *
@@ -955,7 +955,7 @@ class Optimizer implements OptimizerInterface
                 [
                     'restored_size' => $restored_size,
                 ],
-                'Image successfully reverted to original'
+                'Image successfully reverted to original',
             );
         } catch (\Exception $e) {
             return Result::from_exception($e);

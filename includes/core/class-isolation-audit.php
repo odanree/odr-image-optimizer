@@ -31,7 +31,7 @@ class IsolationAudit
      *
      * @var array
      */
-    const DANGEROUS_WP_GLOBALS = [
+    public const DANGEROUS_WP_GLOBALS = [
         'global $wpdb',
         'global $wp_filesystem',
         '$wpdb->',        // Direct database access
@@ -45,7 +45,7 @@ class IsolationAudit
      *
      * @var array
      */
-    const DANGEROUS_HARDCODED_PATHS = [
+    public const DANGEROUS_HARDCODED_PATHS = [
         '"/wp-content/',
         "'/wp-content/",
         '"/uploads/',
@@ -157,8 +157,8 @@ class IsolationAudit
         $standalone = self::test_standalone($optimizer);
 
         $report = "=== Dependency Isolation Audit ===\n\n";
-        $report .= "Optimizer: " . $audit['optimizer'] . "\n";
-        $report .= "File: " . $audit['file'] . "\n\n";
+        $report .= 'Optimizer: ' . $audit['optimizer'] . "\n";
+        $report .= 'File: ' . $audit['file'] . "\n\n";
 
         // Code analysis
         $report .= "Code Analysis:\n";
@@ -166,7 +166,7 @@ class IsolationAudit
             $report .= "  ✅ No WordPress globals detected\n";
             $report .= "  ✅ No hardcoded paths detected\n";
         } else {
-            $report .= "  ❌ Found " . count($audit['violations']) . " violation(s):\n";
+            $report .= '  ❌ Found ' . count($audit['violations']) . " violation(s):\n";
             foreach ($audit['violations'] as $violation) {
                 $report .= sprintf(
                     "\n  [%s] %s\n    Found: %s\n    Reason: %s\n    Fix: %s\n",
@@ -174,16 +174,16 @@ class IsolationAudit
                     $violation['type'],
                     $violation['found'],
                     $violation['reason'],
-                    $violation['fix']
+                    $violation['fix'],
                 );
             }
         }
 
         // Standalone testing
         $report .= "\n\nStandalone Testing:\n";
-        $report .= "  Serializable: " . ($standalone['can_serialize'] ? "YES ✅" : "NO ❌") . "\n";
-        $report .= "  Unresolved Dependencies: " . ($standalone['has_unresolved_deps'] ? "YES ❌" : "NO ✅") . "\n";
-        $report .= "  Isolated: " . ($standalone['isolated'] ? "YES ✅" : "NO ❌") . "\n";
+        $report .= '  Serializable: ' . ($standalone['can_serialize'] ? 'YES ✅' : 'NO ❌') . "\n";
+        $report .= '  Unresolved Dependencies: ' . ($standalone['has_unresolved_deps'] ? 'YES ❌' : 'NO ✅') . "\n";
+        $report .= '  Isolated: ' . ($standalone['isolated'] ? 'YES ✅' : 'NO ❌') . "\n";
 
         return $report;
     }

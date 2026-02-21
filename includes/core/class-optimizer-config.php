@@ -90,7 +90,7 @@ class OptimizerConfig
         bool $create_webp = true,
         int $webp_quality = 75,
         bool $strip_metadata = true,
-        bool $progressive_encoding = true
+        bool $progressive_encoding = true,
     ) {
         $this->auto_optimize = $auto_optimize;
         $this->jpeg_quality = max(1, min(100, $jpeg_quality));
@@ -120,7 +120,7 @@ class OptimizerConfig
             $settings['create_webp'] ?? true,
             $settings['webp_quality'] ?? 75,
             $settings['strip_metadata'] ?? true,
-            $settings['progressive_encoding'] ?? true
+            $settings['progressive_encoding'] ?? true,
         );
     }
 
@@ -149,7 +149,7 @@ class OptimizerConfig
             $config['create_webp'] ?? true,
             $config['webp_quality'] ?? 75,
             $config['strip_metadata'] ?? true,
-            $config['progressive_encoding'] ?? true
+            $config['progressive_encoding'] ?? true,
         );
     }
 

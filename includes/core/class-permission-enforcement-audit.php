@@ -49,7 +49,7 @@ class PermissionEnforcementAudit
 
         // Only "error" level issues cause audit to fail
         // "warning" level are informational
-        $has_errors = count(array_filter($errors, fn($e) => $e['level'] === 'error')) > 0;
+        $has_errors = count(array_filter($errors, fn ($e) => $e['level'] === 'error')) > 0;
 
         return [
             'valid'  => ! $has_errors,
@@ -97,12 +97,12 @@ class PermissionEnforcementAudit
 
         foreach ($methods as $method) {
             $code = file_get_contents($reflection->getFileName());
-            
+
             // Check if any public method has current_user_can
             if ($method->isPublic() && stripos($code, 'current_user_can') !== false) {
                 // This could be OK if it's clearly a permission check method
                 // But public optimize/revert methods should NOT check permissions
-                
+
                 if (in_array($method->getName(), [ 'optimize_attachment', 'revert_optimization' ])) {
                     $issues[] = [
                         'level'    => 'warning',
@@ -203,7 +203,7 @@ class PermissionEnforcementAudit
         $entry_points = self::check_entry_points();
 
         $report = "=== Permission Enforcement Audit ===\n\n";
-        $report .= "Status: " . ($audit['valid'] ? "✅ PASS" : "❌ FAIL") . "\n\n";
+        $report .= 'Status: ' . ($audit['valid'] ? '✅ PASS' : '❌ FAIL') . "\n\n";
 
         if (! empty($audit['issues'])) {
             $report .= "Issues Found:\n";
@@ -213,7 +213,7 @@ class PermissionEnforcementAudit
                     $issue['method'] ?? 'Unknown',
                     $issue['issue'],
                     $issue['reason'],
-                    $issue['fix']
+                    $issue['fix'],
                 );
             }
         } else {
@@ -223,12 +223,12 @@ class PermissionEnforcementAudit
         $report .= "\n\nEntry Point Coverage:\n";
         foreach ($entry_points as $name => $info) {
             $status = $info['status'] ?? 'Unknown';
-            $report .= "\n" . str_pad($name, 20) . ": " . $status . "\n";
+            $report .= "\n" . str_pad($name, 20) . ': ' . $status . "\n";
             if (isset($info['check'])) {
-                $report .= "  Check: " . $info['check'] . "\n";
+                $report .= '  Check: ' . $info['check'] . "\n";
             }
             if (isset($info['note'])) {
-                $report .= "  Note: " . $info['note'] . "\n";
+                $report .= '  Note: ' . $info['note'] . "\n";
             }
         }
 

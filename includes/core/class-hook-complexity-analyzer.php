@@ -33,7 +33,7 @@ class HookComplexityAnalyzer
      *
      * @var array
      */
-    const IDEAL_HOOK_STRUCTURE = [
+    public const IDEAL_HOOK_STRUCTURE = [
         'filters'  => [
             'image_optimizer_engine'      => 'Choose which optimizer to use',
             'image_optimizer_result'      => 'Modify optimization result',
@@ -60,8 +60,8 @@ class HookComplexityAnalyzer
 
         return [
             'total_hooks'      => count($optimizer_hooks),
-            'filter_hooks'     => count(array_filter($optimizer_hooks, fn($h) => $h['type'] === 'filter')),
-            'action_hooks'     => count(array_filter($optimizer_hooks, fn($h) => $h['type'] === 'action')),
+            'filter_hooks'     => count(array_filter($optimizer_hooks, fn ($h) => $h['type'] === 'filter')),
+            'action_hooks'     => count(array_filter($optimizer_hooks, fn ($h) => $h['type'] === 'action')),
             'complexity_score' => self::calculate_complexity_score($optimizer_hooks),
             'hooks'            => $optimizer_hooks,
             'issues'           => self::identify_issues($optimizer_hooks),
@@ -238,10 +238,10 @@ class HookComplexityAnalyzer
 
         // Current state
         $report .= "Current State:\n";
-        $report .= "  Total Hooks: " . $analysis['total_hooks'] . "\n";
-        $report .= "  Filters: " . $analysis['filter_hooks'] . "\n";
-        $report .= "  Actions: " . $analysis['action_hooks'] . "\n";
-        $report .= "  Complexity Score: " . $analysis['complexity_score'] . "/4\n\n";
+        $report .= '  Total Hooks: ' . $analysis['total_hooks'] . "\n";
+        $report .= '  Filters: ' . $analysis['filter_hooks'] . "\n";
+        $report .= '  Actions: ' . $analysis['action_hooks'] . "\n";
+        $report .= '  Complexity Score: ' . $analysis['complexity_score'] . "/4\n\n";
 
         // Scoring explanation
         $scores = [
@@ -251,7 +251,7 @@ class HookComplexityAnalyzer
             3 => '3 (Warning - starting to fragment)',
             4 => '4 (Critical - too much sprawl)',
         ];
-        $report .= "Score Meaning: " . ($scores[$analysis['complexity_score']] ?? 'Unknown') . "\n\n";
+        $report .= 'Score Meaning: ' . ($scores[$analysis['complexity_score']] ?? 'Unknown') . "\n\n";
 
         // Issues
         if (! empty($analysis['issues'])) {
@@ -262,7 +262,7 @@ class HookComplexityAnalyzer
                     strtoupper($issue['level']),
                     $issue['issue'],
                     $issue['reason'],
-                    $issue['fix']
+                    $issue['fix'],
                 );
             }
         } else {

@@ -140,7 +140,7 @@ class MediaTransformer
     {
         return array_map(
             [self::class, 'transform_attachment'],
-            $attachment_ids
+            $attachment_ids,
         );
     }
 

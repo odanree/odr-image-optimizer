@@ -60,7 +60,7 @@ class ResizingConfig
 
         return new self(
             $settings['max_image_width'] ?? 1920,
-            $settings['resize_on_upload'] ?? true
+            $settings['resize_on_upload'] ?? true,
         );
     }
 
@@ -84,7 +84,7 @@ class ResizingConfig
     {
         return new self(
             $config['max_image_width'] ?? 1920,
-            $config['resize_on_upload'] ?? true
+            $config['resize_on_upload'] ?? true,
         );
     }
 

@@ -68,7 +68,7 @@ class ImageResizer
         int $attachment_id,
         string $file_path,
         int $current_width,
-        int $current_height
+        int $current_height,
     ): array {
         $max_width = $this->config->get_max_image_width();
 
@@ -198,11 +198,14 @@ class ImageResizer
         imagecopyresampled(
             $new_image,
             $source_image,
-            0, 0, 0, 0,
+            0,
+            0,
+            0,
+            0,
             $new_width,
             $new_height,
             $file_info[0],
-            $file_info[1]
+            $file_info[1],
         );
 
         $success = false;

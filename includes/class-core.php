@@ -235,11 +235,11 @@ class Core
 
     /**
      * Ensure uploads directory has correct permissions
-     * 
+     *
      * This is required for the plugin to write/restore image files.
      * Without proper permissions, backup restore will fail with:
      * "Cannot write to image directory"
-     * 
+     *
      * @return bool True if permissions are correct or fixed, false otherwise
      */
     public static function ensure_uploads_permissions()

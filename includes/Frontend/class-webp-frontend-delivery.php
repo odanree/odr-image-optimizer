@@ -56,13 +56,13 @@ class WebPFrontendDelivery
     public static function inject_responsive_attributes(array $attrs, \WP_Post $attachment): array
     {
         $attachment_id = $attachment->ID;
-        
+
         // Generate responsive srcset for medium_large size
         $srcset = wp_get_attachment_image_srcset($attachment_id, 'medium_large');
-        
+
         if ($srcset) {
             $attrs['srcset'] = $srcset;
-            
+
             // Add sizes attribute so browser knows the container width
             // This tells the browser: on viewports up to 645px, image is 100vw
             // on larger viewports, image is limited to 645px
@@ -70,7 +70,7 @@ class WebPFrontendDelivery
                 $attrs['sizes'] = '(max-width: 645px) 100vw, 645px';
             }
         }
-        
+
         return $attrs;
     }
 
@@ -104,7 +104,7 @@ class WebPFrontendDelivery
             $new_img = ResponsiveImageService::render_picture_element(
                 $attachment_id,
                 'large',
-                ['class' => 'wp-content-image']
+                ['class' => 'wp-content-image'],
             );
 
             $content = str_replace($img_tag, $new_img, $content);
@@ -130,7 +130,7 @@ class WebPFrontendDelivery
         int $attachment_id,
         string $size,
         bool $icon,
-        array $attr
+        array $attr,
     ): string {
         // Skip if no image file
         if ($icon || ! $attachment_id) {
@@ -178,7 +178,7 @@ class WebPFrontendDelivery
             esc_attr($sizes),
             esc_attr($srcset),
             esc_attr($sizes),
-            $html
+            $html,
         );
 
         return $picture;
@@ -199,7 +199,7 @@ class WebPFrontendDelivery
         int $post_id,
         int $attachment_id,
         string $size,
-        $attr = []
+        $attr = [],
     ): string {
         $attr_array = is_array($attr) ? $attr : [];
         return self::add_webp_picture_element($html, $attachment_id, $size, false, $attr_array);
@@ -234,8 +234,8 @@ class WebPFrontendDelivery
             $attachment_id = $wpdb->get_var(
                 $wpdb->prepare(
                     "SELECT ID FROM $wpdb->posts WHERE guid LIKE %s AND post_type = 'attachment'",
-                    '%' . $file_path . '%'
-                )
+                    '%' . $file_path . '%',
+                ),
             );
 
             return $attachment_id ? (int) $attachment_id : null;
@@ -255,7 +255,7 @@ class WebPFrontendDelivery
         return (string) preg_replace(
             '/(\S+\.(jpg|jpeg|png))(?=\s+\d+w)/i',
             '$1.webp',
-            $jpeg_srcset
+            $jpeg_srcset,
         );
     }
 }

@@ -28,7 +28,7 @@ class HookContractValidator
      *
      * @var array
      */
-    const OPTIMIZER_RESPONSE_SCHEMA = [
+    public const OPTIMIZER_RESPONSE_SCHEMA = [
         'success'            => 'boolean',
         'path'               => 'string|null',
         'original_size'      => 'int',
@@ -54,7 +54,7 @@ class HookContractValidator
             $errors[] = sprintf(
                 '%s hook returned %s, expected array or Result object',
                 $hook_name,
-                gettype($return_value)
+                gettype($return_value),
             );
             return [
                 'valid'  => false,
@@ -71,21 +71,21 @@ class HookContractValidator
                     'errors' => [],
                 ];
             }
-            
+
             // Extract data from Result
             $data = $return_value->get_data();
             if (! is_array($data)) {
                 $errors[] = sprintf(
                     '%s: Result::get_data() returned %s, expected array',
                     $hook_name,
-                    gettype($data)
+                    gettype($data),
                 );
                 return [
                     'valid'  => false,
                     'errors' => $errors,
                 ];
             }
-            
+
             $return_value = $data;
         }
 
@@ -96,7 +96,7 @@ class HookContractValidator
                 $errors[] = sprintf(
                     '%s: Missing required field "%s"',
                     $hook_name,
-                    $field
+                    $field,
                 );
             }
         }
@@ -106,7 +106,7 @@ class HookContractValidator
             $errors[] = sprintf(
                 '%s: Field "original_size" must be int, got %s',
                 $hook_name,
-                gettype($return_value['original_size'])
+                gettype($return_value['original_size']),
             );
         }
 
@@ -114,7 +114,7 @@ class HookContractValidator
             $errors[] = sprintf(
                 '%s: Field "optimized_size" must be int, got %s',
                 $hook_name,
-                gettype($return_value['optimized_size'])
+                gettype($return_value['optimized_size']),
             );
         }
 
@@ -122,7 +122,7 @@ class HookContractValidator
             $errors[] = sprintf(
                 '%s: Field "compression_ratio" must be numeric (int or float), got %s',
                 $hook_name,
-                gettype($return_value['compression_ratio'])
+                gettype($return_value['compression_ratio']),
             );
         }
 
@@ -130,7 +130,7 @@ class HookContractValidator
             $errors[] = sprintf(
                 '%s: Field "savings" must be int, got %s',
                 $hook_name,
-                gettype($return_value['savings'])
+                gettype($return_value['savings']),
             );
         }
 
@@ -156,7 +156,7 @@ class HookContractValidator
             $errors[] = sprintf(
                 '%s hook returned %s, expected string (path) or false (skip)',
                 $hook_name,
-                gettype($return_value)
+                gettype($return_value),
             );
         }
 
@@ -165,7 +165,7 @@ class HookContractValidator
             $errors[] = sprintf(
                 '%s: Path "%s" does not exist',
                 $hook_name,
-                $return_value
+                $return_value,
             );
         }
 
@@ -185,7 +185,7 @@ class HookContractValidator
     {
         $report = "=== Hook Contract Validation Report ===\n\n";
         $total = count($validations);
-        $passed = count(array_filter($validations, fn($v) => $v['valid']));
+        $passed = count(array_filter($validations, fn ($v) => $v['valid']));
         $failed = $total - $passed;
 
         $report .= "Total Hooks: $total\n";
