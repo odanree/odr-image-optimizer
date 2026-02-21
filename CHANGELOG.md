@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-02-21
+
+### Changed
+
+- **Polish:** Enhanced plugin header metadata for WordPress.org consistency.
+  - Updated description to highlight SOLID architecture and 100/100 Lighthouse achievement
+  - Aligned PHP requirement (7.4 → 8.1) to match actual codebase features
+  - Updated tags for better discoverability (performance, webp, lcp, speed, optimizer)
+  - Plugin URI now points to GitHub repository
+
 ## [1.0.0] - 2026-02-21
 
 ### Added
