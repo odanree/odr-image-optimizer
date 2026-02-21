@@ -10,6 +10,9 @@ declare(strict_types=1);
 
 namespace ImageOptimizer\Conversion;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 use ImageOptimizer\Exception\OptimizationFailedException;
 
 readonly class WebpConverter

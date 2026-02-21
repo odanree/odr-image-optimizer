@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 /**
  * The main plugin class
  *
@@ -10,11 +11,15 @@ declare(strict_types=1);
 
 namespace ImageOptimizer;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 use ImageOptimizer\Admin\Dashboard;
 use ImageOptimizer\Admin\Settings;
 use ImageOptimizer\Core\Optimizer;
 use ImageOptimizer\Core\API;
 use ImageOptimizer\Core\Database;
+use ImageOptimizer\Core\Container;
 
 /**
  * Core plugin class
@@ -80,18 +85,24 @@ class Core
 
         // Initialize components
         $this->init_admin();
+        $this->init_resizing();
         $this->init_optimizer();
         $this->init_api();
 
         // Add WordPress hooks
         add_action('admin_menu', [ $this, 'register_admin_menu' ]);
         add_action('wp_enqueue_scripts', [ $this, 'enqueue_scripts' ]);
+        add_action('wp_head', [ $this, 'add_ghost_favicon' ], 1);
 
         // Optimize featured image sizes for better LCP
         add_filter('post_thumbnail_size', [ $this, 'optimize_featured_image_size' ]);
 
         // Remove srcset from featured images to prevent browser downloading larger variants
         add_filter('wp_get_attachment_image', [ $this, 'remove_featured_image_srcset' ], 10, 5);
+
+        // Serve WebP versions when available (improves LCP/Lighthouse scores)
+        add_filter('wp_get_attachment_image_src', [ $this, 'serve_webp_image' ], 10, 2);
+        add_filter('wp_get_attachment_url', [ $this, 'serve_webp_attachment_url' ], 10, 2);
     }
 
     /**
@@ -103,6 +114,17 @@ class Core
         // even before is_admin() fully evaluates (during early plugin loading)
         new Dashboard();
         new Settings();
+    }
+
+    /**
+     * Initialize image resizing processor
+     *
+     * Registers hooks for responsive image resizing to prevent oversized image Lighthouse warnings.
+     */
+    private function init_resizing()
+    {
+        $processor = Container::get_resizing_processor();
+        $processor->register_hooks();
     }
 
     /**
@@ -194,18 +216,93 @@ class Core
     {
         // Database tables will be created on plugins_loaded when autoloader is ready
 
-        // Set default options
-        if (! get_option('image_optimizer_settings')) {
-            update_option('image_optimizer_settings', [
-                'compression_level' => 'medium',
-                'enable_webp'        => true,
-                'enable_lazy_load'   => true,
-                'auto_optimize'      => false,
+        // Set default options with proper prefixing
+        if (! get_option('odr_image_optimizer_settings')) {
+            update_option('odr_image_optimizer_settings', [
+                'compression_level'   => 'medium',
+                'enable_webp'         => true,
+                'lazy_load_mode'      => 'native',
+                'auto_optimize'       => false,
+                'preload_fonts'       => true,
+                'kill_bloat'          => true,
+                'inline_critical_css' => true,
             ]);
         }
 
+        // Migrate old settings from legacy key to new consolidated key (one-time only)
+        self::migrate_legacy_settings();
+
+        // Fix uploads directory permissions (CRITICAL)
+        $permissions = Container::get_permissions_manager();
+        $permissions->ensure_uploads_permissions();
+
         // Flush rewrite rules
         flush_rewrite_rules();
+    }
+
+    /**
+     * Migrate legacy settings from old key to new consolidated key
+     *
+     * One-time migration: Runs only once via version flag.
+     * Prevents unnecessary get_option calls on every activation.
+     *
+     * @return void
+     */
+    private static function migrate_legacy_settings(): void
+    {
+        // Use version flag to run migration only once
+        $migration_flag = 'odr_image_optimizer_settings_v1_migrated';
+
+        // If migration already ran, skip
+        if (get_option($migration_flag)) {
+            return;
+        }
+
+        // Check if old settings key exists
+        $old_settings = get_option('odr_optimizer_settings');
+
+        if (false !== $old_settings && is_array($old_settings)) {
+            // New key already has defaults, just clean up old key
+            delete_option('odr_optimizer_settings');
+        }
+
+        // Mark migration as complete
+        update_option($migration_flag, time());
+    }
+
+    /**
+     * Ensure uploads directory has correct permissions
+     *
+     * This is required for the plugin to write/restore image files.
+     * Without proper permissions, backup restore will fail with:
+     * "Cannot write to image directory"
+     *
+     * @return bool True if permissions are correct or fixed, false otherwise
+     */
+    public static function ensure_uploads_permissions()
+    {
+        $uploads_dir = wp_upload_dir();
+        $base_dir = $uploads_dir['basedir'];
+
+        if (! is_dir($base_dir)) {
+            return false;
+        }
+
+        // Already writable, nothing to do
+        if (is_writable($base_dir)) {
+            return true;
+        }
+
+        // Try to make it writable
+        @chmod($base_dir, 0775);
+
+        // Also ensure the parent directory is writable
+        $parent = dirname($base_dir);
+        if (is_dir($parent) && ! is_writable($parent)) {
+            @chmod($parent, 0775);
+        }
+
+        return is_writable($base_dir);
     }
 
     /**
@@ -258,5 +355,91 @@ class Core
         $html = preg_replace('/\s+sizes="[^"]*"/', '', $html);
 
         return $html;
+    }
+
+    /**
+     * Serve WebP version of attachment images when available
+     *
+     * If a WebP version was created by the optimizer, serve it instead of JPEG/PNG.
+     * WebP format reduces file size by 20-30% compared to JPEG (Lighthouse recommendation).
+     *
+     * @param array    $image         The image array (url, width, height, is_intermediate).
+     * @param int      $attachment_id The attachment ID.
+     * @return array The image array (with WebP URL if available).
+     */
+    public function serve_webp_image($image, $attachment_id)
+    {
+        if (! is_array($image) || empty($image[0])) {
+            return $image;
+        }
+
+        $webp_url = $this->get_webp_url($image[0]);
+        if ($webp_url) {
+            $image[0] = $webp_url;
+        }
+
+        return $image;
+    }
+
+    /**
+     * Serve WebP version of attachment URLs when available
+     *
+     * @param string $url             The attachment URL.
+     * @param int    $attachment_id   The attachment ID.
+     * @return string The WebP URL if available, otherwise the original URL.
+     */
+    public function serve_webp_attachment_url($url, $attachment_id)
+    {
+        $webp_url = $this->get_webp_url($url);
+        return $webp_url ?: $url;
+    }
+
+    /**
+     * Get WebP URL for an image if it exists
+     *
+     * @param string $image_url The original image URL.
+     * @return string|false The WebP URL if the file exists, false otherwise.
+     */
+    private function get_webp_url($image_url)
+    {
+        // Extract file path from URL
+        $uploads_dir = wp_upload_dir();
+        $base_url = $uploads_dir['baseurl'];
+
+        // Only process images in the uploads directory
+        if (strpos($image_url, $base_url) !== 0) {
+            return false;
+        }
+
+        // Convert URL to file path
+        $file_path = str_replace($base_url, $uploads_dir['basedir'], $image_url);
+
+        // Check for WebP version
+        $webp_path = preg_replace('/\.(jpg|jpeg|png)$/i', '.webp', $file_path);
+
+        if (file_exists($webp_path)) {
+            // Convert file path back to URL
+            return str_replace($uploads_dir['basedir'], $base_url, $webp_path);
+        }
+
+        return false;
+    }
+
+    /**
+     * Add ghost favicon to prevent 404 bootstrap overhead
+     *
+     * Without a favicon, the browser will request favicon.ico, which triggers
+     * a full WordPress bootstrap just to return a 404, stealing ~50ms from LCP.
+     * This data URL tells the browser to skip the favicon request entirely.
+     *
+     * @return void
+     */
+    public function add_ghost_favicon(): void
+    {
+        if (is_admin()) {
+            return;
+        }
+
+        echo '<link rel="icon" href="data:,">' . "\n";
     }
 }

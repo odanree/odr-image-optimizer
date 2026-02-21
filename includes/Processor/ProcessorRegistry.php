@@ -14,6 +14,9 @@ declare(strict_types=1);
 
 namespace ImageOptimizer\Processor;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 use Countable;
 use Iterator;
 

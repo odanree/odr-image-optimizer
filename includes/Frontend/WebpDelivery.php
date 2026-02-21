@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace ImageOptimizer\Frontend;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 /**
  * WebP Delivery class - Handles WebP format serving to browsers
  */

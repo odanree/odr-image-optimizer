@@ -63,15 +63,29 @@
 				return;
 			}
 
-			// Render images
+			// Render images with responsive srcset/sizes for Lighthouse compliance
 			let html = '<div class="image-optimizer-gallery">';
 			
 			images.forEach(image => {
+				// Build responsive img tag with srcset and sizes attributes
+				const srcsetAttr = image.srcset ? `srcset="${escapeHtml(image.srcset)}"` : '';
+				const sizesAttr = image.sizes ? `sizes="${escapeHtml(image.sizes)}"` : '';
+				
 				html += `
 					<div class="image-optimizer-card">
-						<img src="${image.url}" alt="${image.title}" width="200" height="200" class="image-optimizer-thumbnail" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22200%22/%3E%3C/svg%3E'">
-						<h3>${image.title}</h3>
+						<div class="image-optimizer-card-image">
+							<img src="${escapeHtml(image.url)}" 
+							     alt="${escapeHtml(image.title)}" 
+							     ${srcsetAttr}
+							     ${sizesAttr}
+							     class="image-optimizer-thumbnail"
+							     loading="lazy"
+							     decoding="async"
+							     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22250%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22250%22 height=%22140%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-family=%22Arial%22 font-size=%2214%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 fill=%22%23999%22%3EImage Not Found%3C/text%3E%3C/svg%3E'">
+						</div>
+						<h3>${escapeHtml(image.title)}</h3>
 						<p>Size: ${formatBytes(image.size)}</p>
+						${image.webp_available ? '<p class="status-webp">📦 WebP Available</p>' : ''}
 						<div class="image-optimizer-actions">
 							${image.optimized ? `
 								<p class="status-optimized">✓ Optimized</p>
@@ -116,6 +130,14 @@
 		return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 	}
 
+	// Escape HTML to prevent XSS attacks
+	function escapeHtml(text) {
+		if (!text) return '';
+		const div = document.createElement('div');
+		div.textContent = text;
+		return div.innerHTML;
+	}
+
 	// Optimize image
 	function optimizeImage(id) {
 		const restUrl = imageOptimizerData.rest_url || '/wp-json/image-optimizer/v1/';
@@ -127,18 +149,38 @@
 				'Content-Type': 'application/json'
 			}
 		})
-		.then(response => response.json())
-		.then(data => {
-			if (data.success) {
+		.then(response => {
+			console.log('Optimize response status:', response.status);
+			console.log('Optimize response type:', response.headers.get('Content-Type'));
+			
+			// Check if response is JSON or HTML
+			const contentType = response.headers.get('Content-Type');
+			if (!contentType || !contentType.includes('application/json')) {
+				// Might be an HTML error page
+				return response.text().then(text => {
+					if (text.includes('critical error') || text.includes('fatal')) {
+						throw new Error('Server returned HTML error: ' + text.substring(0, 200));
+					}
+					throw new Error('Response was not JSON: ' + text.substring(0, 200));
+				});
+			}
+			
+			return response.json().then(data => ({ status: response.status, data }));
+		})
+		.then(({ status, data }) => {
+			console.log('Optimize response data:', data);
+			if (status === 200 && data.success) {
 				alert('Image optimized successfully!\nOriginal: ' + formatBytes(data.original_size) + '\nOptimized: ' + formatBytes(data.optimized_size));
 				location.reload();
 			} else {
-				alert('Error: ' + (data.message || 'Unknown error'));
+				const errorMsg = data.message || data.error || data.code || 'Unknown error';
+				console.error('Optimization failed:', errorMsg, data);
+				alert('Error: ' + errorMsg);
 			}
 		})
 		.catch(error => {
 			console.error('Error optimizing image:', error);
-			alert('Error optimizing image');
+			alert('Error: ' + error.message);
 		});
 	}
 
@@ -157,18 +199,25 @@
 				'Content-Type': 'application/json'
 			}
 		})
-		.then(response => response.json())
-		.then(data => {
-			if (data.success) {
-				alert('Image reverted successfully!\nRestored size: ' + formatBytes(data.restored_size) + '\nSpace freed: ' + formatBytes(data.freed_space));
+		.then(response => {
+			console.log('Revert response status:', response.status);
+			return response.json().then(data => ({ status: response.status, data }));
+		})
+		.then(({ status, data }) => {
+			console.log('Revert response data:', data);
+			if (status === 200 && data.success) {
+				alert('Image reverted successfully!\nRestored size: ' + formatBytes(data.restored_size));
 				location.reload();
 			} else {
-				alert('Error: ' + (data.message || 'Unknown error'));
+				// Handle WP_Error response format
+				const errorMsg = data.message || data.error || data.code || 'Unknown error';
+				console.error('Revert failed:', errorMsg, data);
+				alert('Error: ' + errorMsg);
 			}
 		})
 		.catch(error => {
 			console.error('Error reverting image:', error);
-			alert('Error reverting image');
+			alert('Error: ' + error.message);
 		});
 	}
 })();

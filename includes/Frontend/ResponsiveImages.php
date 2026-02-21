@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace ImageOptimizer\Frontend;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 /**
  * Responsive Images class - Handles srcset generation for WebP images
  */

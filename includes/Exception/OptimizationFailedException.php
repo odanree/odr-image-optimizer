@@ -10,6 +10,9 @@ declare(strict_types=1);
 
 namespace ImageOptimizer\Exception;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 class OptimizationFailedException extends \Exception
 {
     public function __construct(

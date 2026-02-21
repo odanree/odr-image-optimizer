@@ -10,6 +10,9 @@ declare(strict_types=1);
 
 namespace ImageOptimizer\Backup;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 use ImageOptimizer\Exception\BackupFailedException;
 
 readonly class BackupManager

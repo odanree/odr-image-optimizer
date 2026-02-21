@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 /**
  * REST API endpoints for Image Optimizer
  *
@@ -10,6 +11,9 @@ declare(strict_types=1);
 
 namespace ImageOptimizer\Core;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 /**
  * REST API class
  */
@@ -229,22 +233,8 @@ class API
         $images = [];
 
         foreach ($query->posts as $post) {
-            $attached_file = get_attached_file($post->ID);
-            $file_size = $attached_file ? filesize($attached_file) : 0;
-            $history = Database::get_optimization_history($post->ID);
-
-            // Only consider image as optimized if history exists and status is not 'reverted'
-            $is_optimized = ! empty($history) && (! isset($history->status) || $history->status !== 'reverted');
-
-            $images[] = [
-                'id'              => $post->ID,
-                'title'           => $post->post_title,
-                'filename'        => basename($attached_file ? $attached_file : ''),
-                'url'             => wp_get_attachment_url($post->ID),
-                'size'            => $file_size,
-                'optimized'       => $is_optimized,
-                'optimization'    => $history ? $this->format_history($history) : null,
-            ];
+            // Use MediaTransformer for SOLID-compliant response formatting
+            $images[] = MediaTransformer::transform_attachment($post->ID);
         }
 
         $response = rest_ensure_response(
@@ -274,20 +264,32 @@ class API
      */
     public function optimize_image($request)
     {
-        $attachment_id = $request['attachment_id'];
+        try {
+            $attachment_id = $request['attachment_id'];
 
-        if (! get_post($attachment_id)) {
-            return new \WP_Error('invalid_attachment', 'Invalid attachment ID', [ 'status' => 404 ]);
+            if (! get_post($attachment_id)) {
+                return new \WP_Error('invalid_attachment', 'Invalid attachment ID', [ 'status' => 404 ]);
+            }
+
+            $optimizer = Container::get_optimizer();
+            $result = $optimizer->optimize_attachment($attachment_id);
+
+            // Convert Result to WP_Error if failure
+            if ($result->is_failure()) {
+                $wp_error = $result->to_wp_error();
+                $wp_error->add_data([ 'status' => 400 ]);
+                return $wp_error;
+            }
+
+            // Return success response
+            return rest_ensure_response($result->to_array());
+        } catch (\Throwable $e) {
+            return new \WP_Error(
+                'optimization_exception',
+                'Optimization exception: ' . $e->getMessage(),
+                [ 'status' => 500 ],
+            );
         }
-
-        $optimizer = new Optimizer();
-        $result = $optimizer->optimize_attachment($attachment_id);
-
-        if ($result['success']) {
-            return rest_ensure_response($result);
-        }
-
-        return new \WP_Error('optimization_failed', $result['error'], [ 'status' => 400 ]);
     }
 
     /**
@@ -304,14 +306,18 @@ class API
             return new \WP_Error('invalid_attachment', 'Invalid attachment ID', [ 'status' => 404 ]);
         }
 
-        $optimizer = new Optimizer();
+        $optimizer = Container::get_optimizer();
         $result = $optimizer->revert_optimization($attachment_id);
 
-        if ($result['success']) {
-            return rest_ensure_response($result);
+        // Convert Result to WP_Error if failure
+        if ($result->is_failure()) {
+            $wp_error = $result->to_wp_error();
+            $wp_error->add_data([ 'status' => 400 ]);
+            return $wp_error;
         }
 
-        return new \WP_Error('revert_failed', $result['error'], [ 'status' => 400 ]);
+        // Return success response
+        return rest_ensure_response($result->to_array());
     }
 
     /**

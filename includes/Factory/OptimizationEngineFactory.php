@@ -10,6 +10,9 @@ declare(strict_types=1);
 
 namespace ImageOptimizer\Factory;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 use ImageOptimizer\Backup\BackupManager;
 use ImageOptimizer\Core\OptimizationEngine;
 use ImageOptimizer\Conversion\WebpConverter;

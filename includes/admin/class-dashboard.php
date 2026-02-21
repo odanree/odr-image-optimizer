@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Admin Dashboard
  *
@@ -71,5 +72,10 @@ class Dashboard
 			<div id="image-optimizer-dashboard"></div>
 		</div>
 		<?php
+
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
+
     }
 }

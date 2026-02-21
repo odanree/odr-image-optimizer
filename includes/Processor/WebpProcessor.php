@@ -10,6 +10,9 @@ declare(strict_types=1);
 
 namespace ImageOptimizer\Processor;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 use ImageOptimizer\Exception\OptimizationFailedException;
 
 class WebpProcessor implements ImageProcessorInterface

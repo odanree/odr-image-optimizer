@@ -10,6 +10,9 @@ declare(strict_types=1);
 
 namespace ImageOptimizer\Configuration;
 
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 readonly class OptimizationConfig
 {
     public function __construct(
