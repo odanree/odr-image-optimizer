@@ -288,11 +288,15 @@ class API
             $optimizer = Container::get_optimizer();
             $result = $optimizer->optimize_attachment($attachment_id);
 
-            if ($result['success']) {
-                return rest_ensure_response($result);
+            // Convert Result to WP_Error if failure
+            if ($result->is_failure()) {
+                $wp_error = $result->to_wp_error();
+                $wp_error->add_data([ 'status' => 400 ]);
+                return $wp_error;
             }
 
-            return new \WP_Error('optimization_failed', $result['error'], [ 'status' => 400 ]);
+            // Return success response
+            return rest_ensure_response($result->to_array());
         } catch (\Throwable $e) {
             return new \WP_Error(
                 'optimization_exception',
@@ -319,16 +323,15 @@ class API
         $optimizer = Container::get_optimizer();
         $result = $optimizer->revert_optimization($attachment_id);
 
-        if ($result['success']) {
-            return rest_ensure_response($result);
+        // Convert Result to WP_Error if failure
+        if ($result->is_failure()) {
+            $wp_error = $result->to_wp_error();
+            $wp_error->add_data([ 'status' => 400 ]);
+            return $wp_error;
         }
 
-        // Return the detailed error from the optimizer
-        return new \WP_Error(
-            'revert_failed',
-            $result['error'],  // This will now contain detailed error info
-            [ 'status' => 400 ]
-        );
+        // Return success response
+        return rest_ensure_response($result->to_array());
     }
 
     /**

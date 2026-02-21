@@ -183,7 +183,7 @@ class Optimizer
         return max(0, $limit_bytes - $memory_used);
     }
 
-    public function optimize_attachment($attachment_id)
+    public function optimize_attachment($attachment_id): Result
     {
         try {
             // Check memory before attempting optimization
@@ -191,26 +191,17 @@ class Optimizer
             
             // Need at least 100MB free for safe optimization
             if ($memory_available < 100 * 1024 * 1024) {
-                return [
-                    'success' => false,
-                    'error'   => 'Insufficient memory. Please increase WP_MEMORY_LIMIT',
-                ];
+                return Result::failure('Insufficient memory. Please increase WP_MEMORY_LIMIT');
             }
 
             $file = get_attached_file($attachment_id);
 
             if (! $file || ! file_exists($file)) {
-                return [
-                    'success' => false,
-                    'error'   => 'File not found',
-                ];
+                return Result::failure('File not found');
             }
 
             if (! $this->is_optimizable($file)) {
-                return [
-                    'success' => false,
-                    'error'   => 'File type not supported',
-                ];
+                return Result::failure('File type not supported');
             }
 
             $original_size = filesize($file);
@@ -253,10 +244,7 @@ class Optimizer
             $result = $this->optimize_file($file, $method);
 
             if (! $result) {
-                return [
-                    'success' => false,
-                    'error'   => 'Optimization failed',
-                ];
+                return Result::failure('Optimization failed');
             }
 
             $optimized_size = filesize($file);
@@ -303,14 +291,19 @@ class Optimizer
              */
             do_action('image_optimizer_after_optimize', $context);
 
-            return [
-                'success'            => true,
-                'original_size'      => $original_size,
-                'optimized_size'     => $optimized_size,
-                'savings'            => $savings,
-                'compression_ratio'  => $compression_ratio,
-                'webp_available'     => $webp_available,
-            ];
+            return Result::success(
+                [
+                    'original_size'      => $original_size,
+                    'optimized_size'     => $optimized_size,
+                    'savings'            => $savings,
+                    'compression_ratio'  => $compression_ratio,
+                    'webp_available'     => $webp_available,
+                ],
+                sprintf(
+                    'Image optimized: %.1f%% compression',
+                    $compression_ratio
+                )
+            );
         } catch (\Exception $e) {
             Database::save_optimization_result(
                 $attachment_id,
@@ -325,10 +318,7 @@ class Optimizer
                 ],
             );
 
-            return [
-                'success' => false,
-                'error'   => $e->getMessage(),
-            ];
+            return Result::from_exception($e);
         }
     }
 
@@ -751,16 +741,13 @@ class Optimizer
      * @param int $attachment_id The attachment ID.
      * @return array
      */
-    public function revert_optimization($attachment_id)
+    public function revert_optimization($attachment_id): Result
     {
         try {
             $file = get_attached_file($attachment_id);
 
             if (! $file || ! file_exists($file)) {
-                return [
-                    'success' => false,
-                    'error'   => 'File not found: ' . ($file ?: 'no path'),
-                ];
+                return Result::failure('File not found: ' . ($file ?: 'no path'));
             }
 
             // Get backup file path
@@ -769,25 +756,16 @@ class Optimizer
             $backup_file = $backup_dir . '/' . $file_info['filename'] . '-' . $attachment_id . '-backup.' . $file_info['extension'];
 
             if (! file_exists($backup_file)) {
-                return [
-                    'success' => false,
-                    'error'   => 'No backup found: ' . $backup_file,
-                ];
+                return Result::failure('No backup found: ' . $backup_file);
             }
 
             // Check file permissions before attempting restore
             if (! is_readable($backup_file)) {
-                return [
-                    'success' => false,
-                    'error'   => 'Backup file is not readable',
-                ];
+                return Result::failure('Backup file is not readable');
             }
 
             if (! is_writable(dirname($file))) {
-                return [
-                    'success' => false,
-                    'error'   => 'Cannot write to image directory',
-                ];
+                return Result::failure('Cannot write to image directory');
             }
 
             $optimized_size = filesize($file);
@@ -831,18 +809,12 @@ class Optimizer
                         $error_msg .= 'PHP Error: ' . $last_error['message'];
                     }
                 }
-                return [
-                    'success' => false,
-                    'error'   => $error_msg,
-                ];
+                return Result::failure($error_msg);
             }
 
             // Verify the restoration
             if (! file_exists($file) || filesize($file) === 0) {
-                return [
-                    'success' => false,
-                    'error'   => 'Backup was copied but file is empty or missing',
-                ];
+                return Result::failure('Backup was copied but file is empty or missing');
             }
 
             $restored_size = filesize($file);
@@ -877,15 +849,14 @@ class Optimizer
              */
             do_action('image_optimizer_after_revert', $context);
 
-            return [
-                'success'      => true,
-                'restored_size' => $restored_size,
-            ];
+            return Result::success(
+                [
+                    'restored_size' => $restored_size,
+                ],
+                'Image successfully reverted to original'
+            );
         } catch (\Exception $e) {
-            return [
-                'success' => false,
-                'error'   => 'Exception: ' . $e->getMessage() . ' (Line: ' . $e->getLine() . ')',
-            ];
+            return Result::from_exception($e);
         }
     }
 

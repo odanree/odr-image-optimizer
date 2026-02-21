@@ -43,6 +43,7 @@ require_once IMAGE_OPTIMIZER_PATH . 'includes/class-autoloader.php';
 \ImageOptimizer\Autoloader::register();
 
 // Manually include core classes to ensure they're loaded
+require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-result.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-image-file.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-image-context.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-tool-registry.php';
