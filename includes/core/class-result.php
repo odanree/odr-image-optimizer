@@ -164,11 +164,18 @@ class Result
      */
     public function to_array(): array
     {
-        return [
+        // Flatten data fields to top level for API responses
+        $response = [
             'success' => $this->success,
             'message' => $this->message,
-            'data' => $this->data,
         ];
+
+        // Merge data fields into top level
+        if (is_array($this->data) && ! empty($this->data)) {
+            $response = array_merge($response, $this->data);
+        }
+
+        return $response;
     }
 
     /**
