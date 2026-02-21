@@ -638,7 +638,7 @@ class Optimizer
             if (! $file || ! file_exists($file)) {
                 return [
                     'success' => false,
-                    'error'   => 'File not found',
+                    'error'   => 'File not found: ' . ($file ?: 'no path'),
                 ];
             }
 
@@ -650,17 +650,49 @@ class Optimizer
             if (! file_exists($backup_file)) {
                 return [
                     'success' => false,
-                    'error'   => 'No backup found for this image',
+                    'error'   => 'No backup found: ' . $backup_file,
+                ];
+            }
+
+            // Check file permissions before attempting restore
+            if (! is_readable($backup_file)) {
+                return [
+                    'success' => false,
+                    'error'   => 'Backup file is not readable',
+                ];
+            }
+
+            if (! is_writable(dirname($file))) {
+                return [
+                    'success' => false,
+                    'error'   => 'Cannot write to image directory',
                 ];
             }
 
             $optimized_size = filesize($file);
 
-            // Restore from backup
-            if (! copy($backup_file, $file)) {
+            // Restore from backup with detailed error handling
+            $copy_result = @copy($backup_file, $file);
+            
+            if (! $copy_result) {
+                $error_msg = 'Failed to copy backup file. ';
+                if (function_exists('error_get_last')) {
+                    $last_error = error_get_last();
+                    if ($last_error) {
+                        $error_msg .= 'PHP Error: ' . $last_error['message'];
+                    }
+                }
                 return [
                     'success' => false,
-                    'error'   => 'Failed to restore backup',
+                    'error'   => $error_msg,
+                ];
+            }
+
+            // Verify the restoration
+            if (! file_exists($file) || filesize($file) === 0) {
+                return [
+                    'success' => false,
+                    'error'   => 'Backup was copied but file is empty or missing',
                 ];
             }
 
@@ -690,7 +722,7 @@ class Optimizer
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'error'   => $e->getMessage(),
+                'error'   => 'Exception: ' . $e->getMessage() . ' (Line: ' . $e->getLine() . ')',
             ];
         }
     }
