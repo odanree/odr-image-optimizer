@@ -13,7 +13,7 @@ declare(strict_types=1);
  * Plugin Name:       ODR Image Optimizer
  * Plugin URI:        https://github.com/odanree/odr-image-optimizer
  * Description:       Professional high-performance image suite. Features SOLID-compliant WebP conversion, intelligent LCP preloading, and automated critical path cleanup for a 100/100 Lighthouse score.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Author:            Danh Le
  * Author URI:        https://danhle.net
  * License:           GPL v2 or later
