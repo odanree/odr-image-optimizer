@@ -73,17 +73,16 @@
 				
 				html += `
 					<div class="image-optimizer-card">
-						<img src="${escapeHtml(image.url)}" 
-						     alt="${escapeHtml(image.title)}" 
-						     ${srcsetAttr}
-						     ${sizesAttr}
-						     width="200" 
-						     height="200" 
-						     class="image-optimizer-thumbnail"
-						     loading="lazy"
-						     decoding="async"
-						     style="width:100%;height:auto;object-fit:cover;"
-						     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22200%22/%3E%3C/svg%3E'">
+						<div class="image-optimizer-card-image">
+							<img src="${escapeHtml(image.url)}" 
+							     alt="${escapeHtml(image.title)}" 
+							     ${srcsetAttr}
+							     ${sizesAttr}
+							     class="image-optimizer-thumbnail"
+							     loading="lazy"
+							     decoding="async"
+							     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22250%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22250%22 height=%22140%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-family=%22Arial%22 font-size=%2214%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 fill=%22%23999%22%3EImage Not Found%3C/text%3E%3C/svg%3E'">
+						</div>
 						<h3>${escapeHtml(image.title)}</h3>
 						<p>Size: ${formatBytes(image.size)}</p>
 						${image.webp_available ? '<p class="status-webp">📦 WebP Available</p>' : ''}
