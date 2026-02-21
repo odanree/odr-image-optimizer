@@ -42,10 +42,10 @@ class Autoloader
         $parts = explode('\\', $class_name);
         $file_name = 'class-' . strtolower(str_replace('_', '-', array_pop($parts))) . '.php';
 
-        // Build directory path from remaining namespace parts
+        // Build directory path from remaining namespace parts (keep original case for compatibility with case-sensitive filesystems)
         $dir_path = '';
         if (! empty($parts)) {
-            $dir_path = strtolower(implode('/', $parts)) . '/';
+            $dir_path = implode('/', $parts) . '/';
         }
 
         // Construct full file path
