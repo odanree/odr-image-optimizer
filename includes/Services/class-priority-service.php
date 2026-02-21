@@ -144,6 +144,11 @@ class PriorityService
      */
     public function preload_theme_font(): void
     {
+        // Check if font preload is enabled in settings
+        if (! \ImageOptimizer\Admin\SettingsService::is_enabled('preload_font')) {
+            return;
+        }
+
         // Only on frontend, singular posts
         if (is_admin() || ! is_singular()) {
             return;

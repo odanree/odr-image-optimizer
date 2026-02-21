@@ -91,6 +91,11 @@ class CleanupService
      */
     private function force_speed(): void
     {
+        // Check if "kill bloat" is enabled in settings
+        if (! \ImageOptimizer\Admin\SettingsService::is_enabled('kill_bloat')) {
+            return;
+        }
+
         // Dequeue Interactivity API (WordPress 6.5+)
         // Used for dynamic block interactions, not critical for most sites
         wp_dequeue_script('wp-interactivity');

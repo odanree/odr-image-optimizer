@@ -73,6 +73,7 @@ require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-header-manager.php'
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-asset-manager.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-priority-service.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-cleanup-service.php';
+require_once IMAGE_OPTIMIZER_PATH . 'includes/Admin/class-settings-service.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-responsive-image-service.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Frontend/class-frontend-delivery.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-webp-frontend-delivery.php';
@@ -140,6 +141,41 @@ add_action('plugins_loaded', function () {
 add_action('init', function () {
     Core::get_instance();
 }, 20);
+
+/**
+ * Register plugin settings (admin only)
+ */
+add_action('admin_init', function () {
+    $settings_service = new \ImageOptimizer\Admin\SettingsService();
+    $settings_service->register();
+});
+
+/**
+ * Add plugin admin menu
+ */
+add_action('admin_menu', function () {
+    add_options_page(
+        'Image Optimizer Settings',
+        'Image Optimizer',
+        'manage_options',
+        'odr-optimizer',
+        function () {
+            ?>
+        <div class="wrap">
+            <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+            <p>Toggle performance optimizations for mobile Lighthouse testing and A/B analysis.</p>
+            <form action="options.php" method="post">
+                <?php
+                settings_fields('odr_optimizer_group');
+            do_settings_sections('odr-optimizer');
+            submit_button();
+            ?>
+            </form>
+        </div>
+            <?php
+        },
+    );
+});
 
 /**
  * Initialize performance optimizations (before content renders)
