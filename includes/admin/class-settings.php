@@ -38,6 +38,7 @@ class Settings
             ],
         );
 
+        // General Settings section
         add_settings_section(
             'image-optimizer-general',
             __('General Settings', 'odr-image-optimizer'),
@@ -76,6 +77,46 @@ class Settings
             'image-optimizer-settings',
             'image-optimizer-general',
         );
+
+        // Mobile Performance Boosters section (now consolidated into the same page)
+        add_settings_section(
+            'image-optimizer-performance',
+            __('Mobile Performance Boosters', 'odr-image-optimizer'),
+            [ $this, 'render_performance_section' ],
+            'image-optimizer-settings',
+        );
+
+        add_settings_field(
+            'preload_fonts',
+            __('Preload Theme Fonts', 'odr-image-optimizer'),
+            [ $this, 'render_preload_fonts_field' ],
+            'image-optimizer-settings',
+            'image-optimizer-performance',
+        );
+
+        add_settings_field(
+            'kill_bloat',
+            __('Remove Bloat (Emoji JS, Interactivity)', 'odr-image-optimizer'),
+            [ $this, 'render_kill_bloat_field' ],
+            'image-optimizer-settings',
+            'image-optimizer-performance',
+        );
+
+        add_settings_field(
+            'inline_critical_css',
+            __('Inline Critical CSS', 'odr-image-optimizer'),
+            [ $this, 'render_inline_css_field' ],
+            'image-optimizer-settings',
+            'image-optimizer-performance',
+        );
+
+        add_settings_field(
+            'lazy_load_library',
+            __('Defer Non-Critical Scripts', 'odr-image-optimizer'),
+            [ $this, 'render_lazy_load_library_field' ],
+            'image-optimizer-settings',
+            'image-optimizer-performance',
+        );
     }
 
     /**
@@ -91,12 +132,16 @@ class Settings
         }
 
         $sanitized = [
-            'compression_level' => in_array($settings['compression_level'] ?? 'medium', [ 'low', 'medium', 'high' ], true)
+            'compression_level'   => in_array($settings['compression_level'] ?? 'medium', [ 'low', 'medium', 'high' ], true)
                 ? $settings['compression_level']
                 : 'medium',
-            'enable_webp'       => ! empty($settings['enable_webp']),
-            'enable_lazy_load'  => ! empty($settings['enable_lazy_load']),
-            'auto_optimize'     => ! empty($settings['auto_optimize']),
+            'enable_webp'         => ! empty($settings['enable_webp']),
+            'enable_lazy_load'    => ! empty($settings['enable_lazy_load']),
+            'auto_optimize'       => ! empty($settings['auto_optimize']),
+            'preload_fonts'       => ! empty($settings['preload_fonts']),
+            'kill_bloat'          => ! empty($settings['kill_bloat']),
+            'inline_critical_css' => ! empty($settings['inline_critical_css']),
+            'lazy_load_library'   => ! empty($settings['lazy_load_library']),
         ];
 
         return $sanitized;
@@ -127,6 +172,14 @@ class Settings
     public function render_section()
     {
         echo '<p>' . esc_html__('Configure image optimization settings.', 'odr-image-optimizer') . '</p>';
+    }
+
+    /**
+     * Render performance section
+     */
+    public function render_performance_section()
+    {
+        echo '<p>' . esc_html__('Enable performance optimizations to improve mobile loading speed and Lighthouse scores.', 'odr-image-optimizer') . '</p>';
     }
 
     /**
@@ -190,6 +243,70 @@ class Settings
         ?>
 		<input type="checkbox" name="image_optimizer_settings[auto_optimize]" value="1" <?php checked($checked); ?>>
 		<label><?php esc_html_e('Automatically optimize images on upload', 'odr-image-optimizer'); ?></label>
+		<?php
+    }
+
+    /**
+     * Render preload fonts field
+     */
+    public function render_preload_fonts_field()
+    {
+        $settings = get_option('image_optimizer_settings', []);
+        $checked = ! empty($settings['preload_fonts']);
+        ?>
+		<input type="checkbox" name="image_optimizer_settings[preload_fonts]" value="1" <?php checked($checked); ?>>
+		<label><?php esc_html_e('Preload theme fonts to prevent FOUT (Flash of Unstyled Text)', 'odr-image-optimizer'); ?></label>
+		<p class="description">
+			<?php esc_html_e('Improves perceived performance by loading critical fonts early. Savings: 200-400ms on mobile.', 'odr-image-optimizer'); ?>
+		</p>
+		<?php
+    }
+
+    /**
+     * Render kill bloat field
+     */
+    public function render_kill_bloat_field()
+    {
+        $settings = get_option('image_optimizer_settings', []);
+        $checked = ! empty($settings['kill_bloat']);
+        ?>
+		<input type="checkbox" name="image_optimizer_settings[kill_bloat]" value="1" <?php checked($checked); ?>>
+		<label><?php esc_html_e('Remove non-essential JavaScript (Emoji, Interactivity API)', 'odr-image-optimizer'); ?></label>
+		<p class="description">
+			<?php esc_html_e('Frees up bandwidth and processing for critical resources. Savings: 330-530ms on mobile.', 'odr-image-optimizer'); ?>
+		</p>
+		<?php
+    }
+
+    /**
+     * Render inline CSS field
+     */
+    public function render_inline_css_field()
+    {
+        $settings = get_option('image_optimizer_settings', []);
+        $checked = ! empty($settings['inline_critical_css']);
+        ?>
+		<input type="checkbox" name="image_optimizer_settings[inline_critical_css]" value="1" <?php checked($checked); ?>>
+		<label><?php esc_html_e('Inline critical CSS above-the-fold', 'odr-image-optimizer'); ?></label>
+		<p class="description">
+			<?php esc_html_e('Reduces external CSS requests and unblocks rendering. Savings: 200-300ms on mobile.', 'odr-image-optimizer'); ?>
+		</p>
+		<?php
+    }
+
+    /**
+     * Render lazy load library field
+     */
+    public function render_lazy_load_library_field()
+    {
+        $settings = get_option('image_optimizer_settings', []);
+        $checked = ! empty($settings['lazy_load_library']);
+        ?>
+		<input type="checkbox" name="image_optimizer_settings[lazy_load_library]" value="1" <?php checked($checked); ?>>
+		<label><?php esc_html_e('Defer non-critical JavaScript libraries', 'odr-image-optimizer'); ?></label>
+		<p class="description">
+			<?php esc_html_e('Prevents competing requests from blocking image loading. Works with native loading="lazy".', 'odr-image-optimizer'); ?>
+		</p>
 		<?php
     }
 

@@ -218,10 +218,14 @@ class Core
         // Set default options
         if (! get_option('image_optimizer_settings')) {
             update_option('image_optimizer_settings', [
-                'compression_level' => 'medium',
-                'enable_webp'        => true,
-                'enable_lazy_load'   => true,
-                'auto_optimize'      => false,
+                'compression_level'   => 'medium',
+                'enable_webp'         => true,
+                'enable_lazy_load'    => true,
+                'auto_optimize'       => false,
+                'preload_fonts'       => true,
+                'kill_bloat'          => true,
+                'inline_critical_css' => true,
+                'lazy_load_library'   => true,
             ]);
         }
 
