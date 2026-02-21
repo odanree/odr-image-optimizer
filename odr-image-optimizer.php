@@ -69,6 +69,8 @@ require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-api.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-size-selector.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-size-registry.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-layout-policy.php';
+require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-header-manager.php';
+require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-asset-manager.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-responsive-image-service.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Frontend/class-frontend-delivery.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-webp-frontend-delivery.php';
@@ -138,20 +140,32 @@ add_action('init', function () {
 }, 20);
 
 /**
- * Enqueue frontend styles for LCP optimization
+ * Initialize performance optimizations (before content renders)
  */
-add_action('wp_enqueue_scripts', function () {
-    // Only load on frontend, not admin
-    if (is_admin()) {
-        return;
-    }
+add_action('template_redirect', function () {
+    if (! is_admin()) {
+        // Apply cache headers for long-term caching
+        $header_manager = new \ImageOptimizer\Services\HeaderManager();
+        $header_manager->apply_cache_headers();
 
-    wp_enqueue_style(
-        'odr-image-optimizer-frontend',
-        IMAGE_OPTIMIZER_URL . 'assets/css/frontend.css',
-        [],
-        IMAGE_OPTIMIZER_VERSION,
-    );
+        // Optimize critical rendering path
+        $asset_manager = new \ImageOptimizer\Services\AssetManager();
+        $asset_manager->optimize_critical_path();
+    }
+}, 1);
+
+/**
+ * Initialize frontend styles and fonts in wp_head (very early)
+ */
+add_action('wp_head', function () {
+    if (! is_admin()) {
+        // Inline small CSS to eliminate render-blocking request
+        $asset_manager = new \ImageOptimizer\Services\AssetManager();
+        $asset_manager->inline_frontend_styles();
+
+        // Preload critical fonts (breaks dependency chain)
+        $asset_manager->preload_critical_fonts();
+    }
 }, 1);
 
 // Initialize frontend WebP delivery for public-facing posts

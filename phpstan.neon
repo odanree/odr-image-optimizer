@@ -15,6 +15,9 @@ parameters:
       message: '#ImageOptimizer\\Core\\OptimizationEngine#'
     - identifier: return.type
       message: '#ImageOptimizer\\Core\\OptimizationEngine#'
-    # WordPress function stubs for Services
+    # WordPress function and constant stubs for Services
     - identifier: function.notFound
-      message: '#(add_image_size|apply_filters|wp_get_attachment_metadata|wp_get_attachment_image_url|wp_get_attachment_image_srcset)#'
+      message: '#(add_image_size|apply_filters|wp_get_attachment_metadata|wp_get_attachment_image_url|wp_get_attachment_image_srcset|is_admin|wp_dequeue_script|sanitize_text_field|wp_unslash|file_exists|file_get_contents)#'
+    - identifier: constant.notFound
+      message: '#IMAGE_OPTIMIZER_PATH#'
+
