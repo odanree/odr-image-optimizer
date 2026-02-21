@@ -311,6 +311,10 @@ class Optimizer implements OptimizerInterface
              */
             do_action('image_optimizer_after_optimize', $context);
 
+            // Optimize all attachment subsizes (thumbnail, medium, large, etc.)
+            // This is critical for Lighthouse responsive image compliance
+            $this->optimize_attachment_subsizes((int) $attachment_id);
+
             return Result::success(
                 [
                     'original_size'      => $original_size,
@@ -753,6 +757,62 @@ class Optimizer implements OptimizerInterface
         }
 
         return $backup_file;
+    }
+
+    /**
+     * Optimize all attachment subsizes for responsive image compliance
+     *
+     * WordPress generates multiple image sizes (thumbnail, medium, large).
+     * These need to be optimized for proper srcset generation and Lighthouse compliance.
+     *
+     * @param int $attachment_id The attachment ID.
+     * @return bool Success flag.
+     */
+    protected function optimize_attachment_subsizes(int $attachment_id): bool
+    {
+        $metadata = wp_get_attachment_metadata($attachment_id);
+
+        if (! isset($metadata['sizes']) || empty($metadata['sizes'])) {
+            return true;  // No subsizes to optimize
+        }
+
+        $attached_file = get_attached_file($attachment_id);
+        if (! $attached_file || ! file_exists($attached_file)) {
+            return false;
+        }
+
+        $base_dir = dirname($attached_file);
+        $optimized_count = 0;
+
+        // Optimize each subsize
+        foreach ($metadata['sizes'] as $size_name => $size_data) {
+            $subsize_file = $base_dir . '/' . $size_data['file'];
+
+            if (! file_exists($subsize_file)) {
+                continue;  // Skip if file doesn't exist
+            }
+
+            // Optimize the subsize
+            try {
+                $result = $this->optimize_file($subsize_file, 'standard');
+
+                if ($result) {
+                    $optimized_count++;
+
+                    // Create WebP version of subsize if configured
+                    if ($this->config->should_create_webp()) {
+                        if ($this->can_create_webp($subsize_file)) {
+                            $this->create_webp_version($subsize_file);
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                // Log error but continue with other subsizes
+                error_log("Failed to optimize subsize {$size_name}: " . $e->getMessage());
+            }
+        }
+
+        return true;
     }
 
     /**

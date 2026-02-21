@@ -53,6 +53,7 @@ require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-tool-registry.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-container.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-permissions-manager.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-database.php';
+require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-media-transformer.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-image-resizer.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-resizing-processor.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-optimizer.php';

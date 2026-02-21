@@ -233,30 +233,8 @@ class API
         $images = [];
 
         foreach ($query->posts as $post) {
-            $attached_file = get_attached_file($post->ID);
-            $file_size = $attached_file ? filesize($attached_file) : 0;
-            $history = Database::get_optimization_history($post->ID);
-
-            // Only consider image as optimized if history exists and status is not 'reverted'
-            $is_optimized = ! empty($history) && (! isset($history->status) || $history->status !== 'reverted');
-
-            // Get responsive image data (srcset/sizes) for proper Lighthouse compliance
-            $srcset = wp_get_attachment_image_srcset($post->ID);
-            $sizes = wp_get_attachment_image_sizes($post->ID);
-            $webp_available = $attached_file && file_exists($attached_file . '.webp');
-
-            $images[] = [
-                'id'              => $post->ID,
-                'title'           => $post->post_title,
-                'filename'        => basename($attached_file ? $attached_file : ''),
-                'url'             => wp_get_attachment_url($post->ID),
-                'srcset'          => $srcset ?: null,
-                'sizes'           => $sizes ?: null,
-                'size'            => $file_size,
-                'optimized'       => $is_optimized,
-                'webp_available'  => $webp_available,
-                'optimization'    => $history ? $this->format_history($history) : null,
-            ];
+            // Use MediaTransformer for SOLID-compliant response formatting
+            $images[] = MediaTransformer::transform_attachment($post->ID);
         }
 
         $response = rest_ensure_response(
