@@ -70,6 +70,7 @@ require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-size-selector.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-size-registry.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-layout-policy.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-responsive-image-service.php';
+require_once IMAGE_OPTIMIZER_PATH . 'includes/Frontend/class-frontend-delivery.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-webp-frontend-delivery.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/admin/class-dashboard.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/admin/class-settings.php';
@@ -140,6 +141,11 @@ add_action('init', function () {
 add_action('wp', function () {
     if (! is_admin()) {
         \ImageOptimizer\Frontend\WebPFrontendDelivery::init();
+
+        // Add the strictly-typed Frontend_Delivery filter at priority 20
+        // This ensures we run after theme defaults but before other plugins
+        $delivery = new \ImageOptimizer\Frontend\FrontendDelivery();
+        add_filter('wp_get_attachment_image_attributes', [ $delivery, 'serve_optimized_attributes' ], 20, 2);
     }
 });
 
