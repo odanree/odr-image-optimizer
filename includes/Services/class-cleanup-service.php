@@ -18,6 +18,8 @@ if (! defined('ABSPATH')) {
     exit('Direct access denied.');
 }
 
+use ImageOptimizer\Admin\SettingsPolicy;
+
 /**
  * Debloats WordPress by removing non-critical functionality
  *
@@ -44,8 +46,11 @@ class CleanupService
             return;
         }
 
-        // Remove emoji detection if enabled in settings
-        if (\ImageOptimizer\Admin\SettingsService::is_enabled('remove_emoji')) {
+        // Get delivery policy with strict defaults (Lighthouse optimizations enabled by default)
+        $policy = SettingsPolicy::get_delivery_policy();
+
+        // Remove emoji detection if enabled
+        if ($policy['remove_bloat']) {
             remove_action('wp_head', 'print_emoji_detection_script', 7);
             remove_action('wp_print_styles', 'print_emoji_styles');
         }
@@ -66,7 +71,9 @@ class CleanupService
 
         // Force speed: Remove render-blocking interactivity scripts on mobile
         // These steal bandwidth lanes from images on throttled 4G
-        $this->force_speed();
+        if ($policy['remove_bloat']) {
+            $this->force_speed();
+        }
     }
 
     /**
@@ -92,11 +99,6 @@ class CleanupService
      */
     private function force_speed(): void
     {
-        // Check if "kill bloat" is enabled in settings
-        if (! \ImageOptimizer\Admin\SettingsService::is_enabled('kill_bloat')) {
-            return;
-        }
-
         // Dequeue Interactivity API (WordPress 6.5+)
         // Used for dynamic block interactions, not critical for most sites
         wp_dequeue_script('wp-interactivity');

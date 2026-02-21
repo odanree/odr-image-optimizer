@@ -238,14 +238,17 @@ add_action('wp', function () {
 });
 
 /**
- * Remove WordPress bloat (priority 100 = very late, after all plugins enqueue)
+ * Remove WordPress bloat (priority 999 = extremely late, after all plugins/themes enqueue)
+ *
+ * Runs at maximum priority to ensure all scripts are enqueued before we dequeue.
+ * This prevents race conditions where scripts are enqueued after our dequeue.
  */
 add_action('wp_enqueue_scripts', function () {
     if (! is_admin()) {
         $cleanup = new \ImageOptimizer\Services\CleanupService();
         $cleanup->remove_bloat();
     }
-}, 100);
+}, 999);
 
 /**
  * Copyright (C) 2025 Danh Le

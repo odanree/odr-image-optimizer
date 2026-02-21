@@ -118,8 +118,8 @@ class AssetManager
      * Before: HTML → Theme CSS → Font discovery → Font download
      * After:  HTML + Font download (parallel)
      *
-     * Uses font-display: swap to show fallback text while custom font loads.
-     * Respects user setting: 'preload_font' toggle in admin panel.
+     * Always uses font-display: swap to show fallback text while custom font loads.
+     * This prevents Flash of Unstyled Text (FOUT) penalty in Lighthouse.
      *
      * @return void
      */
@@ -135,16 +135,9 @@ class AssetManager
             return;
         }
 
-        // Check if font-display: swap is enabled in settings
-        $use_swap = \ImageOptimizer\Admin\SettingsService::is_enabled('font_swap');
-
-        // Preload the Manrope font (Twenty Twenty-Five theme)
-        // Using woff2 for smaller file size (52KB → 15KB)
-        $font_url = 'https://fonts.googleapis.com/css2?family=Manrope:wght@200..800';
-
-        if ($use_swap) {
-            $font_url .= '&display=swap';
-        }
+        // Always use font-display: swap for optimal Lighthouse scores
+        // Shows fallback text while custom font downloads (prevents FOUT penalty)
+        $font_url = 'https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap';
 
         // Preload with crossorigin (required for fonts)
         // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
