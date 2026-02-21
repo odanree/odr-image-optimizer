@@ -336,14 +336,13 @@ class Optimizer
             // Strip metadata for additional 5-10% reduction
             $im->stripImage();
 
-            // Color quantization based on compression level
-            $colors = $compression === 'high' ? 200 : ($compression === 'low' ? 256 : 256);
-            if ($colors > 0) {
-                $im->quantizeImage($colors, \Imagick::COLORSPACE_RGB, 0, false, false);
-            }
+            // For JPEGs: Skip color quantization (causes color banding on photos)
+            // Instead rely on quality settings and metadata stripping for compression
+            // Color quantization is better for indexed-color images (PNG, GIF)
 
             // Set compression quality based on level
-            $quality = $compression === 'high' ? 70 : ($compression === 'low' ? 80 : 75);
+            // Higher quality = better color preservation
+            $quality = $compression === 'high' ? 75 : ($compression === 'low' ? 82 : 78);
             $im->setImageCompression(\Imagick::COMPRESSION_JPEG);
             $im->setImageCompressionQuality($quality);
 
@@ -368,8 +367,9 @@ class Optimizer
      */
     private function optimize_jpeg_gd($file_path, $compression)
     {
-        // Quality settings for balanced compression and visual quality
-        $quality = $compression === 'high' ? 70 : ($compression === 'low' ? 80 : 75);
+        // Quality settings for good color preservation with compression
+        // Without color quantization, we can use higher quality safely
+        $quality = $compression === 'high' ? 75 : ($compression === 'low' ? 82 : 78);
 
         $image = imagecreatefromjpeg($file_path);
         if (! $image) {
@@ -483,7 +483,7 @@ class Optimizer
                 return false;
             }
 
-            $result = imagewebp($image, $file_path, 80);
+            $result = imagewebp($image, $file_path, 75);
             imagedestroy($image);
 
             return $result;
@@ -550,8 +550,8 @@ class Optimizer
                 return false;
             }
 
-            // WebP quality: 70 (same as JPEG for consistency)
-            $result = imagewebp($image, $webp_path, 70);
+            // WebP quality: 75 (same as JPEG for consistency)
+            $result = imagewebp($image, $webp_path, 75);
             imagedestroy($image);
 
             return $result ? $webp_path : false;
