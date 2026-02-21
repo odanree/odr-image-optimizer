@@ -19,6 +19,7 @@ if (! defined('ABSPATH')) {
 }
 
 use ImageOptimizer\Services\SizeSelector;
+use ImageOptimizer\Services\LayoutPolicy;
 
 /**
  * WebP delivery for frontend posts
@@ -48,8 +49,10 @@ class WebPFrontendDelivery
     /**
      * Inject responsive srcset and sizes attributes into attachment images
      *
-     * Uses Size_Selector to intelligently choose the optimal image size based on
-     * container width, preventing pixelation while keeping file sizes small.
+     * Uses LayoutPolicy to determine theme's content width dynamically.
+     * Uses SizeSelector to intelligently choose the optimal image size.
+     *
+     * This ensures the plugin adapts to any theme without hardcoding values.
      *
      * @param array   $attrs      Image attributes.
      * @param WP_Post $attachment The attachment object.
@@ -58,9 +61,12 @@ class WebPFrontendDelivery
     public static function inject_responsive_attributes(array $attrs, \WP_Post $attachment): array
     {
         $attachment_id = $attachment->ID;
-        $rendered_width = 645; // Default container width for post content
 
-        // Use Size_Selector to find optimal size
+        // Use LayoutPolicy to get theme's actual content width (DIP)
+        $layout_policy = new LayoutPolicy();
+        $rendered_width = $layout_policy->get_max_content_width();
+
+        // Use Size_Selector to find optimal size based on theme's width
         $size_selector = new SizeSelector();
         $optimal_slug = $size_selector->get_optimal_size_slug($rendered_width, $attachment_id);
 
@@ -76,9 +82,9 @@ class WebPFrontendDelivery
         if ($srcset) {
             $attrs['srcset'] = $srcset;
 
-            // Add sizes attribute so browser knows the container width
+            // Add sizes attribute based on theme's layout width
             if (! isset($attrs['sizes']) || empty($attrs['sizes'])) {
-                $attrs['sizes'] = $size_selector->get_sizes_attribute($rendered_width);
+                $attrs['sizes'] = $layout_policy->generate_sizes_attribute($rendered_width);
             }
         }
 
