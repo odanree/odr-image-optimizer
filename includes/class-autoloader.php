@@ -38,8 +38,18 @@ class Autoloader
         // Remove the namespace prefix
         $class_name = str_replace('ImageOptimizer\\', '', $class);
 
-        // Convert namespace to file path
-        $file = IMAGE_OPTIMIZER_PATH . 'includes/class-' . strtolower(str_replace('\\', '/', $class_name)) . '.php';
+        // Convert namespace to file path with kebab-case for class names
+        $parts = explode('\\', $class_name);
+        $file_name = 'class-' . strtolower(str_replace('_', '-', array_pop($parts))) . '.php';
+        
+        // Build directory path from remaining namespace parts
+        $dir_path = '';
+        if (! empty($parts)) {
+            $dir_path = strtolower(implode('/', $parts)) . '/';
+        }
+
+        // Construct full file path
+        $file = IMAGE_OPTIMIZER_PATH . 'includes/' . $dir_path . $file_name;
 
         // Load the file if it exists
         if (file_exists($file)) {

@@ -78,6 +78,7 @@ require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-responsive-image-se
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Frontend/class-frontend-delivery.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-webp-frontend-delivery.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/admin/class-dashboard.php';
+require_once IMAGE_OPTIMIZER_PATH . 'includes/admin/class-settings-policy.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/admin/class-settings.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Frontend/WebpDelivery.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Frontend/ResponsiveImages.php';
