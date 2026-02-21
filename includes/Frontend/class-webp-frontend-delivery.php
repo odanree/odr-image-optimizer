@@ -18,6 +18,8 @@ if (! defined('ABSPATH')) {
     exit('Direct access denied.');
 }
 
+use ImageOptimizer\Services\SizeSelector;
+
 /**
  * WebP delivery for frontend posts
  *
@@ -46,8 +48,8 @@ class WebPFrontendDelivery
     /**
      * Inject responsive srcset and sizes attributes into attachment images
      *
-     * This filter ensures that WordPress serves the appropriate size variants
-     * and responsive attributes to the browser, enabling proper responsive image loading.
+     * Uses Size_Selector to intelligently choose the optimal image size based on
+     * container width, preventing pixelation while keeping file sizes small.
      *
      * @param array   $attrs      Image attributes.
      * @param WP_Post $attachment The attachment object.
@@ -56,18 +58,27 @@ class WebPFrontendDelivery
     public static function inject_responsive_attributes(array $attrs, \WP_Post $attachment): array
     {
         $attachment_id = $attachment->ID;
+        $rendered_width = 645; // Default container width for post content
 
-        // Generate responsive srcset for medium_large size
-        $srcset = wp_get_attachment_image_srcset($attachment_id, 'medium_large');
+        // Use Size_Selector to find optimal size
+        $size_selector = new SizeSelector();
+        $optimal_slug = $size_selector->get_optimal_size_slug($rendered_width, $attachment_id);
+
+        // Set the primary src to the optimal size
+        $src = wp_get_attachment_image_url($attachment_id, $optimal_slug);
+        if ($src) {
+            $attrs['src'] = $src;
+        }
+
+        // Generate responsive srcset for the optimal size
+        $srcset = wp_get_attachment_image_srcset($attachment_id, $optimal_slug);
 
         if ($srcset) {
             $attrs['srcset'] = $srcset;
 
             // Add sizes attribute so browser knows the container width
-            // This tells the browser: on viewports up to 645px, image is 100vw
-            // on larger viewports, image is limited to 645px
             if (! isset($attrs['sizes']) || empty($attrs['sizes'])) {
-                $attrs['sizes'] = '(max-width: 645px) 100vw, 645px';
+                $attrs['sizes'] = $size_selector->get_sizes_attribute($rendered_width);
             }
         }
 
