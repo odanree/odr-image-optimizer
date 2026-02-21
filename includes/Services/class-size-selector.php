@@ -48,7 +48,7 @@ class SizeSelector
             $sizes,
             function ($a, $b) {
                 return ($a['width'] ?? 0) <=> ($b['width'] ?? 0);
-            }
+            },
         );
 
         // Find the first size that is >= the rendered width
