@@ -184,7 +184,7 @@
 		.then(({ status, data }) => {
 			console.log('Revert response data:', data);
 			if (status === 200 && data.success) {
-				alert('Image reverted successfully!\nRestored size: ' + formatBytes(data.restored_size) + '\nSpace freed: ' + formatBytes(data.freed_space));
+				alert('Image reverted successfully!\nRestored size: ' + formatBytes(data.restored_size));
 				location.reload();
 			} else {
 				// Handle WP_Error response format
