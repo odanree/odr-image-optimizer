@@ -173,6 +173,7 @@
 				alert('Image reverted successfully!\nRestored size: ' + formatBytes(data.restored_size) + '\nSpace freed: ' + formatBytes(data.freed_space));
 				location.reload();
 			} else {
+				// Handle WP_Error response format
 				const errorMsg = data.message || data.error || data.code || 'Unknown error';
 				console.error('Revert failed:', errorMsg, data);
 				alert('Error: ' + errorMsg);

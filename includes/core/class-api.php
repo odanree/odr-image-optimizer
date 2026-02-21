@@ -315,7 +315,12 @@ class API
             return rest_ensure_response($result);
         }
 
-        return new \WP_Error('revert_failed', $result['error'], [ 'status' => 400 ]);
+        // Return the detailed error from the optimizer
+        return new \WP_Error(
+            'revert_failed',
+            $result['error'],  // This will now contain detailed error info
+            [ 'status' => 400 ]
+        );
     }
 
     /**
