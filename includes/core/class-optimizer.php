@@ -261,23 +261,80 @@ class Optimizer
         $settings = get_option('image_optimizer_settings', []);
         $compression = $settings['compression_level'] ?? 'medium';
 
-        $quality = $this->get_quality_level($compression);
-
         try {
-            $image = imagecreatefromjpeg($file_path);
-            if (! $image) {
-                return false;
+            // Try ImageMagick first for better compression (50%+ reduction)
+            if (extension_loaded('imagick')) {
+                return $this->optimize_jpeg_imagick($file_path, $compression);
             }
 
-            // Apply progressive encoding for better compression and perceived performance
-            imageinterlace($image, true);
-            $result = imagejpeg($image, $file_path, $quality);
-            imagedestroy($image);
-
-            return $result;
+            // Fall back to GD Library
+            return $this->optimize_jpeg_gd($file_path, $compression);
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    /**
+     * Optimize JPEG using ImageMagick (best compression)
+     *
+     * @param string $file_path The file path.
+     * @param string $compression Compression level.
+     * @return bool
+     */
+    private function optimize_jpeg_imagick($file_path, $compression)
+    {
+        try {
+            $im = new \Imagick($file_path);
+
+            // Strip metadata for additional 5-10% reduction
+            $im->stripImage();
+
+            // Color quantization based on compression level
+            $colors = $compression === 'high' ? 200 : ($compression === 'low' ? 256 : 256);
+            if ($colors > 0) {
+                $im->quantizeImage($colors, \Imagick::COLORSPACE_RGB, 0, false, false);
+            }
+
+            // Set compression quality based on level
+            $quality = $compression === 'high' ? 45 : ($compression === 'low' ? 75 : 60);
+            $im->setImageCompression(\Imagick::COMPRESSION_JPEG);
+            $im->setImageCompressionQuality($quality);
+
+            // Progressive JPEG for better perceived performance
+            $im->setInterlaceScheme(\Imagick::INTERLACE_JPEG);
+
+            $im->writeImage($file_path);
+            $im->destroy();
+
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Optimize JPEG using GD Library (fallback)
+     *
+     * @param string $file_path The file path.
+     * @param string $compression Compression level.
+     * @return bool
+     */
+    private function optimize_jpeg_gd($file_path, $compression)
+    {
+        // Aggressive quality settings for 40%+ compression
+        $quality = $compression === 'high' ? 48 : ($compression === 'low' ? 75 : 60);
+
+        $image = imagecreatefromjpeg($file_path);
+        if (! $image) {
+            return false;
+        }
+
+        // Apply progressive encoding for better compression and perceived performance
+        imageinterlace($image, true);
+        $result = imagejpeg($image, $file_path, $quality);
+        imagedestroy($image);
+
+        return $result;
     }
 
     /**
@@ -293,23 +350,76 @@ class Optimizer
         $settings = get_option('image_optimizer_settings', []);
         $compression = $settings['compression_level'] ?? 'medium';
 
-        $compression_level = $this->get_compression_level($compression);
-
         try {
-            $image = imagecreatefrompng($file_path);
-            if (! $image) {
-                return false;
+            // Try ImageMagick first for better compression
+            if (extension_loaded('imagick')) {
+                return $this->optimize_png_imagick($file_path, $compression);
             }
 
-            // Apply interlacing for progressive display and better perceived performance
-            imageinterlace($image, true);
-            $result = imagepng($image, $file_path, $compression_level);
-            imagedestroy($image);
-
-            return $result;
+            // Fall back to GD Library
+            return $this->optimize_png_gd($file_path, $compression);
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    /**
+     * Optimize PNG using ImageMagick (best compression)
+     *
+     * @param string $file_path The file path.
+     * @param string $compression Compression level.
+     * @return bool
+     */
+    private function optimize_png_imagick($file_path, $compression)
+    {
+        try {
+            $im = new \Imagick($file_path);
+
+            // Strip metadata
+            $im->stripImage();
+
+            // Color reduction for PNG (up to 40% additional reduction)
+            $colors = $compression === 'high' ? 128 : ($compression === 'low' ? 256 : 256);
+            $im->quantizeImage($colors, \Imagick::COLORSPACE_RGB, 0, false, false);
+
+            // Compression quality
+            $quality = $compression === 'high' ? 85 : 95;
+            $im->setImageCompressionQuality($quality);
+
+            // PNG interlacing
+            $im->setInterlaceScheme(\Imagick::INTERLACE_PNG);
+
+            $im->writeImage($file_path);
+            $im->destroy();
+
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Optimize PNG using GD Library (fallback)
+     *
+     * @param string $file_path The file path.
+     * @param string $compression Compression level.
+     * @return bool
+     */
+    private function optimize_png_gd($file_path, $compression)
+    {
+        $compression_level = $this->get_compression_level($compression);
+
+        $image = imagecreatefrompng($file_path);
+        if (! $image) {
+            return false;
+        }
+
+        // Apply interlacing for progressive display and better perceived performance
+        imageinterlace($image, true);
+        $result = imagepng($image, $file_path, $compression_level);
+        imagedestroy($image);
+
+        return $result;
     }
 
     /**
