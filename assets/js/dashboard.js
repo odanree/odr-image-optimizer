@@ -128,17 +128,18 @@
 			}
 		})
 		.then(response => {
-			if (!response.ok) {
-				throw new Error('HTTP ' + response.status + ': ' + response.statusText);
-			}
-			return response.json();
+			console.log('Optimize response status:', response.status);
+			return response.json().then(data => ({ status: response.status, data }));
 		})
-		.then(data => {
-			if (data.success) {
+		.then(({ status, data }) => {
+			console.log('Optimize response data:', data);
+			if (status === 200 && data.success) {
 				alert('Image optimized successfully!\nOriginal: ' + formatBytes(data.original_size) + '\nOptimized: ' + formatBytes(data.optimized_size));
 				location.reload();
 			} else {
-				alert('Error: ' + (data.message || data.error || 'Unknown error'));
+				const errorMsg = data.message || data.error || data.code || 'Unknown error';
+				console.error('Optimization failed:', errorMsg, data);
+				alert('Error: ' + errorMsg);
 			}
 		})
 		.catch(error => {
@@ -163,17 +164,18 @@
 			}
 		})
 		.then(response => {
-			if (!response.ok) {
-				throw new Error('HTTP ' + response.status + ': ' + response.statusText);
-			}
-			return response.json();
+			console.log('Revert response status:', response.status);
+			return response.json().then(data => ({ status: response.status, data }));
 		})
-		.then(data => {
-			if (data.success) {
+		.then(({ status, data }) => {
+			console.log('Revert response data:', data);
+			if (status === 200 && data.success) {
 				alert('Image reverted successfully!\nRestored size: ' + formatBytes(data.restored_size) + '\nSpace freed: ' + formatBytes(data.freed_space));
 				location.reload();
 			} else {
-				alert('Error: ' + (data.message || data.error || 'Unknown error'));
+				const errorMsg = data.message || data.error || data.code || 'Unknown error';
+				console.error('Revert failed:', errorMsg, data);
+				alert('Error: ' + errorMsg);
 			}
 		})
 		.catch(error => {
