@@ -157,7 +157,7 @@ class WebPFrontendDelivery
      * @param int    $post_id The post ID.
      * @param int    $attachment_id The attachment ID.
      * @param string $size The image size.
-     * @param array  $attr The attributes.
+     * @param mixed  $attr The attributes (can be string or array).
      * @return string HTML with WebP support.
      */
     public static function add_webp_to_thumbnail(
@@ -165,9 +165,10 @@ class WebPFrontendDelivery
         int $post_id,
         int $attachment_id,
         string $size,
-        array $attr
+        $attr = []
     ): string {
-        return self::add_webp_picture_element($html, $attachment_id, $size, false, $attr ?? []);
+        $attr_array = is_array($attr) ? $attr : [];
+        return self::add_webp_picture_element($html, $attachment_id, $size, false, $attr_array);
     }
 
     /**

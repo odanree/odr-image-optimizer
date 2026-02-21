@@ -106,7 +106,17 @@ class ResponsiveImageService
         $jpg_sizes = wp_get_attachment_image_sizes($attachment_id, $size);
         $jpg_url = wp_get_attachment_url($attachment_id);
 
-        if (! $jpg_srcset || ! $jpg_sizes) {
+        // If srcset is empty, manually build it from subsizes
+        if (!$jpg_srcset) {
+            $jpg_srcset = self::manually_build_srcset($attachment_id, 'jpg');
+        }
+        
+        // If sizes is still empty, generate a default
+        if (!$jpg_sizes) {
+            $jpg_sizes = self::generate_default_sizes($attachment_id);
+        }
+        
+        if (!$jpg_srcset || !$jpg_sizes) {
             // Fallback to simple responsive image
             return self::render_responsive_image($attachment_id, $size, $attr);
         }
@@ -137,6 +147,78 @@ HTML;
     }
 
     /**
+     * Manually build srcset from attachment subsizes
+     *
+     * Used when wp_get_attachment_image_srcset() returns empty.
+     * Builds srcset from all available subsizes in attachment metadata.
+     *
+     * @param int    $attachment_id WordPress attachment ID.
+     * @param string $format Image format ('jpg', 'webp').
+     * @return string Responsive srcset attribute.
+     */
+    private static function manually_build_srcset(int $attachment_id, string $format = 'jpg'): string
+    {
+        $metadata = wp_get_attachment_metadata($attachment_id);
+
+        if (!$metadata || !isset($metadata['sizes'])) {
+            return '';
+        }
+
+        $srcset_parts = [];
+        $base_url = wp_get_attachment_url($attachment_id);
+        $base_dir = dirname($base_url);
+
+        foreach ($metadata['sizes'] as $size_name => $size_data) {
+            $width = $size_data['width'];
+            $file = $size_data['file'];
+
+            // Build URL for this size
+            $size_url = $base_dir . '/' . $file;
+
+            if ($format === 'webp') {
+                $size_url .= '.webp';
+            }
+
+            $srcset_parts[] = "{$size_url} {$width}w";
+        }
+
+        return implode(', ', $srcset_parts);
+    }
+
+    /**
+     * Generate default sizes attribute when WordPress doesn't provide one
+     *
+     * Creates responsive sizes for common container widths.
+     *
+     * @param int $attachment_id WordPress attachment ID.
+     * @return string Sizes attribute value.
+     */
+    private static function generate_default_sizes(int $attachment_id): string
+    {
+        $metadata = wp_get_attachment_metadata($attachment_id);
+
+        if (!$metadata) {
+            return '';
+        }
+
+        // Get the largest subsize width
+        $max_width = 0;
+        if (isset($metadata['sizes'])) {
+            foreach ($metadata['sizes'] as $size_data) {
+                $max_width = max($max_width, $size_data['width']);
+            }
+        }
+
+        if ($max_width === 0) {
+            return '';
+        }
+
+        // Generate responsive sizes for typical layouts
+        // Assumes image takes full width on mobile, ~80% on tablet, ~60% on desktop
+        return "(max-width: 600px) 100vw, (max-width: 1200px) 80vw, 60vw";
+    }
+
+    /**
      * Convert JPEG srcset to WebP srcset
      *
      * Replaces file extensions in srcset while preserving width descriptors.
@@ -147,8 +229,9 @@ HTML;
     private static function convert_srcset_to_webp(string $jpeg_srcset): string
     {
         // Pattern: filename.jpg 768w, filename-2.jpg 1536w
-        return preg_replace(
-            '/(\S+\.(jpg|jpeg|png))(?=\s+\d+w)/i',
+        // Replace: filename.jpg → filename.webp
+        return (string) preg_replace(
+            '/(\S+)\.(jpg|jpeg|png)(?=\s+\d+w)/i',
             '$1.webp',
             $jpeg_srcset
         ) ?: $jpeg_srcset;
