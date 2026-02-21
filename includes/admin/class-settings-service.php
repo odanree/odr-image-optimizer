@@ -59,7 +59,7 @@ class SettingsService
         );
 
         // Register individual toggle fields
-        $this->add_toggle('preload_font', 'Preload Theme Fonts');
+        $this->add_toggle('preload_fonts', 'Preload Theme Fonts');
         $this->add_toggle('kill_bloat', 'Disable Core Bloat (Emoji/Interactivity JS)');
         $this->add_toggle('inline_css', 'Inline Critical CSS');
         $this->add_toggle('lazy_load', 'Native Lazy Loading');

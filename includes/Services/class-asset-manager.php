@@ -20,6 +20,8 @@ if (! defined('ABSPATH')) {
     exit('Direct access denied.');
 }
 
+use ImageOptimizer\Admin\SettingsPolicy;
+
 /**
  * Eliminates render-blocking and non-critical assets
  *
@@ -124,7 +126,7 @@ class AssetManager
     public function preload_critical_fonts(): void
     {
         // Check if font preload is enabled in settings
-        if (! \ImageOptimizer\Admin\SettingsService::is_enabled('preload_font')) {
+        if (! SettingsPolicy::should_preload_fonts()) {
             return;
         }
 
