@@ -129,6 +129,20 @@
 		})
 		.then(response => {
 			console.log('Optimize response status:', response.status);
+			console.log('Optimize response type:', response.headers.get('Content-Type'));
+			
+			// Check if response is JSON or HTML
+			const contentType = response.headers.get('Content-Type');
+			if (!contentType || !contentType.includes('application/json')) {
+				// Might be an HTML error page
+				return response.text().then(text => {
+					if (text.includes('critical error') || text.includes('fatal')) {
+						throw new Error('Server returned HTML error: ' + text.substring(0, 200));
+					}
+					throw new Error('Response was not JSON: ' + text.substring(0, 200));
+				});
+			}
+			
 			return response.json().then(data => ({ status: response.status, data }));
 		})
 		.then(({ status, data }) => {
