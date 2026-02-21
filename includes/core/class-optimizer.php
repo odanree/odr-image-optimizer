@@ -35,14 +35,24 @@ class Optimizer implements OptimizerInterface
     private $tool_registry;
 
     /**
+     * Optimizer configuration (dependency injection)
+     *
+     * @var OptimizerConfig
+     */
+    private $config;
+
+    /**
      * Constructor
      *
-     * @param ToolRegistry|null $tool_registry Tool registry for dependency injection.
-     *                                          If null, creates a new auto-detected registry.
+     * @param ToolRegistry|null      $tool_registry Tool registry for dependency injection.
+     *                                              If null, creates a new auto-detected registry.
+     * @param OptimizerConfig|null   $config Optimizer configuration for dependency injection.
+     *                                        If null, loads from WordPress options.
      */
-    public function __construct(?ToolRegistry $tool_registry = null)
+    public function __construct(?ToolRegistry $tool_registry = null, ?OptimizerConfig $config = null)
     {
         $this->tool_registry = $tool_registry ?? new ToolRegistry();
+        $this->config = $config ?? OptimizerConfig::from_wordpress_options();
         $this->init_hooks();
     }
 
@@ -74,6 +84,16 @@ class Optimizer implements OptimizerInterface
     }
 
     /**
+     * Get the configuration
+     *
+     * @return OptimizerConfig The configuration instance.
+     */
+    public function get_config(): OptimizerConfig
+    {
+        return $this->config;
+    }
+
+    /**
      * Optimize image on upload
      *
      * @param array $upload The upload data.
@@ -81,9 +101,9 @@ class Optimizer implements OptimizerInterface
      */
     public function optimize_on_upload($upload)
     {
-        $settings = get_option('image_optimizer_settings', []);
+        $config = $this->config;
 
-        if (empty($settings['auto_optimize'])) {
+        if (! $config->should_auto_optimize()) {
             return $upload;
         }
 
@@ -257,9 +277,9 @@ class Optimizer implements OptimizerInterface
             $context->set('compression_ratio', $compression_ratio);
 
             // Check if WebP conversion is enabled and can be created
-            $settings = get_option('image_optimizer_settings', []);
+            $config = $this->config;
             $webp_available = false;
-            if (! empty($settings['enable_webp'])) {
+            if ($config->should_create_webp()) {
                 $webp_available = $this->can_create_webp($file);
                 if ($webp_available) {
                     $this->create_webp_version($file);
@@ -362,8 +382,8 @@ class Optimizer implements OptimizerInterface
     {
         // Core Web Vitals: Aggressive compression improves LCP (Largest Contentful Paint)
         // https://developer.chrome.com/docs/performance/insights/image-delivery
-        $settings = get_option('image_optimizer_settings', []);
-        $compression = $settings['compression_level'] ?? 'medium';
+        $config = $this->config;
+        $compression = 'medium';  // Default compression level
 
         try {
             // Try ImageMagick first for better compression (50%+ reduction)
@@ -450,8 +470,8 @@ class Optimizer implements OptimizerInterface
     private function optimize_png($file_path)
     {
         // Core Web Vitals: PNG compression level 9 = maximum compression for best LCP
-        $settings = get_option('image_optimizer_settings', []);
-        $compression = $settings['compression_level'] ?? 'medium';
+        $config = $this->config;
+        $compression = 'medium';  // Default compression level
 
         try {
             // Try ImageMagick first for better compression

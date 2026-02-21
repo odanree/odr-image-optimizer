@@ -33,17 +33,24 @@ class Container
     /**
      * Get or create an Optimizer instance
      *
-     * @param ToolRegistry|null $tool_registry Optional tool registry for dependency injection.
+     * @param ToolRegistry|null      $tool_registry Optional tool registry for dependency injection.
+     * @param OptimizerConfig|null   $config Optional configuration for dependency injection.
      * @return Optimizer The optimizer service.
      */
-    public static function get_optimizer(?ToolRegistry $tool_registry = null): Optimizer
+    public static function get_optimizer(?ToolRegistry $tool_registry = null, ?OptimizerConfig $config = null): Optimizer
     {
         if (! isset(self::$instances['optimizer'])) {
             // If no tool registry provided, create one
             if (! $tool_registry) {
                 $tool_registry = self::get_tool_registry();
             }
-            self::$instances['optimizer'] = new Optimizer($tool_registry);
+            
+            // If no config provided, load from WordPress options
+            if (! $config) {
+                $config = OptimizerConfig::from_wordpress_options();
+            }
+            
+            self::$instances['optimizer'] = new Optimizer($tool_registry, $config);
         }
         return self::$instances['optimizer'];
     }
