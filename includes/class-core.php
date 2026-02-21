@@ -96,6 +96,10 @@ class Core
 
         // Remove srcset from featured images to prevent browser downloading larger variants
         add_filter('wp_get_attachment_image', [ $this, 'remove_featured_image_srcset' ], 10, 5);
+
+        // Serve WebP versions when available (improves LCP/Lighthouse scores)
+        add_filter('wp_get_attachment_image_src', [ $this, 'serve_webp_image' ], 10, 2);
+        add_filter('wp_get_attachment_url', [ $this, 'serve_webp_attachment_url' ], 10, 2);
     }
 
     /**
@@ -300,5 +304,73 @@ class Core
         $html = preg_replace('/\s+sizes="[^"]*"/', '', $html);
 
         return $html;
+    }
+
+    /**
+     * Serve WebP version of attachment images when available
+     *
+     * If a WebP version was created by the optimizer, serve it instead of JPEG/PNG.
+     * WebP format reduces file size by 20-30% compared to JPEG (Lighthouse recommendation).
+     *
+     * @param array    $image         The image array (url, width, height, is_intermediate).
+     * @param int      $attachment_id The attachment ID.
+     * @return array The image array (with WebP URL if available).
+     */
+    public function serve_webp_image($image, $attachment_id)
+    {
+        if (! is_array($image) || empty($image[0])) {
+            return $image;
+        }
+
+        $webp_url = $this->get_webp_url($image[0]);
+        if ($webp_url) {
+            $image[0] = $webp_url;
+        }
+
+        return $image;
+    }
+
+    /**
+     * Serve WebP version of attachment URLs when available
+     *
+     * @param string $url             The attachment URL.
+     * @param int    $attachment_id   The attachment ID.
+     * @return string The WebP URL if available, otherwise the original URL.
+     */
+    public function serve_webp_attachment_url($url, $attachment_id)
+    {
+        $webp_url = $this->get_webp_url($url);
+        return $webp_url ?: $url;
+    }
+
+    /**
+     * Get WebP URL for an image if it exists
+     *
+     * @param string $image_url The original image URL.
+     * @return string|false The WebP URL if the file exists, false otherwise.
+     */
+    private function get_webp_url($image_url)
+    {
+        // Extract file path from URL
+        $uploads_dir = wp_upload_dir();
+        $base_url = $uploads_dir['baseurl'];
+
+        // Only process images in the uploads directory
+        if (strpos($image_url, $base_url) !== 0) {
+            return false;
+        }
+
+        // Convert URL to file path
+        $file_path = str_replace($base_url, $uploads_dir['basedir'], $image_url);
+
+        // Check for WebP version
+        $webp_path = preg_replace('/\.(jpg|jpeg|png)$/i', '.webp', $file_path);
+
+        if (file_exists($webp_path)) {
+            // Convert file path back to URL
+            return str_replace($uploads_dir['basedir'], $base_url, $webp_path);
+        }
+
+        return false;
     }
 }
