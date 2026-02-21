@@ -124,9 +124,56 @@ class Optimizer
      * @param int $attachment_id The attachment ID.
      * @return array
      */
+    /**
+     * Get available memory in bytes
+     *
+     * @return int Memory available in bytes
+     */
+    private function get_memory_available()
+    {
+        $memory_limit = WP_MEMORY_LIMIT;
+        
+        // Convert format like "256M" to bytes
+        if (function_exists('wp_convert_hr_to_bytes')) {
+            $limit_bytes = wp_convert_hr_to_bytes($memory_limit);
+        } else {
+            // Fallback conversion
+            $memory_limit = (string) $memory_limit;
+            $value = (int) $memory_limit;
+            $unit = strtoupper(substr($memory_limit, -1));
+            
+            switch ($unit) {
+                case 'K':
+                    $value *= 1024;
+                    break;
+                case 'M':
+                    $value *= 1024 * 1024;
+                    break;
+                case 'G':
+                    $value *= 1024 * 1024 * 1024;
+                    break;
+            }
+            $limit_bytes = $value;
+        }
+        
+        $memory_used = memory_get_usage(true);
+        return max(0, $limit_bytes - $memory_used);
+    }
+
     public function optimize_attachment($attachment_id)
     {
         try {
+            // Check memory before attempting optimization
+            $memory_available = $this->get_memory_available();
+            
+            // Need at least 100MB free for safe optimization
+            if ($memory_available < 100 * 1024 * 1024) {
+                return [
+                    'success' => false,
+                    'error'   => 'Insufficient memory. Please increase WP_MEMORY_LIMIT',
+                ];
+            }
+
             $file = get_attached_file($attachment_id);
 
             if (! $file || ! file_exists($file)) {
@@ -471,6 +518,14 @@ class Optimizer
             return false;
         }
 
+        // Check available memory before WebP conversion (expensive operation)
+        $memory_available = $this->get_memory_available();
+        
+        // Skip WebP if less than 100MB available (safe margin)
+        if ($memory_available < 100 * 1024 * 1024) {
+            return false;  // Memory too tight for WebP conversion
+        }
+
         $file_info = pathinfo($file_path);
         $webp_path = $file_info['dirname'] . '/' . $file_info['filename'] . '.webp';
 
@@ -495,8 +550,8 @@ class Optimizer
                 return false;
             }
 
-            // WebP quality: 60 for aggressive compression, improves LCP
-            $result = imagewebp($image, $webp_path, 60);
+            // WebP quality: 70 (same as JPEG for consistency)
+            $result = imagewebp($image, $webp_path, 70);
             imagedestroy($image);
 
             return $result ? $webp_path : false;
