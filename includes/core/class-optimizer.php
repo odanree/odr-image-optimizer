@@ -191,6 +191,34 @@ class Optimizer
             }
 
             $original_size = filesize($file);
+            
+            // Get image dimensions
+            $image_info = @getimagesize($file);
+            $width = $image_info[0] ?? 0;
+            $height = $image_info[1] ?? 0;
+            
+            // Create image context for hooks
+            $context = new ImageContext(
+                $file,
+                (int) $attachment_id,
+                [
+                    'width' => $width,
+                    'height' => $height,
+                    'original_size' => $original_size,
+                    'mime_type' => $image_info['mime'] ?? mime_content_type($file),
+                    'compression_level' => 'medium', // Default
+                ]
+            );
+            
+            /**
+             * Fires before image optimization starts
+             *
+             * Allows plugins to inspect image metadata without re-reading the file.
+             * Hook functions can access: $context->width, $context->height, $context->original_size
+             *
+             * @param ImageContext $context Image context with metadata.
+             */
+            do_action('image_optimizer_before_optimize', $context);
 
             // Create backup before optimization
             $backup_file = $this->create_backup($file, $attachment_id);
@@ -211,6 +239,11 @@ class Optimizer
             $optimized_size = filesize($file);
             $savings = $original_size - $optimized_size;
             $compression_ratio = $savings > 0 ? ($savings / $original_size) * 100 : 0;
+            
+            // Update context with optimization results
+            $context->set('optimized_size', $optimized_size);
+            $context->set('savings', $savings);
+            $context->set('compression_ratio', $compression_ratio);
 
             // Check if WebP conversion is enabled and can be created
             $settings = get_option('image_optimizer_settings', []);
@@ -219,6 +252,7 @@ class Optimizer
                 $webp_available = $this->can_create_webp($file);
                 if ($webp_available) {
                     $this->create_webp_version($file);
+                    $context->set('webp_created', true);
                 }
             }
 
@@ -235,6 +269,16 @@ class Optimizer
                     'backup_file'    => $backup_file,
                 ],
             );
+            
+            /**
+             * Fires after successful image optimization
+             *
+             * Allows plugins to perform post-processing without re-reading files.
+             * Hook functions can access all image metadata via ImageContext object.
+             *
+             * @param ImageContext $context Image context with metadata and optimization results.
+             */
+            do_action('image_optimizer_after_optimize', $context);
 
             return [
                 'success'            => true,
@@ -724,6 +768,34 @@ class Optimizer
             }
 
             $optimized_size = filesize($file);
+            
+            // Get image info from current (optimized) file
+            $image_info = @getimagesize($file);
+            $width = $image_info[0] ?? 0;
+            $height = $image_info[1] ?? 0;
+            
+            // Create image context for hooks
+            $context = new ImageContext(
+                $file,
+                (int) $attachment_id,
+                [
+                    'width' => $width,
+                    'height' => $height,
+                    'original_size' => $optimized_size,
+                    'mime_type' => $image_info['mime'] ?? mime_content_type($file),
+                    'backup_file' => $backup_file,
+                ]
+            );
+            
+            /**
+             * Fires before reverting an optimization
+             *
+             * Allows plugins to perform cleanup or logging without re-reading files.
+             * Can access backup file path via $context->get('backup_file')
+             *
+             * @param ImageContext $context Image context with metadata.
+             */
+            do_action('image_optimizer_before_revert', $context);
 
             // Restore from backup with detailed error handling
             $copy_result = @copy($backup_file, $file);
@@ -755,6 +827,10 @@ class Optimizer
             // Delete WebP versions if they exist
             $this->delete_webp_version($file);
 
+            // Update context with revert results
+            $context->set('restored_size', $restored_size);
+            $context->set('freed_space', $optimized_size - $restored_size);
+
             // Update optimization result to mark as reverted
             Database::save_optimization_result(
                 $attachment_id,
@@ -767,11 +843,20 @@ class Optimizer
                     'status'         => 'reverted',
                 ],
             );
+            
+            /**
+             * Fires after successful revert of optimization
+             *
+             * Allows plugins to perform post-revert actions or notifications.
+             * Can access restored size via $context->get('restored_size')
+             *
+             * @param ImageContext $context Image context with revert metadata.
+             */
+            do_action('image_optimizer_after_revert', $context);
 
             return [
                 'success'      => true,
                 'restored_size' => $restored_size,
-                'freed_space'  => $optimized_size - $restored_size,
             ];
         } catch (\Exception $e) {
             return [
