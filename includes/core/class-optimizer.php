@@ -754,6 +754,10 @@ class Optimizer implements OptimizerInterface
             if (! copy($file_path, $backup_file)) {
                 return '';
             }
+            
+            // Fix permissions so www-data can read the backup during revert
+            // Use 0644 (readable by all, writable by owner only)
+            @chmod($backup_file, 0644);
         }
 
         return $backup_file;
@@ -841,7 +845,13 @@ class Optimizer implements OptimizerInterface
 
             // Check file permissions before attempting restore
             if (! is_readable($backup_file)) {
-                return Result::failure('Backup file is not readable');
+                // Try to fix permissions if backup is not readable
+                @chmod($backup_file, 0644);
+                
+                // Check again after chmod attempt
+                if (! is_readable($backup_file)) {
+                    return Result::failure('Backup file is not readable and cannot fix permissions');
+                }
             }
 
             if (! is_writable(dirname($file))) {
