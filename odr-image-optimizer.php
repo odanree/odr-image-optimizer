@@ -11,8 +11,8 @@ declare(strict_types=1);
  *
  * @wordpress-plugin
  * Plugin Name:       ODR Image Optimizer
- * Plugin URI:        https://wordpress.org/plugins/odr-image-optimizer/
- * Description:       Professional image optimization with intelligent compression, WebP conversion, and lazy loading.
+ * Plugin URI:        https://github.com/odanree/odr-image-optimizer
+ * Description:       Professional high-performance image suite. Features SOLID-compliant WebP conversion, intelligent LCP preloading, and automated critical path cleanup for a 100/100 Lighthouse score.
  * Version:           1.0.0
  * Author:            Danh Le
  * Author URI:        https://danhle.net
@@ -20,11 +20,11 @@ declare(strict_types=1);
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       odr-image-optimizer
  * Domain Path:       /languages
- * Requires at least: 5.0
- * Requires PHP:      7.4
+ * Requires at least: 6.0
+ * Requires PHP:      8.1
  * Tested up to:      6.9
  * Stable tag:        1.0.0
- * Tags:              image optimization, performance, wordpress plugin, caching, compression
+ * Tags:              images, performance, webp, lcp, speed, optimizer
  */
 
 // If this file is called directly, abort.
