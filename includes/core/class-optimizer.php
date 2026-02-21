@@ -284,6 +284,18 @@ class Optimizer implements OptimizerInterface
                 if ($webp_available) {
                     $this->create_webp_version($file);
                     $context->set('webp_created', true);
+
+                    // Update metadata to track WebP availability for full-size image
+                    $metadata = wp_get_attachment_metadata($attachment_id);
+                    if (! isset($metadata['webp'])) {
+                        $file_info = pathinfo($file);
+                        $webp_file = $file_info['dirname'] . '/' . $file_info['filename'] . '.webp';
+                        
+                        if (file_exists($webp_file)) {
+                            $metadata['webp'] = basename($webp_file);
+                            wp_update_attachment_metadata($attachment_id, $metadata);
+                        }
+                    }
                 }
             }
 
