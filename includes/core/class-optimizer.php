@@ -349,7 +349,7 @@ class Optimizer implements OptimizerInterface
      * @param string $method The optimization method.
      * @return bool
      */
-    private function optimize_file($file_path, $method = 'standard')
+    protected function optimize_file($file_path, $method = 'standard')
     {
         if (! file_exists($file_path)) {
             return false;
@@ -378,7 +378,7 @@ class Optimizer implements OptimizerInterface
      * @param string $file_path The file path.
      * @return bool
      */
-    private function optimize_jpeg($file_path)
+    protected function optimize_jpeg($file_path)
     {
         // Core Web Vitals: Aggressive compression improves LCP (Largest Contentful Paint)
         // https://developer.chrome.com/docs/performance/insights/image-delivery
@@ -405,7 +405,7 @@ class Optimizer implements OptimizerInterface
      * @param string $compression Compression level.
      * @return bool
      */
-    private function optimize_jpeg_imagick($file_path, $compression)
+    protected function optimize_jpeg_imagick($file_path, $compression)
     {
         try {
             $im = new \Imagick($file_path);
@@ -442,7 +442,7 @@ class Optimizer implements OptimizerInterface
      * @param string $compression Compression level.
      * @return bool
      */
-    private function optimize_jpeg_gd($file_path, $compression)
+    protected function optimize_jpeg_gd($file_path, $compression)
     {
         // Quality 48-55: 35-45% compression with acceptable color quality
         $quality = $compression === 'high' ? 48 : ($compression === 'low' ? 55 : 52);
@@ -467,7 +467,7 @@ class Optimizer implements OptimizerInterface
      * @param string $file_path The file path.
      * @return bool
      */
-    private function optimize_png($file_path)
+    protected function optimize_png($file_path)
     {
         // Core Web Vitals: PNG compression level 9 = maximum compression for best LCP
         $config = $this->config;
@@ -493,7 +493,7 @@ class Optimizer implements OptimizerInterface
      * @param string $compression Compression level.
      * @return bool
      */
-    private function optimize_png_imagick($file_path, $compression)
+    protected function optimize_png_imagick($file_path, $compression)
     {
         try {
             $im = new \Imagick($file_path);
@@ -528,7 +528,7 @@ class Optimizer implements OptimizerInterface
      * @param string $compression Compression level.
      * @return bool
      */
-    private function optimize_png_gd($file_path, $compression)
+    protected function optimize_png_gd($file_path, $compression)
     {
         $compression_level = $this->get_compression_level($compression);
 
@@ -551,7 +551,7 @@ class Optimizer implements OptimizerInterface
      * @param string $file_path The file path.
      * @return bool
      */
-    private function optimize_webp($file_path)
+    protected function optimize_webp($file_path)
     {
         try {
             $image = imagecreatefromwebp($file_path);
@@ -574,7 +574,7 @@ class Optimizer implements OptimizerInterface
      * @param string $file_path The file path.
      * @return bool
      */
-    private function optimize_gif($file_path)
+    protected function optimize_gif($file_path)
     {
         // GIF optimization is complex; for now just return true
         // In production, use external services
