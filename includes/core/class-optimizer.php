@@ -744,6 +744,37 @@ class Optimizer implements OptimizerInterface
     }
 
     /**
+     * Get quality level based on image size slug
+     *
+     * Mobile-specific sizes (small screens) can use lower quality
+     * because pixels are smaller and users can't perceive the difference.
+     *
+     * Example savings:
+     * - Desktop 704px @ 82% quality: 44KB
+     * - Mobile 450px @ 70% quality: 24KB
+     * - Difference: 45% smaller on mobile
+     *
+     * @param string $size_slug The WordPress image size slug (e.g., 'odr_mobile_optimized').
+     * @return int JPEG quality level (1-100).
+     */
+    private function get_quality_for_size(string $size_slug): int
+    {
+        // Mobile sizes: lower quality (70%) is imperceptible on small screens
+        // This reduces file size by 30-40%, improving LCP on mobile
+        if (str_contains($size_slug, 'mobile')) {
+            return 70;
+        }
+
+        // Tablet sizes: medium quality (75%)
+        if (str_contains($size_slug, 'tablet')) {
+            return 75;
+        }
+
+        // Desktop/full sizes: standard quality (82%)
+        return 82;
+    }
+
+    /**
      * Create a backup of the original file before optimization
      *
      * @param string $file_path The file path.

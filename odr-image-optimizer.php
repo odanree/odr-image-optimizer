@@ -137,15 +137,38 @@ add_action('init', function () {
     Core::get_instance();
 }, 20);
 
+/**
+ * Enqueue frontend styles for LCP optimization
+ */
+add_action('wp_enqueue_scripts', function () {
+    // Only load on frontend, not admin
+    if (is_admin()) {
+        return;
+    }
+
+    wp_enqueue_style(
+        'odr-image-optimizer-frontend',
+        IMAGE_OPTIMIZER_URL . 'assets/css/frontend.css',
+        [],
+        IMAGE_OPTIMIZER_VERSION,
+    );
+}, 1);
+
 // Initialize frontend WebP delivery for public-facing posts
 add_action('wp', function () {
     if (! is_admin()) {
         \ImageOptimizer\Frontend\WebPFrontendDelivery::init();
 
+        // Create the delivery service for filter handling + connection hints
+        $delivery = new \ImageOptimizer\Frontend\FrontendDelivery();
+
         // Add the strictly-typed Frontend_Delivery filter at priority 20
         // This ensures we run after theme defaults but before other plugins
-        $delivery = new \ImageOptimizer\Frontend\FrontendDelivery();
         add_filter('wp_get_attachment_image_attributes', [ $delivery, 'serve_optimized_attributes' ], 20, 2);
+
+        // Add preconnect hints in wp_head (priority 1 = very early)
+        // Warms up DNS/SSL for media domain before browser reaches image tag
+        add_action('wp_head', [ $delivery, 'add_connection_hints' ], 1);
     }
 });
 

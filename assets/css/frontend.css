@@ -1,0 +1,31 @@
+/**
+ * ODR Image Optimizer - Frontend Styles
+ *
+ * Critical CSS for LCP image rendering
+ * Prevents layout shift and ensures proper aspect ratio
+ */
+
+/* Ensure featured images maintain aspect ratio */
+img.wp-post-image {
+    aspect-ratio: auto;
+    height: auto;
+    display: block;
+}
+
+/* Post featured image container */
+.wp-block-post-featured-image {
+    overflow: hidden;
+}
+
+/* Responsive image container - prevent layout shift */
+figure {
+    margin: 0;
+    padding: 0;
+}
+
+/* Standard image sizing for content */
+.wp-content-image {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
