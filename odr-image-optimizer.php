@@ -71,6 +71,8 @@ require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-size-registry.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-layout-policy.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-header-manager.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-asset-manager.php';
+require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-priority-service.php';
+require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-cleanup-service.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-responsive-image-service.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Frontend/class-frontend-delivery.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-webp-frontend-delivery.php';
@@ -144,6 +146,10 @@ add_action('init', function () {
  */
 add_action('template_redirect', function () {
     if (! is_admin()) {
+        // Detect LCP image ID early (before wp_head)
+        $priority_service = new \ImageOptimizer\Services\PriorityService();
+        $priority_service->detect_lcp_id();
+
         // Apply cache headers for long-term caching
         $header_manager = new \ImageOptimizer\Services\HeaderManager();
         $header_manager->apply_cache_headers();
@@ -159,6 +165,10 @@ add_action('template_redirect', function () {
  */
 add_action('wp_head', function () {
     if (! is_admin()) {
+        // Inject LCP preload hint (tell browser to download 704px image immediately)
+        $priority_service = new \ImageOptimizer\Services\PriorityService();
+        $priority_service->inject_preload();
+
         // Inline small CSS to eliminate render-blocking request
         $asset_manager = new \ImageOptimizer\Services\AssetManager();
         $asset_manager->inline_frontend_styles();
@@ -185,6 +195,16 @@ add_action('wp', function () {
         add_action('wp_head', [ $delivery, 'add_connection_hints' ], 1);
     }
 });
+
+/**
+ * Remove WordPress bloat (priority 100 = very late, after all plugins enqueue)
+ */
+add_action('wp_enqueue_scripts', function () {
+    if (! is_admin()) {
+        $cleanup = new \ImageOptimizer\Services\CleanupService();
+        $cleanup->remove_bloat();
+    }
+}, 100);
 
 /**
  * Copyright (C) 2025 Danh Le
