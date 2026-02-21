@@ -44,10 +44,11 @@ class CleanupService
             return;
         }
 
-        // Remove emoji detection (not needed for most sites)
-        // Emoji JS blocks rendering on low-end devices (saves ~20ms)
-        remove_action('wp_head', 'print_emoji_detection_script', 7);
-        remove_action('wp_print_styles', 'print_emoji_styles');
+        // Remove emoji detection if enabled in settings
+        if (\ImageOptimizer\Admin\SettingsService::is_enabled('remove_emoji')) {
+            remove_action('wp_head', 'print_emoji_detection_script', 7);
+            remove_action('wp_print_styles', 'print_emoji_styles');
+        }
 
         // Dequeue lazy-load scripts (WordPress 5.5+, now redundant with native loading="lazy")
         // Each dequeued script saves HTTP request + parse time (saves ~30ms per script)

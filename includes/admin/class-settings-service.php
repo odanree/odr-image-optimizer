@@ -63,6 +63,8 @@ class SettingsService
         $this->add_toggle('kill_bloat', 'Disable Core Bloat (Emoji/Interactivity JS)');
         $this->add_toggle('inline_css', 'Inline Critical CSS');
         $this->add_toggle('lazy_load', 'Native Lazy Loading');
+        $this->add_toggle('remove_emoji', 'Remove Emoji Detection Script');
+        $this->add_toggle('font_swap', 'Use font-display: swap (faster text rendering)');
     }
 
     /**

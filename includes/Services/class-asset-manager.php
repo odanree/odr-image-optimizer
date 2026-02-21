@@ -70,10 +70,17 @@ class AssetManager
      *
      * Inlining also makes CSS part of the HTML (downloaded in parallel with images).
      *
+     * Respects user setting: 'inline_css' toggle in admin panel.
+     *
      * @return void
      */
     public function inline_frontend_styles(): void
     {
+        // Check if CSS inlining is enabled in settings
+        if (! \ImageOptimizer\Admin\SettingsService::is_enabled('inline_css')) {
+            return;
+        }
+
         // Only apply on frontend
         if (is_admin()) {
             return;
@@ -109,19 +116,40 @@ class AssetManager
      * Before: HTML → Theme CSS → Font discovery → Font download
      * After:  HTML + Font download (parallel)
      *
+     * Uses font-display: swap to show fallback text while custom font loads.
+     * Respects user setting: 'preload_font' toggle in admin panel.
+     *
      * @return void
      */
     public function preload_critical_fonts(): void
     {
+        // Check if font preload is enabled in settings
+        if (! \ImageOptimizer\Admin\SettingsService::is_enabled('preload_font')) {
+            return;
+        }
+
         // Only apply on frontend
         if (is_admin()) {
             return;
         }
 
-        // If your theme uses Google Fonts (Manrope, etc), preload here
-        // Example for Manrope-V:
+        // Check if font-display: swap is enabled in settings
+        $use_swap = \ImageOptimizer\Admin\SettingsService::is_enabled('font_swap');
+
+        // Preload the Manrope font (Twenty Twenty-Five theme)
+        // Using woff2 for smaller file size (52KB → 15KB)
+        $font_url = 'https://fonts.googleapis.com/css2?family=Manrope:wght@200..800';
+
+        if ($use_swap) {
+            $font_url .= '&display=swap';
+        }
+
+        // Preload with crossorigin (required for fonts)
         // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
-        echo '<link rel="preload" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" as="style" crossorigin>' . "\n";
+        printf(
+            '<link rel="preload" href="%s" as="style" crossorigin>' . "\n",
+            esc_url($font_url),
+        );
         // phpcs:enable
     }
 }
