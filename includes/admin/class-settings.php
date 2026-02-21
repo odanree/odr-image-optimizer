@@ -18,8 +18,6 @@ if (! defined('ABSPATH')) {
     exit('Direct access denied.');
 }
 
-use ImageOptimizer\Admin\SettingsPolicy;
-
 /**
  * Settings page class
  */
@@ -359,9 +357,9 @@ class Settings
             <form method="post" action="options.php">
                 <?php
                 settings_fields('image-optimizer-settings');
-                do_settings_sections('image-optimizer-settings');
-                submit_button();
-                ?>
+        do_settings_sections('image-optimizer-settings');
+        submit_button();
+        ?>
             </form>
         </div>
         <?php
