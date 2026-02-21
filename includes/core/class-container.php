@@ -33,14 +33,32 @@ class Container
     /**
      * Get or create an Optimizer instance
      *
+     * @param ToolRegistry|null $tool_registry Optional tool registry for dependency injection.
      * @return Optimizer The optimizer service.
      */
-    public static function get_optimizer(): Optimizer
+    public static function get_optimizer(?ToolRegistry $tool_registry = null): Optimizer
     {
         if (! isset(self::$instances['optimizer'])) {
-            self::$instances['optimizer'] = new Optimizer();
+            // If no tool registry provided, create one
+            if (! $tool_registry) {
+                $tool_registry = self::get_tool_registry();
+            }
+            self::$instances['optimizer'] = new Optimizer($tool_registry);
         }
         return self::$instances['optimizer'];
+    }
+
+    /**
+     * Get or create a ToolRegistry instance
+     *
+     * @return ToolRegistry The tool registry service.
+     */
+    public static function get_tool_registry(): ToolRegistry
+    {
+        if (! isset(self::$instances['tool_registry'])) {
+            self::$instances['tool_registry'] = new ToolRegistry();
+        }
+        return self::$instances['tool_registry'];
     }
 
     /**

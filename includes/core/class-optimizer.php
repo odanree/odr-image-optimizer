@@ -28,10 +28,21 @@ class Optimizer
     public const COMPRESSION_HIGH = 3;
 
     /**
-     * Constructor
+     * Tool registry for external tools (dependency injection)
+     *
+     * @var ToolRegistry
      */
-    public function __construct()
+    private $tool_registry;
+
+    /**
+     * Constructor
+     *
+     * @param ToolRegistry|null $tool_registry Tool registry for dependency injection.
+     *                                          If null, creates a new auto-detected registry.
+     */
+    public function __construct(?ToolRegistry $tool_registry = null)
     {
+        $this->tool_registry = $tool_registry ?? new ToolRegistry();
         $this->init_hooks();
     }
 
@@ -48,6 +59,18 @@ class Optimizer
 
         // Bulk optimization via AJAX
         add_action('wp_ajax_image_optimizer_bulk_optimize', [ $this, 'ajax_bulk_optimize' ]);
+    }
+
+    /**
+     * Get the tool registry
+     *
+     * Allows access to registered external tools for optimization.
+     *
+     * @return ToolRegistry The tool registry instance.
+     */
+    public function get_tool_registry(): ToolRegistry
+    {
+        return $this->tool_registry;
     }
 
     /**
