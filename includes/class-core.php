@@ -213,7 +213,8 @@ class Core
         }
 
         // Fix uploads directory permissions (CRITICAL)
-        self::ensure_uploads_permissions();
+        $permissions = Container::get_permissions_manager();
+        $permissions->ensure_uploads_permissions();
 
         // Flush rewrite rules
         flush_rewrite_rules();

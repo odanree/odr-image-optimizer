@@ -285,7 +285,7 @@ class API
                 return new \WP_Error('invalid_attachment', 'Invalid attachment ID', [ 'status' => 404 ]);
             }
 
-            $optimizer = new Optimizer();
+            $optimizer = Container::get_optimizer();
             $result = $optimizer->optimize_attachment($attachment_id);
 
             if ($result['success']) {
@@ -316,7 +316,7 @@ class API
             return new \WP_Error('invalid_attachment', 'Invalid attachment ID', [ 'status' => 404 ]);
         }
 
-        $optimizer = new Optimizer();
+        $optimizer = Container::get_optimizer();
         $result = $optimizer->revert_optimization($attachment_id);
 
         if ($result['success']) {
