@@ -278,20 +278,28 @@ class API
      */
     public function optimize_image($request)
     {
-        $attachment_id = $request['attachment_id'];
+        try {
+            $attachment_id = $request['attachment_id'];
 
-        if (! get_post($attachment_id)) {
-            return new \WP_Error('invalid_attachment', 'Invalid attachment ID', [ 'status' => 404 ]);
+            if (! get_post($attachment_id)) {
+                return new \WP_Error('invalid_attachment', 'Invalid attachment ID', [ 'status' => 404 ]);
+            }
+
+            $optimizer = new Optimizer();
+            $result = $optimizer->optimize_attachment($attachment_id);
+
+            if ($result['success']) {
+                return rest_ensure_response($result);
+            }
+
+            return new \WP_Error('optimization_failed', $result['error'], [ 'status' => 400 ]);
+        } catch (\Throwable $e) {
+            return new \WP_Error(
+                'optimization_exception',
+                'Optimization exception: ' . $e->getMessage(),
+                [ 'status' => 500 ]
+            );
         }
-
-        $optimizer = new Optimizer();
-        $result = $optimizer->optimize_attachment($attachment_id);
-
-        if ($result['success']) {
-            return rest_ensure_response($result);
-        }
-
-        return new \WP_Error('optimization_failed', $result['error'], [ 'status' => 400 ]);
     }
 
     /**
