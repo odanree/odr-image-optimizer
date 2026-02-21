@@ -103,18 +103,15 @@ class ResponsiveImageService
         array $attr = []
     ): string {
         $jpg_srcset = wp_get_attachment_image_srcset($attachment_id, $size);
-        $jpg_sizes = wp_get_attachment_image_sizes($attachment_id, $size);
-        $jpg_url = wp_get_attachment_url($attachment_id);
 
         // If srcset is empty, manually build it from subsizes
         if (!$jpg_srcset) {
             $jpg_srcset = self::manually_build_srcset($attachment_id, 'jpg');
         }
         
-        // If sizes is still empty, generate a default
-        if (!$jpg_sizes) {
-            $jpg_sizes = self::generate_default_sizes($attachment_id);
-        }
+        // ALWAYS use our responsive sizes (ignore WordPress sizes)
+        // WordPress sizes are often too restrictive for responsive design
+        $jpg_sizes = self::generate_default_sizes($attachment_id);
         
         if (!$jpg_srcset || !$jpg_sizes) {
             // Fallback to simple responsive image
@@ -123,6 +120,7 @@ class ResponsiveImageService
 
         // Generate WebP srcset by replacing file extensions
         $webp_srcset = self::convert_srcset_to_webp($jpg_srcset);
+        $jpg_url = wp_get_attachment_url($attachment_id);
         $alt_text = get_post_meta($attachment_id, '_wp_attachment_image_alt', true) ?: '';
 
         // Default img attributes
@@ -189,6 +187,7 @@ HTML;
      * Generate default sizes attribute when WordPress doesn't provide one
      *
      * Creates responsive sizes for common container widths.
+     * Scales image appropriately for all viewport sizes.
      *
      * @param int $attachment_id WordPress attachment ID.
      * @return string Sizes attribute value.
@@ -201,7 +200,7 @@ HTML;
             return '';
         }
 
-        // Get the largest subsize width
+        // Get the largest subsize width to determine responsiveness range
         $max_width = 0;
         if (isset($metadata['sizes'])) {
             foreach ($metadata['sizes'] as $size_data) {
@@ -213,9 +212,15 @@ HTML;
             return '';
         }
 
-        // Generate responsive sizes for typical layouts
-        // Assumes image takes full width on mobile, ~80% on tablet, ~60% on desktop
-        return "(max-width: 600px) 100vw, (max-width: 1200px) 80vw, 60vw";
+        // Generate fully responsive sizes
+        // Mobile (<640px): 100vw (full width)
+        // Tablet (640-1024px): 90vw (slightly less for margins)
+        // Desktop (1024-1536px): 80vw (scales with viewport)
+        // Large desktop (1536px+): 70vw (still responsive, not capped)
+        //
+        // This allows browser to select appropriate subsize from srcset
+        // for any viewport width up to the maximum subsize available
+        return "(max-width: 640px) 100vw, (max-width: 1024px) 90vw, (max-width: 1536px) 80vw, 70vw";
     }
 
     /**
