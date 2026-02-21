@@ -19,6 +19,7 @@ use ImageOptimizer\Admin\Settings;
 use ImageOptimizer\Core\Optimizer;
 use ImageOptimizer\Core\API;
 use ImageOptimizer\Core\Database;
+use ImageOptimizer\Core\Container;
 
 /**
  * Core plugin class
@@ -84,6 +85,7 @@ class Core
 
         // Initialize components
         $this->init_admin();
+        $this->init_resizing();
         $this->init_optimizer();
         $this->init_api();
 
@@ -111,6 +113,17 @@ class Core
         // even before is_admin() fully evaluates (during early plugin loading)
         new Dashboard();
         new Settings();
+    }
+
+    /**
+     * Initialize image resizing processor
+     *
+     * Registers hooks for responsive image resizing to prevent oversized image Lighthouse warnings.
+     */
+    private function init_resizing()
+    {
+        $processor = Container::get_resizing_processor();
+        $processor->register_hooks();
     }
 
     /**

@@ -82,6 +82,44 @@ class Container
     }
 
     /**
+     * Get or create an ImageResizer instance
+     *
+     * @param ToolRegistry|null   $tool_registry Optional tool registry.
+     * @param ResizingConfig|null $config Optional resizing configuration.
+     * @return ImageResizer The image resizer service.
+     */
+    public static function get_image_resizer(?ToolRegistry $tool_registry = null, ?ResizingConfig $config = null): ImageResizer
+    {
+        if (! isset(self::$instances['image_resizer'])) {
+            if (! $tool_registry) {
+                $tool_registry = self::get_tool_registry();
+            }
+            if (! $config) {
+                $config = ResizingConfig::from_wordpress_options();
+            }
+            self::$instances['image_resizer'] = new ImageResizer($tool_registry, $config);
+        }
+        return self::$instances['image_resizer'];
+    }
+
+    /**
+     * Get or create a ResizingProcessor instance
+     *
+     * @param ImageResizer|null $resizer Optional image resizer.
+     * @return ResizingProcessor The resizing processor service.
+     */
+    public static function get_resizing_processor(?ImageResizer $resizer = null): ResizingProcessor
+    {
+        if (! isset(self::$instances['resizing_processor'])) {
+            if (! $resizer) {
+                $resizer = self::get_image_resizer();
+            }
+            self::$instances['resizing_processor'] = new ResizingProcessor($resizer);
+        }
+        return self::$instances['resizing_processor'];
+    }
+
+    /**
      * Set a custom instance (for testing or overrides)
      *
      * @param string $service The service name.
