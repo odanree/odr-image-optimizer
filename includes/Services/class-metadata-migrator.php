@@ -150,4 +150,36 @@ class MetadataMigrator
 
         return $count;
     }
+
+    /**
+     * Migrate sizes from ConversionResult batch
+     *
+     * Batch operation used by orchestrator after image processing.
+     * Accepts multiple ConversionResult objects for different sizes/retina versions.
+     *
+     * @param int                              $attachmentId The attachment ID.
+     * @param array<string, ConversionResult> $results      Array of size_name => ConversionResult pairs.
+     *
+     * @return int Number of sizes successfully migrated.
+     */
+    public function migrate_from_results(int $attachmentId, array $results): int
+    {
+        $count = 0;
+        foreach ($results as $sizeName => $result) {
+            // Ensure we have a ConversionResult instance and string size name
+            if (! is_string($sizeName)) {
+                continue;
+            }
+
+            if (! ($result instanceof ConversionResult)) {
+                continue;
+            }
+
+            if ($this->manager->registerSize($attachmentId, $sizeName, $result)) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
 }

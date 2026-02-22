@@ -59,6 +59,14 @@ class Compatibility_Service
             10,
             5,
         );
+
+        // Tighten sizes attribute to match theme content width (704px)
+        \add_filter(
+            'wp_calculate_image_sizes',
+            [ $this, 'tighten_image_sizes' ],
+            10,
+            5,
+        );
     }
 
     /**
@@ -107,5 +115,46 @@ class Compatibility_Service
         }
 
         return $sources;
+    }
+
+    /**
+     * Tighten image sizes attribute for theme content width
+     *
+     * WordPress generates generic sizes attributes like "100vw" which can
+     * cause Lighthouse to flag "Images are not properly sized" if the browser
+     * downloads a version slightly larger than the container.
+     *
+     * This filter ensures sizes exactly match the theme's 704px content width.
+     *
+     * Filter Signature:
+     * apply_filters('wp_calculate_image_sizes', $sizes, $size, $image_src, $image_meta, $attachment_id)
+     *
+     * @param string                  $sizes        The sizes attribute string (may be empty).
+     * @param string                  $size         The image size name (e.g., 'odr_content_optimized').
+     * @param string                  $imageSrc     The image source URL.
+     * @param array<string, mixed>    $imageMeta    The attachment metadata.
+     * @param int                     $attachmentId The attachment post ID.
+     *
+     * @return string Modified sizes attribute for 704px content width.
+     */
+    public function tighten_image_sizes(
+        string $sizes,
+        string $size,
+        string $imageSrc,
+        array $imageMeta,
+        int $attachmentId,
+    ): string {
+        // Only apply to singular posts in main content area
+        if (! \is_singular()) {
+            return $sizes;
+        }
+
+        // Target our optimized size and theme defaults
+        if ($size === 'odr_content_optimized' || $size === 'medium_large') {
+            // Cap at 704px to match Twenty Twenty-Five content width
+            return '(max-width: 704px) 100vw, 704px';
+        }
+
+        return $sizes;
     }
 }
