@@ -116,7 +116,7 @@ class CleanupService
         if ('1' === $remove_interactivity || true === $remove_interactivity) {
             // Standard Dequeue: Removes the script if already loaded
             wp_dequeue_script('wp-interactivity');
-            
+
             // The "Hammer": Deregister prevents WordPress from re-injecting it as a dependency
             // Block-based themes often declare wp-interactivity as a dependency.
             // Deregistering tells WordPress: "This script doesn't exist."

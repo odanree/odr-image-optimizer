@@ -10,6 +10,8 @@ parameters:
     - includes/Repository/**
     - includes/Configuration/**
     - includes/Frontend/**
+  stubFiles:
+    - stubs/wordpress.stub.php
   reportUnmatchedIgnoredErrors: false
   ignoreErrors:
     - identifier: class.notFound
@@ -18,7 +20,7 @@ parameters:
       message: '#ImageOptimizer\\Core\\OptimizationEngine#'
     # WordPress function and constant stubs for Services
     - identifier: function.notFound
-      message: '#(add_image_size|apply_filters|wp_get_attachment_metadata|wp_get_attachment_image_url|wp_get_attachment_image_srcset|is_admin|wp_dequeue_script|sanitize_text_field|wp_unslash|file_exists|file_get_contents|is_singular|get_post_thumbnail_id|esc_attr|esc_url|remove_action|content_url)#'
+      message: '#(add_image_size|apply_filters|wp_get_attachment_metadata|wp_get_attachment_image_url|wp_get_attachment_image_srcset|is_admin|wp_dequeue_script|sanitize_text_field|wp_unslash|file_exists|file_get_contents|is_singular|get_post_thumbnail_id|esc_attr|esc_url|remove_action|content_url|get_option|wp_deregister_script|add_action|wp_styles|add_filter)#'
     - identifier: constant.notFound
       message: '#IMAGE_OPTIMIZER_PATH#'
     # Admin SettingsService/SettingsPolicy are in excluded dir

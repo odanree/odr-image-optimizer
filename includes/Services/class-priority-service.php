@@ -181,7 +181,7 @@ class PriorityService
             // Some WordPress setups have wp-content renamed or moved.
             // Preloading a 404 would penalize Lighthouse score, so we verify first.
             $file_path = ABSPATH . str_replace('/', DIRECTORY_SEPARATOR, ltrim($font_path, '/'));
-            
+
             if (! file_exists($file_path)) {
                 // Font not found at this path, try next one
                 continue;
@@ -289,7 +289,7 @@ class PriorityService
 
         // Hook into wp_print_styles at priority 999 (very late, after all registrations)
         // This ensures the theme has already registered its inline @font-face styles
-        add_action('wp_print_styles', function() {
+        add_action('wp_print_styles', function () {
             $wp_styles = wp_styles();
 
             // Loop through all registered stylesheet handles
@@ -306,7 +306,7 @@ class PriorityService
                             $wp_styles->registered[$handle]->extra['after'][$key] = str_replace(
                                 'font-display: fallback',
                                 'font-display: swap',
-                                $code
+                                $code,
                             );
                         }
                     }
@@ -316,15 +316,14 @@ class PriorityService
 
         // Also use wp_print_style_{$handle} to catch inline styles at the point they're printed
         // This catches any @font-face rules that might be embedded in theme stylesheets
-        add_filter('style_loader_tag', function($tag, $handle, $src) {
+        add_filter('style_loader_tag', function ($tag, $handle, $src) {
             // Replace font-display: fallback with font-display: swap in the actual tag output
             // This catches inline <style> tags and external stylesheets
             if (str_contains($tag, 'font-display: fallback')) {
                 $tag = str_replace('font-display: fallback', 'font-display: swap', $tag);
             }
-            
+
             return $tag;
         }, 999, 3);
     }
 }
-
