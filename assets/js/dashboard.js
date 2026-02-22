@@ -30,11 +30,11 @@
 		console.log('REST URL:', restUrl);
 		console.log('Fetch URL:', fetchUrl);
 		
-		fetch(fetchUrl, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-WP-Nonce': imageOptimizerData.nonce || ''
+	fetch(fetchUrl, {
+		method: 'GET',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-WP-Nonce': imageOptimizerData.rest_nonce || ''
 			}
 		})
 		.then(response => {
@@ -192,10 +192,10 @@
 
 		const restUrl = imageOptimizerData.rest_url || '/wp-json/image-optimizer/v1/';
 		
-		fetch(restUrl + 'revert/' + id, {
-			method: 'POST',
-			headers: {
-				'X-WP-Nonce': imageOptimizerData.nonce,
+	fetch(restUrl + 'revert/' + id, {
+		method: 'POST',
+		headers: {
+			'X-WP-Nonce': imageOptimizerData.rest_nonce,
 				'Content-Type': 'application/json'
 			}
 		})

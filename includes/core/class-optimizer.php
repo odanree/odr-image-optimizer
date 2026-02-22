@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace ImageOptimizer\Core;
 
+use ImageOptimizer\Services\Image_Service;
+
 if (! defined('ABSPATH')) {
     exit('Direct access denied.');
 }
@@ -323,7 +325,25 @@ class Optimizer implements OptimizerInterface
              */
             do_action('image_optimizer_after_optimize', $context);
 
-            // Optimize all attachment subsizes (thumbnail, medium, large, etc.)
+            // CRITICAL: If image has no subsizes in metadata, regenerate them first
+            // This handles images uploaded BEFORE plugin activation (no subsizes were ever generated)
+            $metadata = \wp_get_attachment_metadata($attachment_id);
+            $has_subsizes = isset($metadata['sizes']) && !empty($metadata['sizes']);
+            
+            if (!$has_subsizes) {
+                // No subsizes exist - regenerate them using WordPress's native image generation
+                // This creates all standard sizes (thumbnail, medium, large, etc.)
+                \wp_generate_attachment_metadata($attachment_id, $file);
+            }
+
+            // First: Retroactively register missing subsizes in metadata
+            // This is critical for legacy images uploaded before plugin activation
+            // Note: Wrapped in if to handle cases where WordPress functions aren't ready
+            if (function_exists('wp_get_intermediate_image_sizes')) {
+                $this->register_missing_subsizes((int) $attachment_id);
+            }
+
+            // Then: Generate missing custom sizes (like odr_content_optimized at 704px)
             // This is critical for Lighthouse responsive image compliance
             $this->optimize_attachment_subsizes((int) $attachment_id);
 
@@ -807,17 +827,182 @@ class Optimizer implements OptimizerInterface
     }
 
     /**
+     * Retroactively register missing subsizes in attachment metadata
+     *
+     * For legacy images uploaded before the plugin was active, subsizes may not be
+     * registered in metadata even though the files exist on disk. This method uses
+     * WordPress image editor to generate missing subsizes and update metadata.
+     *
+     * @param int $attachment_id The attachment ID.
+     * @return bool Success flag.
+     */
+    protected function register_missing_subsizes(int $attachment_id): bool
+    {
+        $metadata = wp_get_attachment_metadata($attachment_id);
+        if (! $metadata || ! isset($metadata['width'], $metadata['height'])) {
+            return false;
+        }
+
+        $file = get_attached_file($attachment_id);
+        if (! $file || ! file_exists($file)) {
+            return false;
+        }
+
+        // Calculate original aspect ratio for validation
+        $original_width = (int) $metadata['width'];
+        $original_height = (int) $metadata['height'];
+        $original_ratio = $original_width / $original_height;
+
+        // Get the list of image sizes registered in WordPress
+        $sizes = \wp_get_intermediate_image_sizes();
+        if (empty($sizes)) {
+            return true;  // No sizes to register
+        }
+
+        $metadata_updated = false;
+        $editor = null;
+
+        // Check each registered size to see if it's missing from metadata
+        foreach ($sizes as $size_name) {
+            if (isset($metadata['sizes'][ $size_name ])) {
+                continue;  // Already registered
+            }
+
+            // Get size dimensions from WordPress global (plugin registration)
+            $size_info = \wp_get_image_sizes($size_name);
+            if (! $size_info) {
+                continue;  // Can't get size info
+            }
+
+            $target_width = (int) ($size_info['width'] ?? 0);
+            if ($target_width <= 0) {
+                continue;  // Invalid width
+            }
+
+            // When height is 0, WordPress maintains aspect ratio
+            // Calculate the proportional height to maintain original aspect ratio
+            $target_height = (int) round($target_width / $original_ratio);
+
+            // Lazy-load the image editor only once (optimization)
+            if (! $editor) {
+                $editor = \wp_get_image_editor($file);
+                if (\is_wp_error($editor)) {
+                    return false;  // Fatal: can't initialize editor
+                }
+            }
+
+            // Generate the subsize with aspect-ratio-preserving dimensions
+            $result = $editor->multi_resize([
+                $size_name => [
+                    'width'  => $target_width,
+                    'height' => $target_height,
+                    'crop'   => false,  // Never crop - maintain aspect ratio
+                ],
+            ]);
+
+            // If successful, add to metadata
+            if ($result && isset($result[ $size_name ]) && ! \is_wp_error($result[ $size_name ])) {
+                $metadata['sizes'][ $size_name ] = $result[ $size_name ];
+                $metadata_updated = true;
+            }
+        }
+
+        // After registering standard sizes, check for responsive display sizes
+        // that are dynamically registered by SizeRegistry
+        $file_info = \pathinfo($file);
+        $base_name = $file_info['filename'];
+        $dir = $file_info['dirname'];
+        
+        // Check for custom ODR responsive sizes
+        // These are registered via add_image_size('odr_content_optimized', 704, 0, false)
+        // but may not be in wp_get_intermediate_image_sizes()
+        $custom_responsive_sizes = [
+            'odr_content_optimized' => 704,
+            'odr_content_retina'    => 1408,
+            'odr_mobile_optimized'  => 450,
+            'odr_tablet_optimized'  => 600,
+        ];
+        
+        foreach ($custom_responsive_sizes as $size_name => $target_width) {
+            // Skip if already in metadata
+            if (isset($metadata['sizes'][$size_name])) {
+                continue;
+            }
+            
+            // Calculate expected height to maintain aspect ratio
+            $target_height = (int) \round($target_width / $original_ratio);
+            
+            // Look for files that match this size pattern
+            // WordPress names them: filename-WIDTHxHEIGHT.ext
+            $potential_patterns = [
+                $dir . '/' . $base_name . '-' . $target_width . 'x' . $target_height . '.jpg',
+                $dir . '/' . $base_name . '-' . $target_width . 'x*.jpg',  // Wildcard for slight height differences
+            ];
+            
+            // Try exact match first
+            if (\file_exists($potential_patterns[0])) {
+                $size_info = @\getimagesize($potential_patterns[0]);
+                if ($size_info) {
+                    $metadata['sizes'][$size_name] = [
+                        'file' => \basename($potential_patterns[0]),
+                        'width' => (int) $size_info[0],
+                        'height' => (int) $size_info[1],
+                        'mime-type' => 'image/jpeg',
+                        'filesize' => \filesize($potential_patterns[0]),
+                    ];
+                    $metadata_updated = true;
+                    continue;
+                }
+            }
+            
+            // Try wildcard match if exact didn't work
+            $glob_pattern = $dir . '/' . $base_name . '-' . $target_width . 'x*.jpg';
+            $matches = \glob($glob_pattern);
+            if (!empty($matches)) {
+                $file_to_register = $matches[0];  // Take the first match
+                $size_info = @\getimagesize($file_to_register);
+                if ($size_info) {
+                    $metadata['sizes'][$size_name] = [
+                        'file' => \basename($file_to_register),
+                        'width' => (int) $size_info[0],
+                        'height' => (int) $size_info[1],
+                        'mime-type' => 'image/jpeg',
+                        'filesize' => \filesize($file_to_register),
+                    ];
+                    $metadata_updated = true;
+                }
+            }
+        }
+
+        // Save updated metadata back to database
+        if ($metadata_updated) {
+            \wp_update_attachment_metadata($attachment_id, $metadata);
+        }
+
+        return true;
+    }
+
+    /**
      * Optimize all attachment subsizes for responsive image compliance
      *
-     * WordPress generates multiple image sizes (thumbnail, medium, large).
-     * These need to be optimized for proper srcset generation and Lighthouse compliance.
+     * This generates ALL registered image sizes (including custom ODR sizes)
+     * to ensure responsive srcset has options for every breakpoint.
      *
      * @param int $attachment_id The attachment ID.
      * @return bool Success flag.
      */
     protected function optimize_attachment_subsizes(int $attachment_id): bool
     {
-        $metadata = wp_get_attachment_metadata($attachment_id);
+        $file = get_attached_file($attachment_id);
+        if (! $file || ! \file_exists($file)) {
+            return false;
+        }
+
+        // Get existing metadata
+        $metadata = \wp_get_attachment_metadata($attachment_id);
+        if (!$metadata) {
+            return false;
+        }
 
         if (! isset($metadata['sizes']) || empty($metadata['sizes'])) {
             return true;  // No subsizes to optimize
@@ -831,7 +1016,7 @@ class Optimizer implements OptimizerInterface
         $base_dir = dirname($attached_file);
         $metadata_updated = false;
 
-        // Optimize each subsize
+        // Optimize each existing subsize
         foreach ($metadata['sizes'] as $size_name => $size_data) {
             $subsize_file = $base_dir . '/' . $size_data['file'];
 
@@ -839,7 +1024,7 @@ class Optimizer implements OptimizerInterface
                 continue;  // Skip if file doesn't exist
             }
 
-            // Optimize the subsize
+            // Optimize the subsize JPEG/PNG file for compression
             try {
                 $result = $this->optimize_file($subsize_file, 'standard');
 
@@ -847,14 +1032,25 @@ class Optimizer implements OptimizerInterface
                     // Create WebP version of subsize if configured
                     if ($this->config->should_create_webp()) {
                         if ($this->can_create_webp($subsize_file)) {
-                            $this->create_webp_version($subsize_file);
-
-                            // Update metadata to track WebP version
-                            $original_file = $size_data['file'];
-                            $webp_file = str_replace(['.jpg', '.jpeg', '.png'], '.webp', $original_file);
-
-                            if (! isset($metadata['sizes'][ $size_name ]['webp'])) {
-                                $metadata['sizes'][ $size_name ]['webp'] = $webp_file;
+                            $webp_file_path = $this->create_webp_version($subsize_file);
+                            
+                            if ($webp_file_path && file_exists($webp_file_path)) {
+                                // Get dimensions from original size data
+                                $width = $size_data['width'] ?? 0;
+                                $height = $size_data['height'] ?? 0;
+                                
+                                // Create WebP size name (e.g., 'medium_webp')
+                                $webp_size_name = $size_name . '_webp';
+                                
+                                // Inject WebP size into metadata so WordPress includes it in srcset
+                                Image_Service::register_webp_size_in_meta(
+                                    $attachment_id,
+                                    $webp_file_path,
+                                    $width,
+                                    $height,
+                                    $webp_size_name
+                                );
+                                
                                 $metadata_updated = true;
                             }
                         }

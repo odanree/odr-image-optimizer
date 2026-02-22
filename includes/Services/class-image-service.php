@@ -123,4 +123,59 @@ class Image_Service
         // as="image" tells browser this is an image, not a stylesheet or script
         echo '<link rel="preload" href="' . esc_url($image_url) . '" as="image">' . "\n";
     }
+
+    /**
+     * Register WebP size in attachment metadata
+     *
+     * Injects the WebP version entry into _wp_attachment_metadata so WordPress
+     * will include it in srcset and sizes calculations.
+     *
+     * @param int    $attachment_id The attachment ID
+     * @param string $file_path     The path to the WebP file
+     * @param int    $width         Image width
+     * @param int    $height        Image height
+     * @param string $size_name     Custom size name (e.g., 'odr-custom-704')
+     *
+     * @return bool True if metadata was updated
+     */
+    public static function register_webp_size_in_meta(
+        int $attachment_id,
+        string $file_path,
+        int $width,
+        int $height,
+        string $size_name
+    ): bool {
+        $metadata = wp_get_attachment_metadata($attachment_id);
+
+        if (! $metadata) {
+            return false;
+        }
+
+        if (! file_exists($file_path)) {
+            return false;
+        }
+
+        // Initialize sizes array if it doesn't exist
+        if (! isset($metadata['sizes'])) {
+            $metadata['sizes'] = [];
+        }
+
+        // Define the new size entry
+        $new_size_data = [
+            'file'      => basename($file_path),
+            'width'     => $width,
+            'height'    => $height,
+            'mime-type' => 'image/webp',
+            'filesize'  => filesize($file_path),
+        ];
+
+        // Inject into the sizes array
+        $metadata['sizes'][ $size_name ] = $new_size_data;
+
+        // Save back to DB
+        wp_update_attachment_metadata($attachment_id, $metadata);
+
+        return true;
+    }
 }
+

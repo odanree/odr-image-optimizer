@@ -94,6 +94,17 @@ class API
             ],
         );
 
+        // Bulk get all media for optimization - requires admin permission
+        register_rest_route(
+            self::NAMESPACE,
+            '/media/bulk',
+            [
+                'methods'             => 'GET',
+                'callback'            => [ $this, 'get_all_media_bulk' ],
+                'permission_callback' => [ $this, 'check_admin_permission' ],
+            ],
+        );
+
         // Optimize single image - requires admin permission
         register_rest_route(
             self::NAMESPACE,
@@ -257,6 +268,36 @@ class API
     }
 
     /**
+     * Get all media for bulk operations
+     *
+     * @return \WP_REST_Response
+     */
+    public function get_all_media_bulk()
+    {
+        $args = [
+            'post_type'      => 'attachment',
+            'post_mime_type' => [ 'image/jpeg', 'image/png', 'image/gif', 'image/webp' ],
+            'post_status'    => 'inherit',
+            'posts_per_page' => -1,
+            'orderby'        => 'date',
+            'order'          => 'DESC',
+        ];
+
+        $query = new \WP_Query($args);
+        $images = [];
+
+        foreach ($query->posts as $post) {
+            $images[] = [
+                'id' => $post->ID,
+                'title' => $post->post_title,
+                'date' => $post->post_date,
+            ];
+        }
+
+        return rest_ensure_response($images);
+    }
+
+    /**
      * Optimize a single image
      *
      * @param \WP_REST_Request $request The request object.
@@ -266,13 +307,16 @@ class API
     {
         try {
             $attachment_id = $request['attachment_id'];
+            error_log("REST optimize_image called for attachment $attachment_id");
 
             if (! get_post($attachment_id)) {
+                error_log("Invalid attachment: $attachment_id");
                 return new \WP_Error('invalid_attachment', 'Invalid attachment ID', [ 'status' => 404 ]);
             }
 
             $optimizer = Container::get_optimizer();
             $result = $optimizer->optimize_attachment($attachment_id);
+            error_log("Optimization result for $attachment_id: " . ($result->is_success() ? 'success' : 'failure - ' . $result->get_message()));
 
             // Convert Result to WP_Error if failure
             if ($result->is_failure()) {
