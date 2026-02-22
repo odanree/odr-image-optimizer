@@ -243,8 +243,8 @@ class Settings
         $settings = get_option('odr_optimizer_settings', []);
         $checked = ! empty($settings['enable_gzip']);
         ?>
-        <input type="checkbox" name="odr_optimizer_settings[enable_gzip]" value="1" <?php checked($checked); ?>>
-        <label><?php esc_html_e('Enable PHP Gzip compression for all responses', 'odr-image-optimizer'); ?></label>
+        <input type="checkbox" id="enable_gzip" name="odr_optimizer_settings[enable_gzip]" value="1" <?php checked($checked); ?>>
+        <label for="enable_gzip"><?php esc_html_e('Enable PHP Gzip compression for all responses', 'odr-image-optimizer'); ?></label>
         <p class="description"><?php esc_html_e('Reduces response size by ~60-70%. Required for Lighthouse 100/100.', 'odr-image-optimizer'); ?></p>
         <?php
     }
@@ -255,9 +255,9 @@ class Settings
     public function render_preload_fonts_field(): void
     {
         $settings = get_option('odr_optimizer_settings', []);
-        $value = isset($settings['preload_fonts']) ? $settings['preload_fonts'] : '';
+        $checked = ! empty($settings['preload_fonts']);
         ?>
-        <input type="checkbox" id="preload_fonts" name="odr_optimizer_settings[preload_fonts]" value="1" <?php checked($value); ?>>
+        <input type="checkbox" id="preload_fonts" name="odr_optimizer_settings[preload_fonts]" value="1" <?php checked($checked); ?>>
         <label for="preload_fonts"><?php esc_html_e('Preload theme fonts with priority 0', 'odr-image-optimizer'); ?></label>
         <p class="description"><?php esc_html_e('Breaks CSS → Font discovery chain. Required for Lighthouse 100/100.', 'odr-image-optimizer'); ?></p>
         <?php
@@ -271,8 +271,8 @@ class Settings
         $settings = get_option('odr_optimizer_settings', []);
         $checked = ! empty($settings['fix_font_display']);
         ?>
-        <input type="checkbox" name="odr_optimizer_settings[fix_font_display]" value="1" <?php checked($checked); ?>>
-        <label><?php esc_html_e('Fix font-display: swap (prevent FOUT)', 'odr-image-optimizer'); ?></label>
+        <input type="checkbox" id="fix_font_display" name="odr_optimizer_settings[fix_font_display]" value="1" <?php checked($checked); ?>>
+        <label for="fix_font_display"><?php esc_html_e('Fix font-display: swap (prevent FOUT)', 'odr-image-optimizer'); ?></label>
         <p class="description"><?php esc_html_e('Ensures all fonts use swap to show fallback text immediately.', 'odr-image-optimizer'); ?></p>
         <?php
     }
@@ -285,8 +285,8 @@ class Settings
         $settings = get_option('odr_optimizer_settings', []);
         $checked = ! empty($settings['inject_lcp_preload']);
         ?>
-        <input type="checkbox" name="odr_optimizer_settings[inject_lcp_preload]" value="1" <?php checked($checked); ?>>
-        <label><?php esc_html_e('Inject LCP image preload hints', 'odr-image-optimizer'); ?></label>
+        <input type="checkbox" id="inject_lcp_preload" name="odr_optimizer_settings[inject_lcp_preload]" value="1" <?php checked($checked); ?>>
+        <label for="inject_lcp_preload"><?php esc_html_e('Inject LCP image preload hints', 'odr-image-optimizer'); ?></label>
         <p class="description"><?php esc_html_e('Auto-detects and preloads Largest Contentful Paint images.', 'odr-image-optimizer'); ?></p>
         <?php
     }
@@ -299,8 +299,8 @@ class Settings
         $settings = get_option('odr_optimizer_settings', []);
         $checked = ! empty($settings['remove_bloat']);
         ?>
-        <input type="checkbox" name="odr_optimizer_settings[remove_bloat]" value="1" <?php checked($checked); ?>>
-        <label><?php esc_html_e('Remove core bloat (emoji, interactivity API)', 'odr-image-optimizer'); ?></label>
+        <input type="checkbox" id="remove_bloat" name="odr_optimizer_settings[remove_bloat]" value="1" <?php checked($checked); ?>>
+        <label for="remove_bloat"><?php esc_html_e('Remove core bloat (emoji, interactivity API)', 'odr-image-optimizer'); ?></label>
         <p class="description"><?php esc_html_e('Removes non-essential WordPress features. Required for Lighthouse 100/100.', 'odr-image-optimizer'); ?></p>
         <?php
     }
@@ -313,8 +313,8 @@ class Settings
         $settings = get_option('odr_optimizer_settings', []);
         $checked = ! empty($settings['aggressive_mode']);
         ?>
-        <input type="checkbox" name="odr_optimizer_settings[aggressive_mode]" value="1" <?php checked($checked); ?>>
-        <label><?php esc_html_e('Enable all aggressive features', 'odr-image-optimizer'); ?></label>
+        <input type="checkbox" id="aggressive_mode" name="odr_optimizer_settings[aggressive_mode]" value="1" <?php checked($checked); ?>>
+        <label for="aggressive_mode"><?php esc_html_e('Enable all aggressive features', 'odr-image-optimizer'); ?></label>
         <p class="description"><?php esc_html_e('Master toggle for all advanced optimizations.', 'odr-image-optimizer'); ?></p>
         <?php
     }
@@ -327,8 +327,8 @@ class Settings
         $settings = get_option('odr_optimizer_settings', []);
         $checked = ! empty($settings['fix_nested_lists']);
         ?>
-        <input type="checkbox" name="odr_optimizer_settings[fix_nested_lists]" value="1" <?php checked($checked); ?>>
-        <label><?php esc_html_e('Sanitize nested list HTML', 'odr-image-optimizer'); ?></label>
+        <input type="checkbox" id="fix_nested_lists" name="odr_optimizer_settings[fix_nested_lists]" value="1" <?php checked($checked); ?>>
+        <label for="fix_nested_lists"><?php esc_html_e('Sanitize nested list HTML', 'odr-image-optimizer'); ?></label>
         <p class="description"><?php esc_html_e('Fixes malformed HTML in nested lists. May break some themes.', 'odr-image-optimizer'); ?></p>
         <?php
     }
@@ -341,8 +341,8 @@ class Settings
         $settings = get_option('odr_optimizer_settings', []);
         $checked = ! empty($settings['inject_seo_meta']);
         ?>
-        <input type="checkbox" name="odr_optimizer_settings[inject_seo_meta]" value="1" <?php checked($checked); ?>>
-        <label><?php esc_html_e('Inject SEO meta tags', 'odr-image-optimizer'); ?></label>
+        <input type="checkbox" id="inject_seo_meta" name="odr_optimizer_settings[inject_seo_meta]" value="1" <?php checked($checked); ?>>
+        <label for="inject_seo_meta"><?php esc_html_e('Inject SEO meta tags', 'odr-image-optimizer'); ?></label>
         <p class="description"><?php esc_html_e('Adds Open Graph and structured data for better search visibility.', 'odr-image-optimizer'); ?></p>
         <?php
     }

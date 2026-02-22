@@ -98,20 +98,14 @@ class Dashboard
 				</a>
 			</nav>
 
-			<!-- Tab Content -->
-			<div class="tab-content">
-				<?php if ('settings' === $tab) : ?>
-					<!-- Settings Tab -->
-					<div class="settings-tab">
-						<?php Settings::render(); ?>
-					</div>
-				<?php else : ?>
-					<!-- Overview Tab (default) -->
-					<div class="overview-tab">
-						<div id="image-optimizer-dashboard"></div>
-					</div>
-				<?php endif; ?>
-			</div>
+		<!-- Tab Content -->
+		<div class="tab-content">
+			<?php if ('settings' === $tab) : ?>
+				<?php Settings::render(); ?>
+			<?php else : ?>
+				<div id="image-optimizer-dashboard"></div>
+			<?php endif; ?>
+		</div>
 		</div>
 		<?php
     }

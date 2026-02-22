@@ -61,6 +61,16 @@ class Asset_Service
      */
     public function register(): void
     {
+        // Check if any optimizations are enabled
+        $has_optimizations = $this->settings->is_enabled('preload_fonts') 
+            || $this->settings->is_enabled('remove_bloat')
+            || $this->settings->is_aggressive_mode();
+
+        // Only register hooks if at least one optimization is enabled
+        if (!$has_optimizations) {
+            return;
+        }
+
         // START: Output buffer at priority -9999 (EARLIEST in wp_head, before everything)
         // This catches ALL module imports, styleheet tags, and script tags
         add_action('wp_head', [$this, 'start_cleaning_module_scripts'], -9999);

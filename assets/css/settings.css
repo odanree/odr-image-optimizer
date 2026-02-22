@@ -9,10 +9,7 @@
 }
 
 .image-optimizer-settings-form {
-	background: white;
-	border-radius: 8px;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-	padding: 20px;
+	/* Inherits padding and styling from tab-content parent */
 }
 
 .image-optimizer-settings-wrap h1 {

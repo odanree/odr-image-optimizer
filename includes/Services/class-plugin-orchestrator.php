@@ -30,6 +30,7 @@ if (! defined('ABSPATH')) {
 }
 
 use ImageOptimizer\Admin\Admin_Settings;
+use ImageOptimizer\Admin\SettingsPolicy;
 
 /**
  * Plugin_Orchestrator: Service Orchestrator with Dependency Injection
@@ -113,8 +114,8 @@ class Plugin_Orchestrator
         add_action('wp_enqueue_scripts', [$cleanup_service, 'remove_bloat'], 100);
 
         // 4. Optimize the HTTP transport layer (gzip, headers)
-        // Only runs if enabled in settings
-        if ($this->settings->is_enabled('enable_gzip')) {
+        // Only runs if enabled in settings (check database via SettingsPolicy)
+        if (SettingsPolicy::should_auto_optimize()) {
             (new Server_Service())->register();
         }
 
@@ -123,8 +124,8 @@ class Plugin_Orchestrator
         (new Asset_Service($this->settings))->register();
 
         // 6. Optimize Largest Contentful Paint (LCP)
-        // Only runs if enabled in settings
-        if ($this->settings->is_enabled('inject_lcp_preload')) {
+        // Only runs if enabled in settings (check database via SettingsPolicy)
+        if (SettingsPolicy::should_preload_fonts()) {
             (new Image_Service())->register();
         }
 

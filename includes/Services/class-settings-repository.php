@@ -73,7 +73,8 @@ class Settings_Repository
         $stored = get_option('odr_optimizer_settings', []);
 
         // Merge stored settings with defaults
-        // Defaults take precedence for missing keys (safe behavior)
+        // Stored values take precedence for explicitly saved keys
+        // Defaults fill in any missing keys (safe behavior)
         $this->options = array_merge(self::DEFAULTS, is_array($stored) ? $stored : []);
     }
 
