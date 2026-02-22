@@ -159,10 +159,10 @@ class Core
             [ $this, 'render_dashboard' ],
         );
 
-        // Register settings under the dashboard submenu
+        // Register settings as a submenu of the main ODR Image Optimizer page
         // This will appear as Tools > ODR Image Optimizer > Settings
         add_submenu_page(
-            'tools.php',
+            'image-optimizer',
             __('Settings', 'odr-image-optimizer'),
             __('Settings', 'odr-image-optimizer'),
             'manage_options',
