@@ -45,6 +45,53 @@ class MetadataMigrator
     }
 
     /**
+     * Migrate main image file to WebP
+     *
+     * Updates the top-level 'file' key in metadata if WebP version exists.
+     * Critical: WordPress and themes may use this as primary source.
+     *
+     * @param int    $attachmentId The attachment ID.
+     * @param string $uploadDir    Full path to uploads directory.
+     *
+     * @return bool True if migrated, false otherwise.
+     */
+    public function migrate_main_file(
+        int $attachmentId,
+        string $uploadDir,
+    ): bool {
+        $metadata = $this->manager->getMetadata($attachmentId);
+
+        if (! is_array($metadata)) {
+            return false;
+        }
+
+        // Get current main file
+        $jpgFile = $metadata['file'] ?? '';
+        if (! is_string($jpgFile) || empty($jpgFile)) {
+            return false;
+        }
+
+        // Convert filename to WebP
+        $webpFile = \str_replace(
+            [ '.jpg', '.jpeg', '.png', '.JPG', '.JPEG', '.PNG' ],
+            '.webp',
+            $jpgFile,
+        );
+
+        // Check if WebP exists on disk
+        $webpPath = $uploadDir . '/' . $webpFile;
+        if (! \file_exists($webpPath)) {
+            return false;
+        }
+
+        // Update metadata with WebP file
+        $metadata['file'] = $webpFile;
+
+        // Store updated metadata
+        return \wp_update_attachment_metadata($attachmentId, $metadata) !== false;
+    }
+
+    /**
      * Migrate a size entry to WebP if file exists
      *
      * Takes an existing JPG size entry and converts it to WebP
@@ -122,6 +169,7 @@ class MetadataMigrator
      * Migrate all sizes for an attachment
      *
      * Converts all size entries from JPG to WebP if WebP files exist.
+     * Also migrates main file if WebP version exists.
      *
      * @param int    $attachmentId The attachment ID.
      * @param string $uploadDir    Full path to uploads directory.
@@ -130,18 +178,25 @@ class MetadataMigrator
      */
     public function migrate_all_sizes(int $attachmentId, string $uploadDir): int
     {
+        $count = 0;
+
+        // First, migrate main file
+        if ($this->migrate_main_file($attachmentId, $uploadDir)) {
+            $count++;
+        }
+
+        // Then migrate all sizes
         $metadata = $this->manager->getMetadata($attachmentId);
 
         if (! is_array($metadata) || ! isset($metadata['sizes'])) {
-            return 0;
+            return $count;
         }
 
         $sizes = $metadata['sizes'];
         if (! is_array($sizes)) {
-            return 0;
+            return $count;
         }
 
-        $count = 0;
         foreach (array_keys($sizes) as $sizeName) {
             if (is_string($sizeName) && $this->migrate_size_to_webp($attachmentId, $sizeName, $uploadDir)) {
                 $count++;
