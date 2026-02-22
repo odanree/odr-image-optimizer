@@ -61,27 +61,82 @@ class Asset_Service
      */
     public function register(): void
     {
+        // START: Output buffer at priority -9999 (EARLIEST in wp_head, before everything)
+        // This catches ALL module imports, styleheet tags, and script tags
+        add_action('wp_head', [$this, 'start_cleaning_module_scripts'], -9999);
+
         // Remove version query strings from scripts/styles for better caching
         // Uses remove_query_arg('ver', $src) to cleanly strip ?ver=X.X.X
         // Priority 999 = runs LAST, after all plugins/themes have enqueued
         add_filter('script_loader_src', [$this, 'remove_ver_query_string'], 999);
         add_filter('style_loader_src', [$this, 'remove_ver_query_string'], 999);
 
-        // Also catch script modules in footer (WordPress 6.9+)
-        // Uses output buffering to clean query strings from all URLs
-        add_action('wp_footer', [$this, 'remove_query_strings_from_output'], 1);
-
-        // Preload critical fonts early (priority 0 = before everything)
+        // Preload critical fonts early (priority 0 = after buffer starts, before default head content)
         // Only if font preloading is enabled
         if ($this->settings->is_enabled('preload_fonts')) {
             add_action('wp_head', [$this, 'preload_critical_fonts'], 0);
         }
+
+        // STOP: Output buffer very late in wp_footer (priority 9999 = AFTER everything)
+        // This flushes and cleans the entire buffered HTML including all module imports
+        add_action('wp_footer', [$this, 'finish_cleaning_module_scripts'], 9999);
 
         // Remove WordPress bloat late (priority 999 = after all plugins/themes enqueue)
         // Only if bloat removal is enabled (aggressive mode)
         if ($this->settings->is_enabled('remove_bloat') || $this->settings->is_aggressive_mode()) {
             add_action('wp_enqueue_scripts', [$this, 'remove_core_bloat'], 999);
         }
+    }
+
+    /**
+     * Start output buffering to clean module script imports
+     *
+     * Called at priority 999999 (extremely late in wp_head).
+     * This catches all script module imports and modulepreload links.
+     *
+     * @return void
+     */
+    public function start_cleaning_module_scripts(): void
+    {
+        ob_start([$this, 'clean_module_queries']);
+    }
+
+    /**
+     * Finish output buffering and clean module script queries
+     *
+     * Called at priority -1 (extremely early in wp_footer).
+     * Ensures we capture and clean everything before output.
+     *
+     * @return void
+     */
+    public function finish_cleaning_module_scripts(): void
+    {
+        if (ob_get_level() > 0) {
+            ob_end_flush();
+        }
+    }
+
+    /**
+     * Clean query strings from module imports and modulepreload links
+     *
+     * Callback for output buffer. Removes all ?ver=... parameters from:
+     * - Module import JSON: {"imports":{"@wordpress/lib":"...?ver=..."}}
+     * - Modulepreload links: <link rel="modulepreload" href="...?ver=...">
+     *
+     * @param string $html The buffered HTML output
+     * @return string      The cleaned HTML
+     */
+    public function clean_module_queries($html)
+    {
+        if (! is_string($html)) {
+            return $html;
+        }
+
+        // Remove ?ver=... from all script URLs in the HTML
+        // Pattern matches: url?ver=hashvalue
+        $html = preg_replace('/\?ver=[a-f0-9]+/i', '', $html);
+
+        return $html;
     }
 
     /**
