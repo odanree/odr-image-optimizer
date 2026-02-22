@@ -442,6 +442,22 @@ function remove_query_arg($key, $url = '') {}
  */
 function current_theme_supports($feature) {}
 
+/**
+ * Get template directory URI
+ *
+ * @return string
+ */
+function get_template_directory_uri() {}
+
+/**
+ * Check if string contains substring
+ *
+ * @param string $haystack
+ * @param string $needle
+ * @return bool
+ */
+function str_contains($haystack, $needle) {}
+
 // WordPress Global Variables
 
 class WP_Styles {
