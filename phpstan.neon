@@ -5,13 +5,13 @@ parameters:
   excludePaths:
     - includes/core/**
     - includes/admin/**
-    - includes/Admin/**
     - includes/class-*.php
     - includes/Repository/**
     - includes/Configuration/**
     - includes/Frontend/**
   stubFiles:
     - stubs/wordpress.stub.php
+    - stubs/imageoptimizer.stub.php
   reportUnmatchedIgnoredErrors: false
   ignoreErrors:
     - identifier: class.notFound
@@ -31,4 +31,11 @@ parameters:
     # Admin SettingsService/SettingsPolicy are in excluded dir
     - identifier: class.notFound
       message: '#ImageOptimizer\\Admin\\(SettingsService|SettingsPolicy)#'
+    # Settings Repository and Admin Settings are new classes
+    - identifier: class.notFound
+      message: '#ImageOptimizer\\Admin\\Admin_Settings#'
+    # Settings Repository has unreachable code warning in type coercion
+    - identifier: deadCode.unreachable
+      message: '#Unreachable statement#'
+      path: includes/Services/class-settings-repository.php
 

@@ -10,6 +10,7 @@ declare(strict_types=1);
  * Includes output buffer fixes (font-display, nested lists) and SEO meta tags.
  *
  * Single Responsibility: HTML Compatibility & SEO
+ * Dependency Injection: Receives Settings_Repository to respect user preferences.
  *
  * @package ImageOptimizer
  * @author  Danh Le
@@ -31,21 +32,48 @@ if (! defined('ABSPATH')) {
  *
  * By isolating these here, we acknowledge they're workarounds for theme issues,
  * not core plugin features.
+ *
+ * Respects user settings via dependency injection.
  */
 class Compatibility_Service
 {
     /**
+     * Settings repository for accessing plugin configuration
+     *
+     * @var Settings_Repository
+     */
+    private Settings_Repository $settings;
+
+    /**
+     * Constructor: Inject settings repository
+     *
+     * @param Settings_Repository $settings The settings repository instance
+     */
+    public function __construct(Settings_Repository $settings)
+    {
+        $this->settings = $settings;
+    }
+
+    /**
      * Register hooks for compatibility fixes
+     *
+     * Only registers hooks for enabled features.
      *
      * @return void
      */
     public function register(): void
     {
         // Start output buffer to fix HTML issues (priority 2 = early)
-        add_action('template_redirect', [$this, 'start_output_buffer'], 2);
+        // Runs if font-display or nested list fixes are enabled
+        if ($this->settings->is_enabled('fix_font_display') || $this->settings->is_enabled('fix_nested_lists')) {
+            add_action('template_redirect', [$this, 'start_output_buffer'], 2);
+        }
 
         // Inject SEO meta tags in wp_head
-        add_action('wp_head', [$this, 'inject_seo_meta'], 1);
+        // Only if SEO meta injection is enabled
+        if ($this->settings->is_enabled('inject_seo_meta')) {
+            add_action('wp_head', [$this, 'inject_seo_meta'], 1);
+        }
 
         // Clean up list structures for accessibility
         add_filter('wp_nav_menu', [$this, 'sanitize_nav_lists']);

@@ -6,16 +6,18 @@ declare(strict_types=1);
  * Plugin Orchestrator
  *
  * The "Brain" of the plugin. Coordinates all services using the
- * Service-Oriented Architecture pattern.
+ * Service-Oriented Architecture pattern with Dependency Injection.
  *
  * Instead of the main plugin file calling 13 different hooks directly,
  * this orchestrator initializes specific services. Each service is:
  * - Single Responsibility (one job)
  * - Independent (can be swapped/extended without breaking others)
  * - Testable (can test in isolation)
+ * - Dependency-injected (receives dependencies, doesn't create them)
  *
  * Follows Dependency Inversion Principle:
  * High-level policy (orchestrator) doesn't depend on low-level details (services).
+ * Services depend on abstractions (Settings_Repository) not on WordPress directly.
  *
  * @package ImageOptimizer
  * @author  Danh Le
@@ -27,18 +29,24 @@ if (! defined('ABSPATH')) {
     exit('Direct access denied.');
 }
 
+use ImageOptimizer\Admin\Admin_Settings;
+
 /**
- * ODR_Optimizer: Service Orchestrator
+ * Plugin_Orchestrator: Service Orchestrator with Dependency Injection
  *
- * Initializes the 4-service architecture:
- * 1. Server_Service: HTTP transport optimization (gzip, headers)
- * 2. Asset_Service: Critical path optimization (fonts, bloat removal)
- * 3. Image_Service: LCP optimization (preloading featured images)
- * 4. Compatibility_Service: Theme-specific fixes (HTML sanitization, SEO)
+ * Initializes the 5-component architecture:
+ * 1. Settings_Repository: Configuration access (no direct get_option calls)
+ * 2. Server_Service: HTTP transport optimization (gzip, headers)
+ * 3. Asset_Service: Critical path optimization (fonts, bloat removal)
+ * 4. Image_Service: LCP optimization (preloading featured images)
+ * 5. Compatibility_Service: Theme-specific fixes (HTML sanitization, SEO)
+ * 6. Admin_Settings: WordPress admin UI for settings
  *
  * This design ensures:
  * - Adding "Database Optimization" or "CDN Support" later doesn't break existing logic
  * - Each service can be tested independently
+ * - Services are "smart" but don't know about WordPress internals
+ * - Settings are centralized and easy to modify
  * - New team members can understand the architecture quickly
  * - The main plugin file stays clean and readable
  */
@@ -50,6 +58,13 @@ class Plugin_Orchestrator
      * @var self|null
      */
     private static ?self $instance = null;
+
+    /**
+     * Settings repository (shared across all services)
+     *
+     * @var Settings_Repository|null
+     */
+    private ?Settings_Repository $settings = null;
 
     /**
      * Get singleton instance
@@ -71,20 +86,57 @@ class Plugin_Orchestrator
      * This is the single entry point for the entire plugin.
      * All optimization logic flows from here through individual services.
      *
+     * Dependency Injection Flow:
+     * 1. Create Settings_Repository (shared across services)
+     * 2. Pass settings to each service that needs configuration
+     * 3. Services call register() to hook into WordPress
+     * 4. Admin UI is initialized separately for settings management
+     *
      * @return void
      */
     public function init(): void
     {
-        // 1. Optimize the HTTP transport layer (gzip, headers)
-        (new Server_Service())->register();
+        // Create the shared settings repository
+        // This is instantiated once and passed to all services
+        $this->settings = new Settings_Repository();
 
-        // 2. Optimize critical rendering path (fonts, bloat removal)
-        (new Asset_Service())->register();
+        // 1. Initialize Admin Settings UI (runs on admin_menu, admin_init)
+        (new Admin_Settings($this->settings))->register();
 
-        // 3. Optimize Largest Contentful Paint (LCP)
-        (new Image_Service())->register();
+        // 2. Optimize the HTTP transport layer (gzip, headers)
+        // Only runs if enabled in settings
+        if ($this->settings->is_enabled('enable_gzip')) {
+            (new Server_Service())->register();
+        }
 
-        // 4. Fix theme-specific HTML issues (sanitization, SEO)
-        (new Compatibility_Service())->register();
+        // 3. Optimize critical rendering path (fonts, bloat removal)
+        // Injects settings so it can respect user preferences
+        (new Asset_Service($this->settings))->register();
+
+        // 4. Optimize Largest Contentful Paint (LCP)
+        // Only runs if enabled in settings
+        if ($this->settings->is_enabled('inject_lcp_preload')) {
+            (new Image_Service())->register();
+        }
+
+        // 5. Fix theme-specific HTML issues (sanitization, SEO)
+        // Injects settings so it respects user's aggressive mode choice
+        (new Compatibility_Service($this->settings))->register();
+    }
+
+    /**
+     * Get the settings repository
+     *
+     * Used by services or external code that needs access to settings.
+     *
+     * @return Settings_Repository The shared settings repository
+     */
+    public function get_settings(): Settings_Repository
+    {
+        if ($this->settings === null) {
+            $this->settings = new Settings_Repository();
+        }
+
+        return $this->settings;
     }
 }

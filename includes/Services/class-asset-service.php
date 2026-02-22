@@ -10,6 +10,9 @@ declare(strict_types=1);
  *
  * Single Responsibility: Critical Path & Font Management
  *
+ * Dependency Injection: Receives Settings_Repository to respect user preferences.
+ * Services should never call get_option() directly - they ask for settings via DI.
+ *
  * @package ImageOptimizer
  * @author  Danh Le
  */
@@ -24,22 +27,51 @@ if (! defined('ABSPATH')) {
  * Asset_Service: Optimize critical rendering path
  *
  * Isolates font and asset logic from other optimizations.
+ * Respects user settings via dependency injection.
  * If you later add CDN support or Database optimization, this stays clean.
  */
 class Asset_Service
 {
     /**
+     * Settings repository for accessing plugin configuration
+     *
+     * @var Settings_Repository
+     */
+    private Settings_Repository $settings;
+
+    /**
+     * Constructor: Inject settings repository
+     *
+     * Dependency Injection ensures this service doesn't know about
+     * WordPress get_option() - it just uses the repository.
+     *
+     * @param Settings_Repository $settings The settings repository instance
+     */
+    public function __construct(Settings_Repository $settings)
+    {
+        $this->settings = $settings;
+    }
+
+    /**
      * Register hooks for asset optimizations
+     *
+     * Only registers hooks for enabled features.
      *
      * @return void
      */
     public function register(): void
     {
         // Preload critical fonts early (priority 0 = before everything)
-        add_action('wp_head', [$this, 'preload_critical_fonts'], 0);
+        // Only if font preloading is enabled
+        if ($this->settings->is_enabled('preload_fonts')) {
+            add_action('wp_head', [$this, 'preload_critical_fonts'], 0);
+        }
 
         // Remove WordPress bloat late (priority 999 = after all plugins/themes enqueue)
-        add_action('wp_enqueue_scripts', [$this, 'remove_core_bloat'], 999);
+        // Only if bloat removal is enabled (aggressive mode)
+        if ($this->settings->is_enabled('remove_bloat') || $this->settings->is_aggressive_mode()) {
+            add_action('wp_enqueue_scripts', [$this, 'remove_core_bloat'], 999);
+        }
     }
 
     /**
