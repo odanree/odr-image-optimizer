@@ -60,19 +60,21 @@ require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-optimizer.php';
  */
 register_activation_hook(__FILE__, function() {
     // Performance-first defaults (all optimizations enabled)
+    // These match the SOA defaults in Settings_Repository
     $defaults = [
-        'compression_level'   => 'high',
-        'enable_webp'         => true,
-        'lazy_load_mode'      => 'native',
-        'auto_optimize'       => true,
+        'enable_gzip'         => true,
         'preload_fonts'       => true,
-        'kill_bloat'          => true,
-        'inline_critical_css' => true,
+        'inject_lcp_preload'  => true,
+        'inject_seo_meta'     => true,
+        'fix_font_display'    => true,
+        'fix_nested_lists'    => true,
+        'remove_bloat'        => true,  // Aggressive mode enabled
+        'aggressive_mode'     => true,
     ];
 
     // Only set if they don't exist to avoid overwriting user changes
-    if (false === get_option('odr_image_optimizer_settings')) {
-        update_option('odr_image_optimizer_settings', $defaults);
+    if (false === get_option('odr_optimizer_settings')) {
+        update_option('odr_optimizer_settings', $defaults);
     }
 });
 require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-image-file.php';

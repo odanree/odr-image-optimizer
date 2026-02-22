@@ -36,7 +36,8 @@ class Settings
     /**
      * Register settings
      *
-     * Adds capability check to ensure only admins can save settings.
+     * Registers WordPress settings that match the SOA Settings_Repository defaults.
+     * These are the actual performance optimization flags used by services.
      *
      * @return void
      */
@@ -49,7 +50,7 @@ class Settings
 
         register_setting(
             'image-optimizer-settings',
-            'odr_image_optimizer_settings',
+            'odr_optimizer_settings',
             [
                 'type'              => 'object',
                 'sanitize_callback' => [ $this, 'sanitize_settings' ],
@@ -57,95 +58,100 @@ class Settings
             ],
         );
 
-        // Media Policy section
+        // HTTP Transport Optimization
         add_settings_section(
-            'odr_media_policy',
-            esc_html__('Image Optimization (Media Policy)', 'odr-image-optimizer'),
-            [ $this, 'render_media_section' ],
+            'odr_http_transport',
+            esc_html__('HTTP Transport Optimization', 'odr-image-optimizer'),
+            [ $this, 'render_http_section' ],
             'image-optimizer-settings',
         );
 
         add_settings_field(
-            'odr_compression_level',
-            esc_html__('Compression Level', 'odr-image-optimizer'),
-            [ $this, 'render_compression_field' ],
+            'odr_enable_gzip',
+            esc_html__('Enable PHP Gzip Compression', 'odr-image-optimizer'),
+            [ $this, 'render_gzip_field' ],
             'image-optimizer-settings',
-            'odr_media_policy',
+            'odr_http_transport',
         );
 
-        add_settings_field(
-            'odr_enable_webp',
-            esc_html__('WebP Format Support', 'odr-image-optimizer'),
-            [ $this, 'render_webp_field' ],
-            'image-optimizer-settings',
-            'odr_media_policy',
-        );
-
-        add_settings_field(
-            'odr_auto_optimize',
-            esc_html__('Auto-Optimize on Upload', 'odr-image-optimizer'),
-            [ $this, 'render_auto_optimize_field' ],
-            'image-optimizer-settings',
-            'odr_media_policy',
-        );
-
-        // Delivery Policy section
+        // Critical Rendering Path
         add_settings_section(
-            'odr_delivery_policy',
-            esc_html__('Frontend Performance (Delivery Policy)', 'odr-image-optimizer'),
-            [ $this, 'render_delivery_section' ],
+            'odr_critical_path',
+            esc_html__('Critical Rendering Path', 'odr-image-optimizer'),
+            [ $this, 'render_critical_path_section' ],
             'image-optimizer-settings',
-        );
-
-        add_settings_field(
-            'odr_lazy_load_mode',
-            esc_html__('Lazy Loading Mode', 'odr-image-optimizer'),
-            [ $this, 'render_lazy_load_field' ],
-            'image-optimizer-settings',
-            'odr_delivery_policy',
         );
 
         add_settings_field(
             'odr_preload_fonts',
-            esc_html__('Preload Theme Fonts', 'odr-image-optimizer'),
+            esc_html__('Priority 0 Font Preloading', 'odr-image-optimizer'),
             [ $this, 'render_preload_fonts_field' ],
             'image-optimizer-settings',
-            'odr_delivery_policy',
+            'odr_critical_path',
         );
 
         add_settings_field(
-            'odr_kill_bloat',
-            esc_html__('Remove Bloat Scripts', 'odr-image-optimizer'),
-            [ $this, 'render_kill_bloat_field' ],
+            'odr_fix_font_display',
+            esc_html__('Fix Font Display (swap)', 'odr-image-optimizer'),
+            [ $this, 'render_fix_font_display_field' ],
             'image-optimizer-settings',
-            'odr_delivery_policy',
+            'odr_critical_path',
         );
 
         add_settings_field(
-            'odr_inline_critical_css',
-            esc_html__('Inline Critical CSS', 'odr-image-optimizer'),
-            [ $this, 'render_inline_css_field' ],
+            'odr_inject_lcp_preload',
+            esc_html__('Inject LCP Image Preload', 'odr-image-optimizer'),
+            [ $this, 'render_inject_lcp_field' ],
             'image-optimizer-settings',
-            'odr_delivery_policy',
+            'odr_critical_path',
+        );
+
+        // Aggressive Optimizations
+        add_settings_section(
+            'odr_aggressive',
+            esc_html__('Aggressive Optimizations (Advanced)', 'odr-image-optimizer'),
+            [ $this, 'render_aggressive_section' ],
+            'image-optimizer-settings',
+        );
+
+        add_settings_field(
+            'odr_remove_bloat',
+            esc_html__('Aggressive Core Bloat Removal', 'odr-image-optimizer'),
+            [ $this, 'render_remove_bloat_field' ],
+            'image-optimizer-settings',
+            'odr_aggressive',
+        );
+
+        add_settings_field(
+            'odr_aggressive_mode',
+            esc_html__('Enable All Aggressive Features', 'odr-image-optimizer'),
+            [ $this, 'render_aggressive_mode_field' ],
+            'image-optimizer-settings',
+            'odr_aggressive',
+        );
+
+        add_settings_field(
+            'odr_fix_nested_lists',
+            esc_html__('Fix Nested Lists (HTML Sanitization)', 'odr-image-optimizer'),
+            [ $this, 'render_fix_nested_lists_field' ],
+            'image-optimizer-settings',
+            'odr_aggressive',
+        );
+
+        add_settings_field(
+            'odr_inject_seo_meta',
+            esc_html__('Inject SEO Meta Tags', 'odr-image-optimizer'),
+            [ $this, 'render_inject_seo_meta_field' ],
+            'image-optimizer-settings',
+            'odr_aggressive',
         );
     }
 
     /**
-     * Sanitize settings
-     *
-     * @param array $settings The settings to sanitize.
-     * @return array
-     */
-    /**
      * Sanitize and validate settings
      *
-     * Called by WordPress settings API. Nonce is verified automatically
-     * by register_setting() when using settings_fields() form output.
-     *
-     * Security:
-     * - Nonce verification: Automatic via settings_fields()
-     * - Capability check: Enforced in register_settings()
-     * - Type validation: Explicit for each setting
+     * Ensures all settings are properly validated before saving to database.
+     * Only allows boolean values for the SOA settings.
      *
      * @param mixed $settings The raw settings array.
      * @return array Sanitized and validated settings.
@@ -157,17 +163,14 @@ class Settings
         }
 
         return [
-            'compression_level'   => in_array($settings['compression_level'] ?? 'medium', [ 'low', 'medium', 'high' ], true)
-                ? $settings['compression_level']
-                : 'medium',
-            'enable_webp'         => ! empty($settings['enable_webp']),
-            'lazy_load_mode'      => in_array($settings['lazy_load_mode'] ?? 'native', [ 'native', 'hybrid', 'off' ], true)
-                ? $settings['lazy_load_mode']
-                : 'native',
-            'auto_optimize'       => ! empty($settings['auto_optimize']),
+            'enable_gzip'         => ! empty($settings['enable_gzip']),
             'preload_fonts'       => ! empty($settings['preload_fonts']),
-            'kill_bloat'          => ! empty($settings['kill_bloat']),
-            'inline_critical_css' => ! empty($settings['inline_critical_css']),
+            'inject_lcp_preload'  => ! empty($settings['inject_lcp_preload']),
+            'inject_seo_meta'     => ! empty($settings['inject_seo_meta']),
+            'fix_font_display'    => ! empty($settings['fix_font_display']),
+            'fix_nested_lists'    => ! empty($settings['fix_nested_lists']),
+            'remove_bloat'        => ! empty($settings['remove_bloat']),
+            'aggressive_mode'     => ! empty($settings['aggressive_mode']),
         ];
     }
 
@@ -209,160 +212,138 @@ class Settings
     }
 
     /**
-     * Render media policy section
-     *
-     * @return void
+     * Render HTTP transport section
      */
-    public function render_media_section(): void
+    public function render_http_section(): void
     {
-        echo '<p>' . esc_html__('Control how images are processed and optimized on upload.', 'odr-image-optimizer') . '</p>';
+        echo '<p>' . esc_html__('Optimize how responses are delivered to browsers.', 'odr-image-optimizer') . '</p>';
     }
 
     /**
-     * Render delivery policy section
-     *
-     * @return void
+     * Render critical rendering path section
      */
-    public function render_delivery_section(): void
+    public function render_critical_path_section(): void
     {
-        echo '<p>' . esc_html__('Control how images are delivered and rendered on the frontend.', 'odr-image-optimizer') . '</p>';
+        echo '<p>' . esc_html__('Speed up the browser\'s critical rendering path.', 'odr-image-optimizer') . '</p>';
     }
 
     /**
-     * Render compression level field
-     *
-     * @return void
+     * Render aggressive optimizations section
      */
-    public function render_compression_field(): void
+    public function render_aggressive_section(): void
     {
-        $settings = get_option('odr_image_optimizer_settings', []);
-        $value = $settings['compression_level'] ?? 'medium';
+        echo '<p>' . esc_html__('Advanced features that may impact compatibility. Test thoroughly before enabling.', 'odr-image-optimizer') . '</p>';
+    }
+
+    /**
+     * Render gzip field
+     */
+    public function render_gzip_field(): void
+    {
+        $settings = get_option('odr_optimizer_settings', []);
+        $checked = ! empty($settings['enable_gzip']);
         ?>
-        <select name="odr_image_optimizer_settings[compression_level]">
-            <option value="low" <?php selected($value, 'low'); ?>>
-                <?php esc_html_e('Low (Better Quality)', 'odr-image-optimizer'); ?>
-            </option>
-            <option value="medium" <?php selected($value, 'medium'); ?>>
-                <?php esc_html_e('Medium (Balanced)', 'odr-image-optimizer'); ?>
-            </option>
-            <option value="high" <?php selected($value, 'high'); ?>>
-                <?php esc_html_e('High (Maximum Compression)', 'odr-image-optimizer'); ?>
-            </option>
-        </select>
-        <p class="description">
-            <?php esc_html_e('Select compression level. Higher compression means smaller files but may reduce image quality.', 'odr-image-optimizer'); ?>
-        </p>
-        <?php
-    }
-
-    /**
-     * Render WebP conversion field
-     *
-     * @return void
-     */
-    public function render_webp_field(): void
-    {
-        $settings = get_option('odr_image_optimizer_settings', []);
-        $checked = ! empty($settings['enable_webp']);
-        ?>
-        <input type="checkbox" name="odr_image_optimizer_settings[enable_webp]" value="1" <?php checked($checked); ?>>
-        <label><?php esc_html_e('Automatically convert images to WebP format for better compression', 'odr-image-optimizer'); ?></label>
-        <?php
-    }
-
-    /**
-     * Render lazy loading mode field
-     *
-     * @return void
-     */
-    public function render_lazy_load_field(): void
-    {
-        $settings = get_option('odr_image_optimizer_settings', []);
-        $mode = $settings['lazy_load_mode'] ?? 'native';
-        ?>
-        <select name="odr_image_optimizer_settings[lazy_load_mode]">
-            <option value="native" <?php selected($mode, 'native'); ?>>
-                <?php esc_html_e('Native (Browser-Based)', 'odr-image-optimizer'); ?>
-            </option>
-            <option value="hybrid" <?php selected($mode, 'hybrid'); ?>>
-                <?php esc_html_e('Hybrid (JS Fallback)', 'odr-image-optimizer'); ?>
-            </option>
-            <option value="off" <?php selected($mode, 'off'); ?>>
-                <?php esc_html_e('Disabled', 'odr-image-optimizer'); ?>
-            </option>
-        </select>
-        <p class="description">
-            <?php esc_html_e('Native (default) uses browser loading="lazy" for best performance. Hybrid adds JS fallback for older browsers.', 'odr-image-optimizer'); ?>
-        </p>
-        <?php
-    }
-
-    /**
-     * Render auto-optimize field
-     *
-     * @return void
-     */
-    public function render_auto_optimize_field(): void
-    {
-        $settings = get_option('odr_image_optimizer_settings', []);
-        $checked = ! empty($settings['auto_optimize']);
-        ?>
-        <input type="checkbox" name="odr_image_optimizer_settings[auto_optimize]" value="1" <?php checked($checked); ?>>
-        <label><?php esc_html_e('Automatically optimize images on upload', 'odr-image-optimizer'); ?></label>
+        <input type="checkbox" name="odr_optimizer_settings[enable_gzip]" value="1" <?php checked($checked); ?>>
+        <label><?php esc_html_e('Enable PHP Gzip compression for all responses', 'odr-image-optimizer'); ?></label>
+        <p class="description"><?php esc_html_e('Reduces response size by ~60-70%. Required for Lighthouse 100/100.', 'odr-image-optimizer'); ?></p>
         <?php
     }
 
     /**
      * Render preload fonts field
-     *
-     * @return void
      */
     public function render_preload_fonts_field(): void
     {
-        $settings = get_option('odr_image_optimizer_settings', []);
-        $checked = ! empty($settings['preload_fonts']);
+        $settings = get_option('odr_optimizer_settings', []);
+        $value = isset($settings['preload_fonts']) ? $settings['preload_fonts'] : '';
         ?>
-        <input type="checkbox" name="odr_image_optimizer_settings[preload_fonts]" value="1" <?php checked($checked); ?>>
-        <label><?php esc_html_e('Preload theme fonts to prevent Flash of Unstyled Text', 'odr-image-optimizer'); ?></label>
-        <p class="description">
-            <?php esc_html_e('Improves perceived performance by loading critical fonts early.', 'odr-image-optimizer'); ?>
-        </p>
+        <input type="checkbox" id="preload_fonts" name="odr_optimizer_settings[preload_fonts]" value="1" <?php checked($value); ?>>
+        <label for="preload_fonts"><?php esc_html_e('Preload theme fonts with priority 0', 'odr-image-optimizer'); ?></label>
+        <p class="description"><?php esc_html_e('Breaks CSS → Font discovery chain. Required for Lighthouse 100/100.', 'odr-image-optimizer'); ?></p>
         <?php
     }
 
     /**
-     * Render kill bloat field
-     *
-     * @return void
+     * Render fix font display field
      */
-    public function render_kill_bloat_field(): void
+    public function render_fix_font_display_field(): void
     {
-        $settings = get_option('odr_image_optimizer_settings', []);
-        $checked = ! empty($settings['kill_bloat']);
+        $settings = get_option('odr_optimizer_settings', []);
+        $checked = ! empty($settings['fix_font_display']);
         ?>
-        <input type="checkbox" name="odr_image_optimizer_settings[kill_bloat]" value="1" <?php checked($checked); ?>>
-        <label><?php esc_html_e('Remove non-essential JavaScript (Emoji detection, Interactivity API)', 'odr-image-optimizer'); ?></label>
-        <p class="description">
-            <?php esc_html_e('Frees up bandwidth and processing for critical resources.', 'odr-image-optimizer'); ?>
-        </p>
+        <input type="checkbox" name="odr_optimizer_settings[fix_font_display]" value="1" <?php checked($checked); ?>>
+        <label><?php esc_html_e('Fix font-display: swap (prevent FOUT)', 'odr-image-optimizer'); ?></label>
+        <p class="description"><?php esc_html_e('Ensures all fonts use swap to show fallback text immediately.', 'odr-image-optimizer'); ?></p>
         <?php
     }
 
     /**
-     * Render inline CSS field
-     *
-     * @return void
+     * Render inject LCP preload field
      */
-    public function render_inline_css_field(): void
+    public function render_inject_lcp_field(): void
     {
-        $settings = get_option('odr_image_optimizer_settings', []);
-        $checked = ! empty($settings['inline_critical_css']);
+        $settings = get_option('odr_optimizer_settings', []);
+        $checked = ! empty($settings['inject_lcp_preload']);
         ?>
-        <input type="checkbox" name="odr_image_optimizer_settings[inline_critical_css]" value="1" <?php checked($checked); ?>>
-        <label><?php esc_html_e('Inline critical CSS above-the-fold', 'odr-image-optimizer'); ?></label>
-        <p class="description">
-            <?php esc_html_e('Reduces external CSS requests and unblocks rendering.', 'odr-image-optimizer'); ?>
-        </p>
+        <input type="checkbox" name="odr_optimizer_settings[inject_lcp_preload]" value="1" <?php checked($checked); ?>>
+        <label><?php esc_html_e('Inject LCP image preload hints', 'odr-image-optimizer'); ?></label>
+        <p class="description"><?php esc_html_e('Auto-detects and preloads Largest Contentful Paint images.', 'odr-image-optimizer'); ?></p>
+        <?php
+    }
+
+    /**
+     * Render remove bloat field
+     */
+    public function render_remove_bloat_field(): void
+    {
+        $settings = get_option('odr_optimizer_settings', []);
+        $checked = ! empty($settings['remove_bloat']);
+        ?>
+        <input type="checkbox" name="odr_optimizer_settings[remove_bloat]" value="1" <?php checked($checked); ?>>
+        <label><?php esc_html_e('Remove core bloat (emoji, interactivity API)', 'odr-image-optimizer'); ?></label>
+        <p class="description"><?php esc_html_e('Removes non-essential WordPress features. Required for Lighthouse 100/100.', 'odr-image-optimizer'); ?></p>
+        <?php
+    }
+
+    /**
+     * Render aggressive mode field
+     */
+    public function render_aggressive_mode_field(): void
+    {
+        $settings = get_option('odr_optimizer_settings', []);
+        $checked = ! empty($settings['aggressive_mode']);
+        ?>
+        <input type="checkbox" name="odr_optimizer_settings[aggressive_mode]" value="1" <?php checked($checked); ?>>
+        <label><?php esc_html_e('Enable all aggressive features', 'odr-image-optimizer'); ?></label>
+        <p class="description"><?php esc_html_e('Master toggle for all advanced optimizations.', 'odr-image-optimizer'); ?></p>
+        <?php
+    }
+
+    /**
+     * Render fix nested lists field
+     */
+    public function render_fix_nested_lists_field(): void
+    {
+        $settings = get_option('odr_optimizer_settings', []);
+        $checked = ! empty($settings['fix_nested_lists']);
+        ?>
+        <input type="checkbox" name="odr_optimizer_settings[fix_nested_lists]" value="1" <?php checked($checked); ?>>
+        <label><?php esc_html_e('Sanitize nested list HTML', 'odr-image-optimizer'); ?></label>
+        <p class="description"><?php esc_html_e('Fixes malformed HTML in nested lists. May break some themes.', 'odr-image-optimizer'); ?></p>
+        <?php
+    }
+
+    /**
+     * Render inject SEO meta field
+     */
+    public function render_inject_seo_meta_field(): void
+    {
+        $settings = get_option('odr_optimizer_settings', []);
+        $checked = ! empty($settings['inject_seo_meta']);
+        ?>
+        <input type="checkbox" name="odr_optimizer_settings[inject_seo_meta]" value="1" <?php checked($checked); ?>>
+        <label><?php esc_html_e('Inject SEO meta tags', 'odr-image-optimizer'); ?></label>
+        <p class="description"><?php esc_html_e('Adds Open Graph and structured data for better search visibility.', 'odr-image-optimizer'); ?></p>
         <?php
     }
 
