@@ -46,13 +46,13 @@ class SettingsPolicy
      *
      * @var string
      */
-    private const OPTION_NAME = 'odr_image_optimizer_settings';
+    private const OPTION_NAME = 'odr_optimizer_settings';
 
     /**
      * Get the complete settings object with safe defaults
      *
-     * Defaults to TRUE for optimizations (Lighthouse mode).
-     * Settings are only disabled if explicitly set to false.
+     * Returns the current user settings from the database.
+     * Converts all settings to boolean for consistency.
      *
      * @return array{compression_level: 'low'|'medium'|'high', enable_webp: bool, lazy_load_mode: 'native'|'hybrid'|'off', auto_optimize: bool, preload_fonts: bool, kill_bloat: bool, inline_critical_css: bool}
      */
@@ -62,12 +62,12 @@ class SettingsPolicy
 
         return [
             'compression_level'   => self::sanitize_compression_level($raw['compression_level'] ?? 'medium'),
-            'enable_webp'         => ! isset($raw['enable_webp']) || ! empty($raw['enable_webp']),
+            'enable_webp'         => ! empty($raw['enable_webp']),
             'lazy_load_mode'      => self::sanitize_lazy_mode($raw['lazy_load_mode'] ?? 'native'),
-            'auto_optimize'       => ! isset($raw['auto_optimize']) || ! empty($raw['auto_optimize']),
-            'preload_fonts'       => ! isset($raw['preload_fonts']) || ! empty($raw['preload_fonts']),
-            'kill_bloat'          => ! isset($raw['kill_bloat']) || ! empty($raw['kill_bloat']),
-            'inline_critical_css' => ! isset($raw['inline_critical_css']) || ! empty($raw['inline_critical_css']),
+            'auto_optimize'       => ! empty($raw['auto_optimize']),
+            'preload_fonts'       => ! empty($raw['preload_fonts']),
+            'kill_bloat'          => ! empty($raw['kill_bloat']),
+            'inline_critical_css' => ! empty($raw['inline_critical_css']),
         ];
     }
 

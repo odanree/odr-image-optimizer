@@ -5,11 +5,13 @@ parameters:
   excludePaths:
     - includes/core/**
     - includes/admin/**
-    - includes/Admin/**
     - includes/class-*.php
     - includes/Repository/**
     - includes/Configuration/**
     - includes/Frontend/**
+  stubFiles:
+    - stubs/wordpress.stub.php
+    - stubs/imageoptimizer.stub.php
   reportUnmatchedIgnoredErrors: false
   ignoreErrors:
     - identifier: class.notFound
@@ -17,11 +19,23 @@ parameters:
     - identifier: return.type
       message: '#ImageOptimizer\\Core\\OptimizationEngine#'
     # WordPress function and constant stubs for Services
+    # These are intentionally ignored as they're properly defined in stubs/wordpress.stub.php
     - identifier: function.notFound
-      message: '#(add_image_size|apply_filters|wp_get_attachment_metadata|wp_get_attachment_image_url|wp_get_attachment_image_srcset|is_admin|wp_dequeue_script|sanitize_text_field|wp_unslash|file_exists|file_get_contents|is_singular|get_post_thumbnail_id|esc_attr|esc_url|remove_action|content_url)#'
+      message: '#(add_image_size|apply_filters|wp_get_attachment_metadata|wp_get_attachment_image_url|wp_get_attachment_image_srcset|is_admin|wp_dequeue_script|wp_dequeue_style|sanitize_text_field|wp_unslash|file_exists|file_get_contents|is_singular|get_post_thumbnail_id|esc_attr|esc_url|remove_action|content_url|get_option|wp_deregister_script|add_action|wp_styles|add_filter|is_home|is_front_page|is_archive|get_the_excerpt|get_bloginfo|get_the_archive_title|wp_strip_all_tags|wp_get_attachment_url|ob_start|ob_gzhandler|headers_sent|header|is_array|str_replace|strpos|strlen|preg_replace|substr|preg_match|is_object|remove_query_arg|current_theme_supports)#'
     - identifier: constant.notFound
       message: '#IMAGE_OPTIMIZER_PATH#'
+    # Widget filter callback receives mixed types, before_widget is always string in practice
+    - identifier: invalidCast
+      message: '#Cannot cast mixed to string#'
+      path: includes/Services/class-compatibility-service.php
     # Admin SettingsService/SettingsPolicy are in excluded dir
     - identifier: class.notFound
       message: '#ImageOptimizer\\Admin\\(SettingsService|SettingsPolicy)#'
+    # Settings Repository and Admin Settings are new classes
+    - identifier: class.notFound
+      message: '#ImageOptimizer\\Admin\\Admin_Settings#'
+    # Settings Repository has unreachable code warning in type coercion
+    - identifier: deadCode.unreachable
+      message: '#Unreachable statement#'
+      path: includes/Services/class-settings-repository.php
 

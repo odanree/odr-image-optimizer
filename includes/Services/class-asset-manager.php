@@ -64,47 +64,15 @@ class AssetManager
     /**
      * Inline critical CSS to eliminate render-blocking request
      *
-     * Our frontend.css is only 0.7KB, so inlining saves:
-     * - 1 HTTP request
-     * - DNS lookup time
-     * - TCP handshake
-     * - ~200ms on 4G throttle
-     *
-     * Inlining also makes CSS part of the HTML (downloaded in parallel with images).
-     *
-     * Respects user setting: 'inline_css' toggle in admin panel.
+     * DEPRECATED: CSS inlining is now handled by Asset_Service in the new SOA.
+     * This legacy method is kept for backward compatibility but does nothing.
      *
      * @return void
      */
     public function inline_frontend_styles(): void
     {
-        // Check if CSS inlining is enabled in settings
-        if (! \ImageOptimizer\Admin\SettingsService::is_enabled('inline_css')) {
-            return;
-        }
-
-        // Only apply on frontend
-        if (is_admin()) {
-            return;
-        }
-
-        $css_path = IMAGE_OPTIMIZER_PATH . 'assets/css/frontend.css';
-
-        if (! file_exists($css_path)) {
-            return;
-        }
-
-        // Read the CSS file
-        $css = file_get_contents($css_path); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-
-        if (! is_string($css) || empty($css)) {
-            return;
-        }
-
-        // Inline directly into the head
-        // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
-        echo '<style id="odr-optimizer-inline-css">' . $css . '</style>' . "\n";
-        // phpcs:enable
+        // Handled by Asset_Service in Service-Oriented Architecture
+        return;
     }
 
     /**

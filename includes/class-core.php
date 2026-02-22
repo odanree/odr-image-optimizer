@@ -106,14 +106,15 @@ class Core
     }
 
     /**
-     * Initialize admin components
+     * Initialize admin functionality
+     *
+     * Settings are now registered by Plugin_Orchestrator → Admin_Settings → Settings class
      */
     private function init_admin()
     {
-        // Initialize admin classes - Settings needs to be instantiated to register admin_init hooks
-        // even before is_admin() fully evaluates (during early plugin loading)
+        // Initialize dashboard class for admin page rendering
         new Dashboard();
-        new Settings();
+        // Settings instantiation moved to Admin_Settings (via Plugin_Orchestrator)
     }
 
     /**
@@ -148,23 +149,15 @@ class Core
      */
     public function register_admin_menu()
     {
+        // Register main plugin page as top-level menu item at the bottom
         add_menu_page(
             __('ODR Image Optimizer', 'odr-image-optimizer'),
             __('ODR Image Optimizer', 'odr-image-optimizer'),
             'manage_options',
             'image-optimizer',
             [ $this, 'render_dashboard' ],
-            'dashicons-format-image',
-            80,
-        );
-
-        add_submenu_page(
-            'image-optimizer',
-            __('Settings', 'odr-image-optimizer'),
-            __('Settings', 'odr-image-optimizer'),
-            'manage_options',
-            'image-optimizer-settings',
-            [ $this, 'render_settings' ],
+            'dashicons-images-alt2',
+            99, // Position at bottom of menu (Settings is at 99, so this will be above)
         );
     }
 
@@ -174,14 +167,6 @@ class Core
     public function render_dashboard()
     {
         Dashboard::render();
-    }
-
-    /**
-     * Render settings
-     */
-    public function render_settings()
-    {
-        Settings::render();
     }
 
     /**
