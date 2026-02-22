@@ -179,7 +179,8 @@ class Settings
      */
     public function enqueue_scripts($hook): void
     {
-        if ('image-optimizer_page_image-optimizer-settings' !== $hook) {
+        // Hook name for submenu page under tools.php: tools_page_{page_slug}
+        if ('tools_page_image-optimizer-settings' !== $hook) {
             return;
         }
 

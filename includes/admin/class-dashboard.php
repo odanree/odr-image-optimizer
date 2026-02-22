@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Admin Dashboard
  *
@@ -8,6 +10,10 @@
  */
 
 namespace ImageOptimizer\Admin;
+
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 
 /**
  * Dashboard class
@@ -29,12 +35,13 @@ class Dashboard
      */
     public function enqueue_scripts($hook)
     {
-        if ('toplevel_page_image-optimizer' !== $hook) {
+        // Hook name for submenu page under tools.php: tools_page_{page_slug}
+        if ('tools_page_image-optimizer' !== $hook) {
             return;
         }
 
         // Use current time as cache buster with microtime for maximum uniqueness
-        $cache_buster = str_replace('.', '', microtime(true));
+        $cache_buster = str_replace('.', '', (string) microtime(true));
 
         wp_enqueue_style(
             'image-optimizer-dashboard',
@@ -72,10 +79,5 @@ class Dashboard
 			<div id="image-optimizer-dashboard"></div>
 		</div>
 		<?php
-
-if (! defined('ABSPATH')) {
-    exit('Direct access denied.');
-}
-
     }
 }

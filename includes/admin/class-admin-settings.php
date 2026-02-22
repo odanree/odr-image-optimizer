@@ -72,22 +72,16 @@ class Admin_Settings
     /**
      * Add plugin settings page to admin menu
      *
-     * Creates a top-level menu item for "ODR Optimizer" with dedicated sidebar slot.
-     * This generates admin.php?page=image-optimizer-settings URL.
+     * Settings menu is now managed by class-core.php which registers under Tools menu.
+     * This method is kept for backward compatibility but does not register a menu.
+     * The Settings_Repository and Admin_Settings provide the configuration layer.
      *
      * @return void
      */
     public function add_menu_page(): void
     {
-        add_menu_page(
-            'ODR Image Optimizer Settings',  // Page Title
-            'ODR Optimizer',                 // Menu Title
-            'manage_options',                // Capability
-            'image-optimizer-settings',      // Menu Slug
-            [$this, 'render_form'],          // Callback
-            'dashicons-performance',         // Icon (dashicons-performance fits 400/400 branding)
-            80,                               // Position (near Settings/Tools)
-        );
+        // Menu registration is handled by class-core.php
+        // This class provides the settings repository and UI rendering
     }
 
     /**
