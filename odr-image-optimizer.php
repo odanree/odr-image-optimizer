@@ -100,6 +100,13 @@ require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-header-manager.php'
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-asset-manager.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-priority-service.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-cleanup-service.php';
+
+// NEW: Service-Oriented Architecture (SOA) classes
+require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-server-service.php';
+require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-asset-service.php';
+require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-image-service.php';
+require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-compatibility-service.php';
+require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-plugin-orchestrator.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Admin/class-settings-service.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-responsive-image-service.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Frontend/class-frontend-delivery.php';
@@ -169,6 +176,25 @@ add_action('plugins_loaded', function () {
 add_action('init', function () {
     Core::get_instance();
 }, 20);
+
+/**
+ * Initialize Service-Oriented Architecture (Enterprise Grade)
+ *
+ * This orchestrator coordinates all performance services:
+ * 1. Server_Service - HTTP transport optimization (gzip, headers)
+ * 2. Asset_Service - Critical rendering path (fonts, bloat removal)
+ * 3. Image_Service - LCP optimization (image preloading)
+ * 4. Compatibility_Service - Theme-specific fixes (HTML sanitization, SEO)
+ *
+ * Benefits:
+ * - Clean separation of concerns (SRP - Single Responsibility Principle)
+ * - Easy to extend with new services (Database_Service, CDN_Service, etc.)
+ * - Each service can be tested independently
+ * - Makes the codebase "Enterprise Grade" per PR notes
+ */
+add_action('init', function () {
+    \ImageOptimizer\Services\Plugin_Orchestrator::get_instance()->init();
+}, 15); // Priority 15: runs BEFORE Core (20), ensures services register early
 
 /**
  * Register plugin settings (admin only)

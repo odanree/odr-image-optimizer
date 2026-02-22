@@ -337,6 +337,94 @@ function wp_get_attachment_image_url($attachment_id, $size = 'thumbnail', $icon 
  */
 function wp_get_attachment_image_srcset($attachment_id, $size = 'medium', $post = null) {}
 
+/**
+ * Dequeue a CSS stylesheet
+ *
+ * @param string $handle
+ * @return void
+ */
+function wp_dequeue_style($handle) {}
+
+/**
+ * Dequeue a JavaScript script
+ *
+ * @param string $handle
+ * @return void
+ */
+function wp_dequeue_script($handle) {}
+
+/**
+ * Get post excerpt
+ *
+ * @param int|WP_Post $post
+ * @return string
+ */
+function get_the_excerpt($post = null) {}
+
+/**
+ * Check if current page is the front page
+ *
+ * @return bool
+ */
+function is_front_page() {}
+
+/**
+ * Check if current page is the home page (blog)
+ *
+ * @return bool
+ */
+function is_home() {}
+
+/**
+ * Check if current page is an archive
+ *
+ * @return bool
+ */
+function is_archive() {}
+
+/**
+ * Get archive title
+ *
+ * @param string $before
+ * @param string $after
+ * @return string
+ */
+function get_the_archive_title($before = '', $after = '') {}
+
+/**
+ * Strip HTML tags from a string
+ *
+ * @param string $string
+ * @param string|null $allowed_tags
+ * @return string
+ */
+function wp_strip_all_tags($string, $allowed_tags = null) {}
+
+/**
+ * Get blog info (site name, description, URL, etc)
+ *
+ * @param string $show
+ * @param string $filter
+ * @return string
+ */
+function get_bloginfo($show = '', $filter = 'raw') {}
+
+/**
+ * Get attachment URL
+ *
+ * @param int $attachment_id
+ * @return string|false
+ */
+function wp_get_attachment_url($attachment_id) {}
+
+/**
+ * Get post thumbnail ID
+ *
+ * @param int|WP_Post $post
+ * @return int|false
+ */
+function get_post_thumbnail_id($post = null) {}
+
 // WordPress Global Variables
 
 class WP_Styles {
