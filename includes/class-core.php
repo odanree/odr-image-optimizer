@@ -106,14 +106,15 @@ class Core
     }
 
     /**
-     * Initialize admin components
+     * Initialize admin functionality
+     *
+     * Settings are now registered by Plugin_Orchestrator → Admin_Settings → Settings class
      */
     private function init_admin()
     {
-        // Initialize admin classes - Settings needs to be instantiated to register admin_init hooks
-        // even before is_admin() fully evaluates (during early plugin loading)
+        // Initialize dashboard class for admin page rendering
         new Dashboard();
-        new Settings();
+        // Settings instantiation moved to Admin_Settings (via Plugin_Orchestrator)
     }
 
     /**

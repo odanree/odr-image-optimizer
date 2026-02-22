@@ -110,12 +110,15 @@ class Asset_Service
      *
      * Dequeues non-essential CSS and JavaScript that theme doesn't need.
      * Common items:
-     * - wp-block-library (Gutenberg block styles)
-     * - global-styles (global styles when not needed)
-     * - Classic theme CSS
+     * - wp-block-library (Gutenberg block styles) - ONLY if blocks are not used
+     * - global-styles (global styles when not needed) - ONLY if theme provides its own
+     * - Classic theme CSS - ONLY if using block-based theme
      *
      * Runs at priority 999 (extremely late) to ensure all plugins/themes
      * have already enqueued their scripts before we dequeue.
+     *
+     * CRITICAL: Only remove CSS if we're certain it's not needed.
+     * Aggressive removal can break block-based themes and layouts.
      *
      * @return void
      */
@@ -125,18 +128,24 @@ class Asset_Service
             return;
         }
 
-        // Remove block library styles if not using Gutenberg blocks
-        wp_dequeue_style('wp-block-library');
+        // IMPORTANT: wp-block-library CSS is NOT bloat if site uses Gutenberg blocks
+        // Removing it breaks block styling, so skip this dequeue entirely
+        // Block library CSS (~5KB gzipped) is worth the price for block functionality
 
-        // Remove global styles if theme provides its own
-        wp_dequeue_style('global-styles');
+        // Remove global styles only if theme is NOT block-based
+        // Block themes use global-styles, so check theme support first
+        if (! current_theme_supports('editor-styles')) {
+            wp_dequeue_style('global-styles');
+        }
 
-        // Remove emoji styles if not needed
+        // Remove emoji styles and scripts (safe to remove - rarely used)
         wp_dequeue_style('print-emoji-styles');
         wp_dequeue_script('wp-emoji');
 
-        // Remove classic theme styles if using block-based theme
-        wp_dequeue_style('classic-theme-styles');
+        // Remove classic theme styles only if explicitly needed
+        // Most block themes already handle this, so be conservative
+        // Uncomment only if you see classic theme interference:
+        // wp_dequeue_style('classic-theme-styles');
     }
 
     /**

@@ -103,23 +103,33 @@ class Plugin_Orchestrator
         // 1. Initialize Admin Settings UI (runs on admin_menu, admin_init)
         (new Admin_Settings($this->settings))->register();
 
-        // 2. Optimize the HTTP transport layer (gzip, headers)
+        // 2. Apply cache headers for long-term asset caching
+        // Must run early (template_redirect) before content output
+        $header_manager = new HeaderManager();
+        add_action('template_redirect', [$header_manager, 'apply_cache_headers'], 1);
+
+        // 3. Clean up bloat and defer non-critical scripts
+        // Runs at wp_enqueue_scripts to remove/defer unnecessary resources
+        $cleanup_service = new CleanupService();
+        add_action('wp_enqueue_scripts', [$cleanup_service, 'remove_bloat'], 100);
+
+        // 4. Optimize the HTTP transport layer (gzip, headers)
         // Only runs if enabled in settings
         if ($this->settings->is_enabled('enable_gzip')) {
             (new Server_Service())->register();
         }
 
-        // 3. Optimize critical rendering path (fonts, bloat removal)
+        // 5. Optimize critical rendering path (fonts, bloat removal)
         // Injects settings so it can respect user preferences
         (new Asset_Service($this->settings))->register();
 
-        // 4. Optimize Largest Contentful Paint (LCP)
+        // 6. Optimize Largest Contentful Paint (LCP)
         // Only runs if enabled in settings
         if ($this->settings->is_enabled('inject_lcp_preload')) {
             (new Image_Service())->register();
         }
 
-        // 5. Fix theme-specific HTML issues (sanitization, SEO)
+        // 7. Fix theme-specific HTML issues (sanitization, SEO)
         // Injects settings so it respects user's aggressive mode choice
         (new Compatibility_Service($this->settings))->register();
     }
