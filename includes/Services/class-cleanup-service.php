@@ -79,8 +79,9 @@ class CleanupService
     /**
      * Remove render-blocking scripts that compete for bandwidth on mobile
      *
-     * Dequeues WordPress Interactivity API and Block Navigation View scripts.
-     * These are beneficial for interactivity but steal bandwidth from images on 4G.
+     * Dequeues AND deregisters WordPress Interactivity API and Block Navigation View scripts.
+     * WordPress often re-injects dequeued scripts as dependencies for block-based themes.
+     * By deregistering entirely, we tell WordPress these scripts don't exist, preventing re-injection.
      *
      * On slow networks (4G throttle):
      * - Interactivity JS: 40KB
@@ -99,13 +100,39 @@ class CleanupService
      */
     private function force_speed(): void
     {
+        // Get settings with strict fallback to '1' (enabled by default)
+        $options = get_option('odr_image_optimizer_settings', []);
+        $should_cleanup = $options['kill_bloat'] ?? '1';
+
+        // Only proceed if explicitly enabled ('1' or true)
+        if ('1' !== $should_cleanup && true !== $should_cleanup) {
+            return;
+        }
+
         // Dequeue Interactivity API (WordPress 6.5+)
         // Used for dynamic block interactions, not critical for most sites
-        wp_dequeue_script('wp-interactivity');
+        // Fallback to '1' if key doesn't exist (Fast by Default)
+        $remove_interactivity = $options['remove_interactivity_bloat'] ?? '1';
+        if ('1' === $remove_interactivity || true === $remove_interactivity) {
+            // Standard Dequeue: Removes the script if already loaded
+            wp_dequeue_script('wp-interactivity');
+            
+            // The "Hammer": Deregister prevents WordPress from re-injecting it as a dependency
+            // Block-based themes often declare wp-interactivity as a dependency.
+            // Deregistering tells WordPress: "This script doesn't exist."
+            wp_deregister_script('wp-interactivity');
+        }
 
         // Dequeue Block Navigation (WordPress 6.3+)
         // Adds JS to navigation blocks, but slows down pages with navigation
         wp_dequeue_script('wp-block-navigation-view');
+        wp_deregister_script('wp-block-navigation-view');
+
+        // For WordPress 6.9+: Deregister Script Modules (new ES modules system)
+        // Script modules bypass traditional dequeue/deregister, so we need explicit deregistration
+        if (function_exists('wp_script_modules')) {
+            wp_script_modules()->deregister('@wordpress/interactivity');
+        }
 
         // Dequeue Block Library (includes all block view scripts)
         // If not using advanced block features, this is safe to remove

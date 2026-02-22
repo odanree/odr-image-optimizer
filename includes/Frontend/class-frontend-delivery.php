@@ -94,10 +94,10 @@ class FrontendDelivery
             // VIP Treatment: Tell the browser to download THIS NOW
             // fetchpriority=high: Start downloading before other resources
             // loading=eager: Don't lazy-load, fetch immediately
-            // decoding=sync: Block rendering until image is decoded (LCP image should be sync)
+            // decoding=async: Don't block the main thread while decompressing (allows layout to proceed)
             $attrs['fetchpriority'] = 'high';
             $attrs['loading'] = 'eager';
-            $attrs['decoding'] = 'sync';
+            $attrs['decoding'] = 'async';
         } else {
             // Standard Treatment: Load when needed
             // loading=lazy: Let the browser decide when to fetch (usually on scroll)

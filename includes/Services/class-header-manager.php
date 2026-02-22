@@ -38,6 +38,11 @@ class HeaderManager
      * Called on template_redirect (early in request, before content output).
      * Only applies to public-facing pages, not admin.
      *
+     * Cache strategy:
+     * - Static assets (images, fonts, CSS, JS): 1 year (immutable)
+     * - HTML pages: 1 hour (allows updates without manual purge)
+     * - Browser revalidation: ETags + Last-Modified for validation
+     *
      * @return void
      */
     public function apply_cache_headers(): void
@@ -50,13 +55,24 @@ class HeaderManager
         // Check if this is a request for a media file or static asset
         $request_uri = isset($_SERVER['REQUEST_URI']) ? sanitize_text_field(wp_unslash($_SERVER['REQUEST_URI'])) : '';
 
-        // Only cache actual files (images, webp, css, js), not HTML pages
-        if (preg_match('~\.(webp|jpg|jpeg|png|gif|css|js|woff2|woff)$~i', $request_uri)) {
+        // Cache strategy for static assets: 1 year (31536000 seconds)
+        // immutable: File won't change (content-based naming)
+        if (preg_match('~\.(webp|jpg|jpeg|png|gif|css|js|woff2|woff|svg)$~i', $request_uri)) {
             // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
-            // Aggressive cache for 1 year (31536000 seconds)
-            // immutable: File won't change (content-based naming)
             header('Cache-Control: public, max-age=31536000, immutable');
             // phpcs:enable
+        } else {
+            // HTML pages and dynamic content: Cache for 1 hour
+            // Allows browser caching but respects updates within 1 hour
+            // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
+            header('Cache-Control: public, max-age=3600, must-revalidate');
+            // phpcs:enable
         }
+
+        // Add Vary header for proper caching with Accept-Encoding
+        // This ensures gzip/brotli compressed versions are cached separately
+        // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
+        header('Vary: Accept-Encoding');
+        // phpcs:enable
     }
 }
