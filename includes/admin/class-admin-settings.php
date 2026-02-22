@@ -66,7 +66,7 @@ class Admin_Settings
     public function register(): void
     {
         add_action('admin_menu', [$this, 'add_menu_page']);
-        
+
         // Initialize the Settings class which registers WordPress settings
         // The Settings class constructor hooks into admin_init
         new Settings();
