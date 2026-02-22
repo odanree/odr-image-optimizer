@@ -104,7 +104,7 @@ class Plugin_Orchestrator
         (new Admin_Settings($this->settings))->register();
 
         // 2. Apply cache headers for long-term asset caching
-        // Must run early (template_redirect) before content output
+        // Run on template_redirect to catch all requests early, before output
         $header_manager = new HeaderManager();
         add_action('template_redirect', [$header_manager, 'apply_cache_headers'], 1);
 

@@ -61,6 +61,11 @@ class Asset_Service
      */
     public function register(): void
     {
+        // Remove version query strings from scripts/styles for better caching
+        // WordPress adds ?ver=X.X.X which prevents browsers from caching
+        add_filter('script_loader_src', [$this, 'remove_query_strings'], 15, 1);
+        add_filter('style_loader_src', [$this, 'remove_query_strings'], 15, 1);
+
         // Preload critical fonts early (priority 0 = before everything)
         // Only if font preloading is enabled
         if ($this->settings->is_enabled('preload_fonts')) {
@@ -72,6 +77,31 @@ class Asset_Service
         if ($this->settings->is_enabled('remove_bloat') || $this->settings->is_aggressive_mode()) {
             add_action('wp_enqueue_scripts', [$this, 'remove_core_bloat'], 999);
         }
+    }
+
+    /**
+     * Remove query strings from asset URLs for better caching
+     *
+     * WordPress adds ?ver=X.X.X to scripts and stylesheets, which prevents
+     * browsers and CDNs from caching them effectively. Since we're using
+     * ExpiresByType in .htaccess based on file extension, removing the query
+     * string allows proper cache control headers to be applied.
+     *
+     * Example:
+     * - Before: /wp-content/plugins/plugin/script.js?ver=1.0.0
+     * - After:  /wp-content/plugins/plugin/script.js
+     *
+     * @param string $src The script or style source URL
+     * @return string     The cleaned URL without query strings
+     */
+    public function remove_query_strings(string $src): string
+    {
+        if (strpos($src, '?') === false) {
+            return $src;
+        }
+
+        // Remove everything after the ? (query string)
+        return strtok($src, '?');
     }
 
     /**
