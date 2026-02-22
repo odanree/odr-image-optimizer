@@ -104,9 +104,8 @@ class Plugin_Orchestrator
         (new Admin_Settings($this->settings))->register();
 
         // 2. Apply cache headers for long-term asset caching
-        // Run on template_redirect to catch all requests early, before output
-        $header_manager = new HeaderManager();
-        add_action('template_redirect', [$header_manager, 'apply_cache_headers'], 1);
+        // Uses send_headers hook (earliest point to send headers)
+        (new HeaderManager())->register();
 
         // 3. Clean up bloat and defer non-critical scripts
         // Runs at wp_enqueue_scripts to remove/defer unnecessary resources

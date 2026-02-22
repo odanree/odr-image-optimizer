@@ -62,9 +62,10 @@ class Asset_Service
     public function register(): void
     {
         // Remove version query strings from scripts/styles for better caching
-        // WordPress adds ?ver=X.X.X which prevents browsers from caching
-        add_filter('script_loader_src', [$this, 'remove_query_strings'], 15, 1);
-        add_filter('style_loader_src', [$this, 'remove_query_strings'], 15, 1);
+        // Uses remove_query_arg('ver', $src) to cleanly strip ?ver=X.X.X
+        // Priority 999 = runs LAST, after all plugins/themes have enqueued
+        add_filter('script_loader_src', [$this, 'remove_ver_query_string'], 999);
+        add_filter('style_loader_src', [$this, 'remove_ver_query_string'], 999);
 
         // Also catch script modules in footer (WordPress 6.9+)
         // Uses output buffering to clean query strings from all URLs
@@ -84,6 +85,36 @@ class Asset_Service
     }
 
     /**
+     * Remove version query string from static resources
+     *
+     * Strips ?ver=X.X.X from scripts and styles to improve cacheability.
+     * This ensures Lighthouse sees clean URLs without cache-busting parameters.
+     *
+     * Example:
+     * - Input:  /wp-includes/js/jquery/jquery.js?ver=6.9
+     * - Output: /wp-includes/js/jquery/jquery.js
+     *
+     * Uses WordPress's remove_query_arg() for reliable parameter removal.
+     *
+     * @param string $src The script or style source URL
+     * @return string     The cleaned URL without ?ver= parameter
+     */
+    public function remove_ver_query_string($src)
+    {
+        if (! is_string($src)) {
+            return $src;
+        }
+
+        // Only process if URL contains ?ver=
+        if (strpos($src, '?ver=') === false) {
+            return $src;
+        }
+
+        // Remove the 'ver' query parameter cleanly
+        return remove_query_arg('ver', $src);
+    }
+
+    /**
      * Remove query strings from asset URLs for better caching
      *
      * WordPress adds ?ver=X.X.X to scripts and stylesheets, which prevents
@@ -95,17 +126,29 @@ class Asset_Service
      * - Before: /wp-content/plugins/plugin/script.js?ver=1.0.0
      * - After:  /wp-content/plugins/plugin/script.js
      *
+     * Uses WordPress's remove_query_arg() function for reliability.
+     *
      * @param string $src The script or style source URL
      * @return string     The cleaned URL without query strings
      */
     public function remove_query_strings(string $src): string
     {
+        if (! is_string($src)) {
+            return $src;
+        }
+
+        // Remove all query parameters, keeping only the base URL
+        // This ensures compatibility with version query strings and any future params
         if (strpos($src, '?') === false) {
             return $src;
         }
 
-        // Remove everything after the ? (query string)
-        return strtok($src, '?');
+        // Use WordPress's remove_query_arg to cleanly remove 'ver' parameter
+        $src = remove_query_arg('ver', $src);
+
+        // Also remove any other query args that might cause cache misses
+        // (though 'ver' is the most common)
+        return $src;
     }
 
     /**

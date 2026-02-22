@@ -33,9 +33,21 @@ if (! defined('ABSPATH')) {
 class HeaderManager
 {
     /**
+     * Register hooks for cache header application
+     *
+     * @return void
+     */
+    public function register(): void
+    {
+        // Use 'send_headers' hook - fires before any content is sent
+        // This is earlier than template_redirect and ensures headers are sent
+        add_action('send_headers', [$this, 'apply_cache_headers']);
+    }
+
+    /**
      * Apply aggressive cache headers for media and assets
      *
-     * Called on template_redirect (early in request, before content output).
+     * Called on send_headers (earliest point to send headers, before content).
      * Only applies to public-facing pages, not admin.
      *
      * Cache strategy:
