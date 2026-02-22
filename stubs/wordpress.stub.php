@@ -475,3 +475,102 @@ class WP_Post {
     /** @var string */
     public $post_title;
 }
+
+/**
+ * Get the file path for an attachment
+ *
+ * @param int $attachment_id
+ * @return string|false
+ */
+function get_attached_file($attachment_id) {}
+
+/**
+ * Clean attachment metadata cache
+ *
+ * @param int $attachment_id
+ * @return void
+ */
+function clean_attachment_cache($attachment_id) {}
+
+/**
+ * Get attachment metadata
+ *
+ * @param int $attachment_id
+ * @param bool $unfiltered
+ * @return array<string, mixed>|false
+ */
+function wp_get_attachment_metadata($attachment_id, $unfiltered = false) {}
+
+/**
+ * Update attachment metadata
+ *
+ * @param int $attachment_id
+ * @param array<string, mixed> $data
+ * @return int|false
+ */
+function wp_update_attachment_metadata($attachment_id, $data) {}
+
+/**
+ * Get image sizes for attachment
+ *
+ * @param int $attachment_id
+ * @param string|int[] $size
+ * @return string
+ */
+function wp_get_attachment_image_sizes($attachment_id, $size = 'large') {}
+
+/**
+ * WordPress error object
+ */
+class WP_Error {
+    /**
+     * Get error message
+     *
+     * @return string
+     */
+    public function get_error_message() {}
+    
+    /**
+     * Get error code
+     *
+     * @return string|int
+     */
+    public function get_error_code() {}
+}
+
+/**
+ * WordPress image editor
+ */
+class WP_Image_Editor {
+    /**
+     * Get image size
+     *
+     * @return array<string, int>|false
+     */
+    public function get_size() {}
+    
+    /**
+     * Set quality for compression
+     *
+     * @param int $quality
+     * @return WP_Image_Editor
+     */
+    public function set_quality($quality) {}
+    
+    /**
+     * Set MIME type
+     *
+     * @param string $mime_type
+     * @return WP_Image_Editor
+     */
+    public function set_mime_type($mime_type) {}
+    
+    /**
+     * Save image file
+     *
+     * @param string|null $filename
+     * @param string|null $mime_type
+     * @return array<string, mixed>|WP_Error
+     */
+    public function save($filename = null, $mime_type = null) {}
+}
