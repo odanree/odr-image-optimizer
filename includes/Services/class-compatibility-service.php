@@ -127,10 +127,10 @@ class Compatibility_Service
      * This filter ensures sizes exactly match the theme's 704px content width.
      *
      * Filter Signature:
-     * apply_filters('wp_calculate_image_sizes', $sizes, $size, $image_src, $image_meta, $attachment_id)
+     * apply_filters('wp_calculate_image_sizes', $sizes, $size_array, $image_src, $image_meta, $attachment_id)
      *
      * @param string                  $sizes        The sizes attribute string (may be empty).
-     * @param string                  $size         The image size name (e.g., 'odr_content_optimized').
+     * @param array<int, int>         $sizeArray    The image dimensions [width, height].
      * @param string                  $imageSrc     The image source URL.
      * @param array<string, mixed>    $imageMeta    The attachment metadata.
      * @param int                     $attachmentId The attachment post ID.
@@ -139,7 +139,7 @@ class Compatibility_Service
      */
     public function tighten_image_sizes(
         string $sizes,
-        string $size,
+        array $sizeArray,
         string $imageSrc,
         array $imageMeta,
         int $attachmentId,
@@ -149,8 +149,9 @@ class Compatibility_Service
             return $sizes;
         }
 
-        // Target our optimized size and theme defaults
-        if ($size === 'odr_content_optimized' || $size === 'medium_large') {
+        // Check if this is our optimized size (704px width)
+        // Only tighten if image width is 704px (content width)
+        if (isset($sizeArray[0]) && (int) $sizeArray[0] === 704) {
             // Cap at 704px to match Twenty Twenty-Five content width
             return '(max-width: 704px) 100vw, 704px';
         }
