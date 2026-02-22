@@ -40,7 +40,11 @@ class Autoloader
 
         // Convert namespace to file path with kebab-case for class names
         $parts = explode('\\', $class_name);
-        $file_name = 'class-' . strtolower(str_replace('_', '-', array_pop($parts))) . '.php';
+        $class_part = array_pop($parts);
+
+        // Convert CamelCase and snake_case to kebab-case
+        $kebab_class = self::to_kebab_case($class_part);
+        $file_name = 'class-' . $kebab_class . '.php';
 
         // Build directory path from remaining namespace parts (keep original case for compatibility with case-sensitive filesystems)
         $dir_path = '';
@@ -55,5 +59,24 @@ class Autoloader
         if (file_exists($file)) {
             require_once $file;
         }
+    }
+
+    /**
+     * Convert CamelCase and snake_case to kebab-case
+     *
+     * @param string $string The string to convert.
+     * @return string The kebab-cased string.
+     */
+    private static function to_kebab_case($string)
+    {
+        // First, replace underscores with hyphens (for snake_case)
+        $string = str_replace('_', '-', $string);
+
+        // Then, insert hyphens before uppercase letters (for CamelCase)
+        // and convert to lowercase
+        $string = preg_replace('/([a-z])([A-Z])/', '$1-$2', $string);
+        $string = strtolower($string);
+
+        return $string;
     }
 }

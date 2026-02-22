@@ -91,6 +91,11 @@ class PriorityService
      */
     public function inject_preload(): void
     {
+        // Check if preload is allowed via policy
+        if (! SettingsPolicy::should_preload_fonts()) {
+            return;
+        }
+
         // No preload if no featured image
         if (null === self::$lcp_id) {
             return;

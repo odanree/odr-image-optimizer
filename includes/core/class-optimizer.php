@@ -329,7 +329,7 @@ class Optimizer implements OptimizerInterface
             // This handles images uploaded BEFORE plugin activation (no subsizes were ever generated)
             $metadata = \wp_get_attachment_metadata($attachment_id);
             $has_subsizes = isset($metadata['sizes']) && !empty($metadata['sizes']);
-            
+
             if (!$has_subsizes) {
                 // No subsizes exist - regenerate them using WordPress's native image generation
                 // This creates all standard sizes (thumbnail, medium, large, etc.)
@@ -912,7 +912,7 @@ class Optimizer implements OptimizerInterface
         $file_info = \pathinfo($file);
         $base_name = $file_info['filename'];
         $dir = $file_info['dirname'];
-        
+
         // Check for custom ODR responsive sizes
         // These are registered via add_image_size('odr_content_optimized', 704, 0, false)
         // but may not be in wp_get_intermediate_image_sizes()
@@ -922,23 +922,23 @@ class Optimizer implements OptimizerInterface
             'odr_mobile_optimized'  => 450,
             'odr_tablet_optimized'  => 600,
         ];
-        
+
         foreach ($custom_responsive_sizes as $size_name => $target_width) {
             // Skip if already in metadata
             if (isset($metadata['sizes'][$size_name])) {
                 continue;
             }
-            
+
             // Calculate expected height to maintain aspect ratio
             $target_height = (int) \round($target_width / $original_ratio);
-            
+
             // Look for files that match this size pattern
             // WordPress names them: filename-WIDTHxHEIGHT.ext
             $potential_patterns = [
                 $dir . '/' . $base_name . '-' . $target_width . 'x' . $target_height . '.jpg',
                 $dir . '/' . $base_name . '-' . $target_width . 'x*.jpg',  // Wildcard for slight height differences
             ];
-            
+
             // Try exact match first
             if (\file_exists($potential_patterns[0])) {
                 $size_info = @\getimagesize($potential_patterns[0]);
@@ -954,7 +954,7 @@ class Optimizer implements OptimizerInterface
                     continue;
                 }
             }
-            
+
             // Try wildcard match if exact didn't work
             $glob_pattern = $dir . '/' . $base_name . '-' . $target_width . 'x*.jpg';
             $matches = \glob($glob_pattern);
@@ -1033,24 +1033,24 @@ class Optimizer implements OptimizerInterface
                     if ($this->config->should_create_webp()) {
                         if ($this->can_create_webp($subsize_file)) {
                             $webp_file_path = $this->create_webp_version($subsize_file);
-                            
+
                             if ($webp_file_path && file_exists($webp_file_path)) {
                                 // Get dimensions from original size data
                                 $width = $size_data['width'] ?? 0;
                                 $height = $size_data['height'] ?? 0;
-                                
+
                                 // Create WebP size name (e.g., 'medium_webp')
                                 $webp_size_name = $size_name . '_webp';
-                                
+
                                 // Inject WebP size into metadata so WordPress includes it in srcset
                                 Image_Service::register_webp_size_in_meta(
                                     $attachment_id,
                                     $webp_file_path,
                                     $width,
                                     $height,
-                                    $webp_size_name
+                                    $webp_size_name,
                                 );
-                                
+
                                 $metadata_updated = true;
                             }
                         }

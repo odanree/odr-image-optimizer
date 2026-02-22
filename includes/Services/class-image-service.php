@@ -143,7 +143,7 @@ class Image_Service
         string $file_path,
         int $width,
         int $height,
-        string $size_name
+        string $size_name,
     ): bool {
         $metadata = wp_get_attachment_metadata($attachment_id);
 
@@ -178,4 +178,3 @@ class Image_Service
         return true;
     }
 }
-

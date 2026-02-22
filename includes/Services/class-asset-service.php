@@ -62,7 +62,7 @@ class Asset_Service
     public function register(): void
     {
         // Check if any optimizations are enabled
-        $has_optimizations = $this->settings->is_enabled('preload_fonts') 
+        $has_optimizations = $this->settings->is_enabled('preload_fonts')
             || $this->settings->is_enabled('remove_bloat')
             || $this->settings->is_aggressive_mode();
 

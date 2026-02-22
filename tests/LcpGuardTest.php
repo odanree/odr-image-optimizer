@@ -19,7 +19,7 @@ class LcpGuardTest extends TestCase
     public function test_priority_service_injects_high_priority_preload_tags(): void
     {
         // Arrange: Enable preloading setting
-        update_option('odr_image_optimizer_settings', [
+        update_option('odr_optimizer_settings', [
             'preload_fonts' => '1',
         ]);
 
@@ -49,7 +49,7 @@ class LcpGuardTest extends TestCase
     public function test_cleanup_service_removes_emoji_bloat_when_enabled(): void
     {
         // Arrange: Enable bloat removal setting
-        update_option('odr_image_optimizer_settings', [
+        update_option('odr_optimizer_settings', [
             'kill_bloat' => '1',
         ]);
 
@@ -98,7 +98,7 @@ class LcpGuardTest extends TestCase
     public function test_priority_service_respects_preload_setting_when_disabled(): void
     {
         // Arrange: Disable preloading
-        update_option('odr_image_optimizer_settings', [
+        update_option('odr_optimizer_settings', [
             'preload_fonts' => '0',
         ]);
 
@@ -128,7 +128,7 @@ class LcpGuardTest extends TestCase
     public function test_cleanup_service_respects_kill_bloat_setting_when_disabled(): void
     {
         // Arrange: Disable bloat removal
-        update_option('odr_image_optimizer_settings', [
+        update_option('odr_optimizer_settings', [
             'kill_bloat' => '0',
         ]);
 

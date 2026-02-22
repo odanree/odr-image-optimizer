@@ -358,9 +358,9 @@ class Settings
         <form method="post" action="options.php" class="image-optimizer-settings-form">
             <?php
             settings_fields('image-optimizer-settings');
-            do_settings_sections('image-optimizer-settings');
-            submit_button();
-            ?>
+        do_settings_sections('image-optimizer-settings');
+        submit_button();
+        ?>
         </form>
         <?php
     }

@@ -62,12 +62,12 @@ class SettingsPolicy
 
         return [
             'compression_level'   => self::sanitize_compression_level($raw['compression_level'] ?? 'medium'),
-            'enable_webp'         => ! empty($raw['enable_webp']),
+            'enable_webp'         => self::to_bool($raw['enable_webp'] ?? false),
             'lazy_load_mode'      => self::sanitize_lazy_mode($raw['lazy_load_mode'] ?? 'native'),
-            'auto_optimize'       => ! empty($raw['auto_optimize']),
-            'preload_fonts'       => ! empty($raw['preload_fonts']),
-            'kill_bloat'          => ! empty($raw['kill_bloat']),
-            'inline_critical_css' => ! empty($raw['inline_critical_css']),
+            'auto_optimize'       => self::to_bool($raw['auto_optimize'] ?? false),
+            'preload_fonts'       => self::to_bool($raw['preload_fonts'] ?? false),
+            'kill_bloat'          => self::to_bool($raw['kill_bloat'] ?? false),
+            'inline_critical_css' => self::to_bool($raw['inline_critical_css'] ?? false),
         ];
     }
 
@@ -198,5 +198,28 @@ class SettingsPolicy
         $allowed = [ 'native', 'hybrid', 'off' ];
 
         return in_array($value, $allowed, true) ? $value : 'native';
+    }
+
+    /**
+     * Convert various truthy values to boolean
+     *
+     * Handles '1', 1, true, and other truthy values.
+     * Handles '0', 0, false, and other falsy values.
+     *
+     * @param mixed $value The value to convert.
+     * @return bool
+     */
+    private static function to_bool($value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+        if (is_int($value)) {
+            return $value !== 0;
+        }
+        if (is_string($value)) {
+            return in_array(strtolower($value), [ '1', 'true', 'yes', 'on' ], true);
+        }
+        return ! empty($value);
     }
 }
