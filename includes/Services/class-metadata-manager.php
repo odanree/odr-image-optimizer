@@ -41,6 +41,11 @@ class MetadataManager
      * Injects the conversion result into `_wp_attachment_metadata` sizes array,
      * making WordPress include it in srcset generation and Lighthouse calculations.
      *
+     * CRITICAL: Updates the size entry with actual converted file details:
+     * - Uses converted filename (.webp)
+     * - Sets MIME type to converted format
+     * - Stores dimensions for srcset ratio check
+     *
      * @param int               $attachmentId   The attachment ID.
      * @param string            $sizeName       The size name (e.g., 'medium_webp', 'odr_content_optimized').
      * @param ConversionResult  $result         The conversion result with dimensions and output path.
@@ -80,11 +85,13 @@ class MetadataManager
         }
 
         // Build the size entry from result
+        // KEY: Use converted filename (e.g., .webp not .jpg)
+        // This ensures WordPress srcset uses converted files
         $sizeEntry = [
-            'file'      => \basename($result->outputPath),
-            'width'     => $result->getWidth(),
-            'height'    => $result->getHeight(),
-            'mime-type' => $result->mimeType,
+            'file'      => \basename($result->outputPath),  // e.g., image-704x469.webp
+            'width'     => $result->getWidth(),             // 704
+            'height'    => $result->getHeight(),            // 469
+            'mime-type' => $result->mimeType,               // image/webp
         ];
 
         // Add filesize if available
