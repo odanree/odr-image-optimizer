@@ -196,41 +196,7 @@ add_action('init', function () {
 add_action('init', function () {
     \ImageOptimizer\Services\Plugin_Orchestrator::get_instance()->init();
 }, 15); // Priority 15: runs BEFORE Core (20), ensures services register early
-
-/**
- * Register plugin settings (admin only)
- */
-add_action('admin_init', function () {
-    $settings_service = new \ImageOptimizer\Admin\SettingsService();
-    $settings_service->register();
-});
-
-/**
- * Add plugin admin menu
- */
-add_action('admin_menu', function () {
-    add_options_page(
-        'Image Optimizer Settings',
-        'Image Optimizer',
-        'manage_options',
-        'odr-optimizer',
-        function () {
-            ?>
-        <div class="wrap">
-            <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
-            <p>Toggle performance optimizations for mobile Lighthouse testing and A/B analysis.</p>
-            <form action="options.php" method="post">
-                <?php
-                settings_fields('odr_optimizer_group');
-            do_settings_sections('odr-optimizer');
-            submit_button();
-            ?>
-            </form>
-        </div>
-            <?php
-        },
-    );
-});
+// Note: Plugin_Orchestrator::init() handles all service initialization including Admin_Settings
 
 /**
  * Initialize performance optimizations (before content renders)
