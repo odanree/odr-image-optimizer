@@ -35,6 +35,10 @@ require_once dirname(__DIR__) . '/includes/class-autoloader.php';
 
 \ImageOptimizer\Autoloader::register();
 
+// Explicitly load admin classes that are needed by Services but excluded from autoloader
+// These are in includes/admin/ which is excluded from phpunit.xml source analysis
+require_once dirname(__DIR__) . '/includes/admin/class-settings-policy.php';
+
 // WordPress function stubs for testing
 // Global store for options
 global $wp_options;
