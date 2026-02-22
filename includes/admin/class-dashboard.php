@@ -15,6 +15,8 @@ if (! defined('ABSPATH')) {
     exit('Direct access denied.');
 }
 
+use ImageOptimizer\Admin\Settings;
+
 /**
  * Dashboard class
  */
@@ -35,8 +37,8 @@ class Dashboard
      */
     public function enqueue_scripts($hook)
     {
-        // Hook name for submenu page under tools.php: tools_page_{page_slug}
-        if ('tools_page_image-optimizer' !== $hook) {
+        // Hook name for top-level page: toplevel_page_{page_slug}
+        if ('toplevel_page_image-optimizer' !== $hook) {
             return;
         }
 
@@ -48,6 +50,14 @@ class Dashboard
             IMAGE_OPTIMIZER_URL . 'assets/css/dashboard.css?t=' . $cache_buster,
             [],
             false,
+        );
+
+        // Also enqueue settings styles for the settings tab
+        wp_enqueue_style(
+            'odr-image-optimizer-settings',
+            IMAGE_OPTIMIZER_URL . 'assets/css/settings.css',
+            [],
+            IMAGE_OPTIMIZER_VERSION,
         );
 
         wp_enqueue_script(
@@ -73,10 +83,35 @@ class Dashboard
      */
     public static function render()
     {
+        $tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'overview'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         ?>
 		<div class="wrap image-optimizer-wrap">
 			<h1><?php esc_html_e('ODR Image Optimizer', 'odr-image-optimizer'); ?></h1>
-			<div id="image-optimizer-dashboard"></div>
+			
+			<!-- Tab Navigation -->
+			<nav class="nav-tab-wrapper">
+				<a href="<?php echo esc_url(admin_url('admin.php?page=image-optimizer&tab=overview')); ?>" class="nav-tab <?php echo $tab === 'overview' ? 'nav-tab-active' : ''; ?>">
+					<?php esc_html_e('Dashboard', 'odr-image-optimizer'); ?>
+				</a>
+				<a href="<?php echo esc_url(admin_url('admin.php?page=image-optimizer&tab=settings')); ?>" class="nav-tab <?php echo $tab === 'settings' ? 'nav-tab-active' : ''; ?>">
+					<?php esc_html_e('Settings', 'odr-image-optimizer'); ?>
+				</a>
+			</nav>
+
+			<!-- Tab Content -->
+			<div class="tab-content">
+				<?php if ('settings' === $tab) : ?>
+					<!-- Settings Tab -->
+					<div class="settings-tab">
+						<?php Settings::render(); ?>
+					</div>
+				<?php else : ?>
+					<!-- Overview Tab (default) -->
+					<div class="overview-tab">
+						<div id="image-optimizer-dashboard"></div>
+					</div>
+				<?php endif; ?>
+			</div>
 		</div>
 		<?php
     }

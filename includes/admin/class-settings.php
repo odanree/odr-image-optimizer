@@ -355,16 +355,13 @@ class Settings
     public static function render(): void
     {
         ?>
-        <div class="wrap image-optimizer-settings-wrap">
-            <h1><?php esc_html_e('ODR Image Optimizer Settings', 'odr-image-optimizer'); ?></h1>
-            <form method="post" action="options.php">
-                <?php
-                settings_fields('image-optimizer-settings');
-        do_settings_sections('image-optimizer-settings');
-        submit_button();
-        ?>
-            </form>
-        </div>
+        <form method="post" action="options.php" class="image-optimizer-settings-form">
+            <?php
+            settings_fields('image-optimizer-settings');
+            do_settings_sections('image-optimizer-settings');
+            submit_button();
+            ?>
+        </form>
         <?php
     }
 }

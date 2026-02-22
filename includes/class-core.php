@@ -149,25 +149,15 @@ class Core
      */
     public function register_admin_menu()
     {
-        // Register dashboard under Tools menu (instead of top-level menu)
-        add_submenu_page(
-            'tools.php',
+        // Register main plugin page as top-level menu item at the bottom
+        add_menu_page(
             __('ODR Image Optimizer', 'odr-image-optimizer'),
             __('ODR Image Optimizer', 'odr-image-optimizer'),
             'manage_options',
             'image-optimizer',
             [ $this, 'render_dashboard' ],
-        );
-
-        // Register settings as a submenu of the main ODR Image Optimizer page
-        // This will appear as Tools > ODR Image Optimizer > Settings
-        add_submenu_page(
-            'image-optimizer',
-            __('Settings', 'odr-image-optimizer'),
-            __('Settings', 'odr-image-optimizer'),
-            'manage_options',
-            'image-optimizer-settings',
-            [ $this, 'render_settings' ],
+            'dashicons-images-alt2',
+            99, // Position at bottom of menu (Settings is at 99, so this will be above)
         );
     }
 
@@ -177,14 +167,6 @@ class Core
     public function render_dashboard()
     {
         Dashboard::render();
-    }
-
-    /**
-     * Render settings
-     */
-    public function render_settings()
-    {
-        Settings::render();
     }
 
     /**
