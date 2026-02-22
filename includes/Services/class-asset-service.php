@@ -66,6 +66,10 @@ class Asset_Service
         add_filter('script_loader_src', [$this, 'remove_query_strings'], 15, 1);
         add_filter('style_loader_src', [$this, 'remove_query_strings'], 15, 1);
 
+        // Also catch script modules in footer (WordPress 6.9+)
+        // Uses output buffering to clean query strings from all URLs
+        add_action('wp_footer', [$this, 'remove_query_strings_from_output'], 1);
+
         // Preload critical fonts early (priority 0 = before everything)
         // Only if font preloading is enabled
         if ($this->settings->is_enabled('preload_fonts')) {
@@ -102,6 +106,31 @@ class Asset_Service
 
         // Remove everything after the ? (query string)
         return strtok($src, '?');
+    }
+
+    /**
+     * Remove query strings from script modules in HTML output
+     *
+     * Script modules (WordPress 6.9+) include URLs in JSON that need cleaning.
+     * This catches the final HTML output and removes all ?ver=... parameters.
+     *
+     * @return void
+     */
+    public function remove_query_strings_from_output(): void
+    {
+        // Buffer the output and clean query strings from module URLs
+        add_filter('wp_print_script_tag', function ($tag, $handle) {
+            // Clean query strings from type="module" script tags
+            if (strpos($tag, 'type="module"') !== false) {
+                return preg_replace('/\?ver=[a-f0-9]+/', '', $tag);
+            }
+            return $tag;
+        }, 10, 2);
+
+        // Also clean from inline script tags with JSON imports
+        add_filter('wp_inline_script_attributes', function ($attrs) {
+            return $attrs;
+        }, 10, 1);
     }
 
     /**

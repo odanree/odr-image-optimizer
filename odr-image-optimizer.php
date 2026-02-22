@@ -447,6 +447,31 @@ add_action('wp', function () {
  * Runs at maximum priority to ensure all scripts are enqueued before we dequeue.
  * This prevents race conditions where scripts are enqueued after our dequeue.
  */
+/**
+ * Remove query strings from all asset URLs for better caching
+ *
+ * WordPress adds ?ver=X.X.X to scripts/styles and script modules,
+ * which prevents browsers and CDNs from caching them effectively.
+ * This filter removes all query strings from asset URLs.
+ *
+ * @since 1.0.1
+ */
+add_filter('script_loader_src', function ($src) {
+    // Handle false or non-string values
+    if (!is_string($src)) {
+        return $src;
+    }
+    return strpos($src, '?') === false ? $src : strtok($src, '?');
+}, 15);
+
+add_filter('style_loader_src', function ($src) {
+    // Handle false or non-string values
+    if (!is_string($src)) {
+        return $src;
+    }
+    return strpos($src, '?') === false ? $src : strtok($src, '?');
+}, 15);
+
 add_action('wp_enqueue_scripts', function () {
     if (! is_admin()) {
         $cleanup = new \ImageOptimizer\Services\CleanupService();

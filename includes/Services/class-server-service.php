@@ -37,6 +37,7 @@ class Server_Service
     public function register(): void
     {
         add_action('init', [$this, 'enable_compression'], 1);
+        add_filter('wp_headers', [$this, 'add_cache_headers'], 10, 1);
     }
 
     /**
@@ -81,5 +82,38 @@ class Server_Service
 
         // Enable gzip compression using PHP's built-in handler
         ob_start('ob_gzhandler');
+    }
+
+    /**
+     * Add Cache-Control headers for static assets
+     *
+     * Forces proper cache headers for assets served through WordPress.
+     * Lighthouse checks for these headers to validate caching strategy.
+     *
+     * Assets with version query strings (?ver=...) are treated as immutable
+     * since version changes result in new filenames.
+     *
+     * @param array<string, string> $headers The HTTP headers array
+     * @return array<string, string>         Modified headers with cache-control
+     */
+    public function add_cache_headers(array $headers): array
+    {
+        // Skip if no REQUEST_URI (shouldn't happen but be safe)
+        if (! isset($_SERVER['REQUEST_URI'])) {
+            return $headers;
+        }
+
+        // Get file extension from request URI
+        $request_uri = sanitize_text_field(wp_unslash($_SERVER['REQUEST_URI']));
+        $extension = strtolower(pathinfo($request_uri, PATHINFO_EXTENSION));
+
+        // Apply cache headers to static assets
+        // These are the file types that Lighthouse checks for caching
+        if (in_array($extension, ['woff2', 'woff', 'ttf', 'otf', 'webp', 'jpg', 'jpeg', 'png', 'gif', 'svg', 'js', 'css'], true)) {
+            // Cache for 1 year, immutable (files change by name, not content)
+            $headers['Cache-Control'] = 'public, max-age=31536000, immutable';
+        }
+
+        return $headers;
     }
 }
