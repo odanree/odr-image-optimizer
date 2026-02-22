@@ -574,3 +574,40 @@ class WP_Image_Editor {
      */
     public function save($filename = null, $mime_type = null) {}
 }
+
+/**
+ * Get WordPress upload directory info
+ *
+ * @param string $time
+ * @return array<string, mixed>
+ */
+function wp_upload_dir($time = '') {}
+
+/**
+ * Function exists check
+ *
+ * @param string $function_name
+ * @return bool
+ */
+function function_exists($function_name) {}
+
+/**
+ * Exception class for PHP
+ */
+class Exception {
+    /**
+     * Constructor
+     *
+     * @param string $message
+     */
+    public function __construct($message = '') {}
+}
+
+/**
+ * Get WordPress image editor
+ *
+ * @param string $path
+ * @param array<string, mixed> $args
+ * @return WP_Image_Editor|WP_Error
+ */
+function wp_get_image_editor($path, $args = array()) {}
