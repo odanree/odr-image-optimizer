@@ -425,6 +425,23 @@ function wp_get_attachment_url($attachment_id) {}
  */
 function get_post_thumbnail_id($post = null) {}
 
+/**
+ * Remove a query arg from a URL
+ *
+ * @param string|string[] $key
+ * @param string $url
+ * @return string
+ */
+function remove_query_arg($key, $url = '') {}
+
+/**
+ * Check if the current theme supports a feature
+ *
+ * @param string $feature
+ * @return bool|mixed[]
+ */
+function current_theme_supports($feature) {}
+
 // WordPress Global Variables
 
 class WP_Styles {

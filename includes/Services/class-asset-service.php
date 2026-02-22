@@ -126,7 +126,7 @@ class Asset_Service
      * @param string $html The buffered HTML output
      * @return string      The cleaned HTML
      */
-    public function clean_module_queries($html)
+    public function clean_module_queries(string $html): string
     {
         if (! is_string($html)) {
             return $html;
@@ -134,9 +134,10 @@ class Asset_Service
 
         // Remove ?ver=... from all script URLs in the HTML
         // Pattern matches: url?ver=hashvalue
-        $html = preg_replace('/\?ver=[a-f0-9]+/i', '', $html);
+        $cleaned = preg_replace('/\?ver=[a-f0-9]+/i', '', $html);
 
-        return $html;
+        // preg_replace returns string|array|null; cast to string for type safety
+        return (string) ($cleaned ?? '');
     }
 
     /**
