@@ -256,8 +256,6 @@ class PriorityService
         echo '/* Ensure instant text rendering while fonts download (FOUT prevention) */' . "\n";
         echo '/* Force font-display: swap on ALL @font-face rules, including Google Fonts */' . "\n";
         echo '@font-face { font-display: swap !important; }' . "\n";
-        echo '/* Also apply to any font-family declarations */' . "\n";
-        echo '* { font-display: swap; }' . "\n";
         echo '</style>' . "\n";
         // phpcs:enable
     }
