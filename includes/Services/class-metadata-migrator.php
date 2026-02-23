@@ -212,8 +212,8 @@ class MetadataMigrator
      * Batch operation used by orchestrator after image processing.
      * AGGRESSIVELY overwrites old JPG size entries with new WebP entries.
      *
-     * For each ConversionResult:
-     * - Replaces 'file' key: .jpg → .webp
+     * For each size entry in metadata:
+     * - Replaces 'file' key: .jpg → .webp (if WebP exists on disk)
      * - Replaces 'mime-type': image/jpeg → image/webp
      * - Updates 'filesize' with actual WebP file size
      *
@@ -234,59 +234,76 @@ class MetadataMigrator
             return 0;
         }
 
+        // Validate file key exists and is a string
+        if (! isset($metadata['file']) || ! is_string($metadata['file'])) {
+            return 0;
+        }
+
+        // Get sizes array and validate type
         $sizes = $metadata['sizes'] ?? [];
         if (! is_array($sizes)) {
-            $sizes = [];
+            return 0;
         }
+
+        // Get upload directory for file existence checks
+        $upload_dir = wp_upload_dir();
+        $upload_base = $upload_dir['basedir'];
+        $relative_path = dirname($metadata['file']);
 
         $count = 0;
 
-        // For each ConversionResult, aggressively overwrite the old JPG entry
-        foreach ($results as $sizeName => $result) {
-            // Validate inputs
-            if (! is_string($sizeName)) {
+        // CRITICAL: Transform sizes array in-place using reference
+        // This ensures we update the ACTUAL array, not a copy
+        // @phpstan-ignore-next-line (sizes is guaranteed to be array above)
+        foreach ($sizes as $slug => &$size_data) {
+            // Skip if not an array
+            if (! is_array($size_data)) {
                 continue;
             }
 
-            if (! ($result instanceof ConversionResult)) {
+            // Get the current JPG filename
+            $jpg_file = $size_data['file'] ?? '';
+            if (! is_string($jpg_file) || empty($jpg_file)) {
                 continue;
             }
 
-            if ($result->isFailure()) {
-                continue;
+            // 1. Determine the target WebP filename
+            $webp_filename = str_replace(
+                [ '.jpg', '.jpeg', '.png', '.JPG', '.JPEG', '.PNG' ],
+                '.webp',
+                $jpg_file,
+            );
+
+            // 2. Build full path to WebP file
+            $full_path = $upload_base . '/' . $relative_path . '/' . $webp_filename;
+
+            // 3. Only migrate if the WebP actually exists on disk
+            if (file_exists($full_path)) {
+                // MUST change file to .webp
+                $size_data['file'] = $webp_filename;
+
+                // MUST change mime-type to image/webp
+                $size_data['mime-type'] = 'image/webp';
+
+                // Bonus: Update to the actual WebP filesize for accuracy
+                $size_data['filesize'] = (int) filesize($full_path);
+
+                $count++;
             }
-
-            // Build WebP size entry from ConversionResult
-            // CRITICAL: Must hardcode 'mime-type' to 'image/webp' (never trust result->mimeType)
-            $webpFile = \basename($result->outputPath);
-            $sizeEntry = [
-                'file'      => $webpFile,                    // e.g., yosemite-unsplash-704x469.webp
-                'width'     => $result->getWidth(),
-                'height'    => $result->getHeight(),
-                'mime-type' => 'image/webp',                 // ALWAYS image/webp (aggressive override)
-            ];
-
-            // Add actual filesize from disk
-            if (\file_exists($result->outputPath)) {
-                $sizeEntry['filesize'] = (int) \filesize($result->outputPath);
-            }
-
-            // AGGRESSIVELY overwrite existing size entry
-            // This replaces any old JPG entry with new WebP entry
-            $sizes[ $sizeName ] = $sizeEntry;
-            $count++;
         }
 
-        // Update metadata with all new WebP entries
-        // CRITICAL: Preserve all other metadata fields (image_meta, etc.)
+        // Break the reference to avoid accidental mutations
+        unset($size_data);
+
+        // Update metadata with all transformed WebP entries
         $metadata['sizes'] = $sizes;
-        $updated = \wp_update_attachment_metadata($attachmentId, $metadata);
+        $updated = wp_update_attachment_metadata($attachmentId, $metadata);
 
         // Verify update was successful
         if ($updated === false) {
             error_log(
                 sprintf(
-                    'Failed to update metadata for attachment %d. Result: %s',
+                    'Failed to update metadata for attachment %d during migration. Result: %s',
                     $attachmentId,
                     var_export($updated, true),
                 ),
