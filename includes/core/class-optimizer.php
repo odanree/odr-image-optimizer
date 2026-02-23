@@ -262,7 +262,7 @@ class Optimizer implements OptimizerInterface
              *
              * @param ImageContext $context Image context with metadata.
              */
-            do_action('image_optimizer_before_optimize', $context);
+            do_action('odr_image_optimizer_before_optimize', $context);
 
             // Create backup before optimization
             $backup_file = $this->create_backup($file, $attachment_id);
@@ -331,7 +331,7 @@ class Optimizer implements OptimizerInterface
              *
              * @param ImageContext $context Image context with metadata and optimization results.
              */
-            do_action('image_optimizer_after_optimize', $context);
+            do_action('odr_image_optimizer_after_optimize', $context);
 
             // Optimize all attachment subsizes (thumbnail, medium, large, etc.)
             // This is critical for Lighthouse responsive image compliance
@@ -951,7 +951,7 @@ class Optimizer implements OptimizerInterface
              *
              * @param ImageContext $context Image context with metadata.
              */
-            do_action('image_optimizer_before_revert', $context);
+            do_action('odr_image_optimizer_before_revert', $context);
 
             // Restore from backup with detailed error handling
             $copy_result = @copy($backup_file, $file);
@@ -1002,7 +1002,7 @@ class Optimizer implements OptimizerInterface
              *
              * @param ImageContext $context Image context with revert metadata.
              */
-            do_action('image_optimizer_after_revert', $context);
+            do_action('odr_image_optimizer_after_revert', $context);
 
             return Result::success(
                 [

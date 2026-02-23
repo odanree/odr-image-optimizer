@@ -29,7 +29,7 @@ if (! defined('ABSPATH')) {
  *       'mime_type' => 'image/jpeg',
  *   ]);
  *
- *   apply_filters('image_optimizer_before_optimize', $context);
+ *   apply_filters('odr_image_optimizer_before_optimize', $context);
  */
 class ImageContext
 {
