@@ -214,36 +214,24 @@ class NavigationDeferralService
     private function inject_on_demand_loader_inline(): void
     {
         // Build the on-demand loader script using the official API
-        $loader_script = <<<'SCRIPT'
-(function() {
-    var navScriptLoaded = false;
-
-    function loadDeferredScripts() {
-        if (navScriptLoaded) return;
-        navScriptLoaded = true;
-
-        // Get the navigation script URL from data attribute (injected below)
-        var navScript = document.getElementById('odr-nav-src');
-        if (!navScript || !navScript.dataset.src) return;
-
-        var script = document.createElement('script');
-        script.type = 'module';
-        script.src = navScript.dataset.src;
-        document.body.appendChild(script);
-
-        // Remove event listeners
-        document.removeEventListener('touchstart', loadDeferredScripts);
-        document.removeEventListener('mousedown', loadDeferredScripts);
-    }
-
-    // Load on user interaction
-    document.addEventListener('touchstart', loadDeferredScripts, { once: true });
-    document.addEventListener('mousedown', loadDeferredScripts, { once: true });
-
-    // Fallback: Load after 5 seconds for passive users
-    setTimeout(loadDeferredScripts, 5000);
-})();
-SCRIPT;
+        $loader_script = '(function() {'
+            . 'var navScriptLoaded = false;'
+            . 'function loadDeferredScripts() {'
+                . 'if (navScriptLoaded) return;'
+                . 'navScriptLoaded = true;'
+                . 'var navScript = document.getElementById("odr-nav-src");'
+                . 'if (!navScript || !navScript.dataset.src) return;'
+                . 'var script = document.createElement("script");'
+                . 'script.type = "module";'
+                . 'script.src = navScript.dataset.src;'
+                . 'document.body.appendChild(script);'
+                . 'document.removeEventListener("touchstart", loadDeferredScripts);'
+                . 'document.removeEventListener("mousedown", loadDeferredScripts);'
+            . '}'
+            . 'document.addEventListener("touchstart", loadDeferredScripts, { once: true });'
+            . 'document.addEventListener("mousedown", loadDeferredScripts, { once: true });'
+            . 'setTimeout(loadDeferredScripts, 5000);'
+        . '})();';
 
         // Get the script URL to pass to the loader
         global $wp_scripts;

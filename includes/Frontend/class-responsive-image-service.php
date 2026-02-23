@@ -135,13 +135,11 @@ class ResponsiveImageService
             $attr_string .= ' ' . esc_attr($key) . '="' . esc_attr($value) . '"';
         }
 
-        return <<<HTML
-<picture>
-  <source type="image/webp" srcset="{$webp_srcset}" sizes="{$jpg_sizes}">
-  <source type="image/jpeg" srcset="{$jpg_srcset}" sizes="{$jpg_sizes}">
-  <img src="{$jpg_url}" alt="{$alt_text}"{$attr_string}>
-</picture>
-HTML;
+        return '<picture>'
+            . '<source type="image/webp" srcset="' . esc_attr($webp_srcset) . '" sizes="' . esc_attr($jpg_sizes) . '">'
+            . '<source type="image/jpeg" srcset="' . esc_attr($jpg_srcset) . '" sizes="' . esc_attr($jpg_sizes) . '">'
+            . '<img src="' . esc_attr($jpg_url) . '" alt="' . esc_attr($alt_text) . '"' . $attr_string . '>'
+            . '</picture>';
     }
 
     /**
