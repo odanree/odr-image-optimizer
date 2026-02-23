@@ -13,7 +13,7 @@ declare(strict_types=1);
  * Plugin Name:       ODR Image Optimizer
  * Plugin URI:        https://github.com/odanree/odr-image-optimizer
  * Description:       Professional high-performance image suite. Features SOLID-compliant WebP conversion, intelligent LCP preloading, and automated critical path cleanup for a 100/100 Lighthouse score.
- * Version:           1.0.1
+ * Version:           1.0.2
  * Author:            Danh Le
  * Author URI:        https://danhle.net
  * License:           GPL v2 or later
@@ -23,7 +23,7 @@ declare(strict_types=1);
  * Requires at least: 6.0
  * Requires PHP:      8.1
  * Tested up to:      6.9
- * Stable tag:        1.0.0
+ * Stable tag:        1.0.2
  * Tags:              images, performance, webp, lcp, speed, optimizer
  */
 
@@ -32,56 +32,57 @@ if (! defined('ABSPATH')) {
     exit('Direct access denied.');
 }
 
-// Define plugin constants
-define('IMAGE_OPTIMIZER_VERSION', time()); // Cache buster
-define('IMAGE_OPTIMIZER_PATH', plugin_dir_path(__FILE__));
-define('IMAGE_OPTIMIZER_URL', plugin_dir_url(__FILE__));
-define('IMAGE_OPTIMIZER_BASENAME', plugin_basename(__FILE__));
+// Define plugin constants with ODR_ prefix for WordPress.org compliance
+define('ODR_IMAGE_OPTIMIZER_VERSION', time()); // Cache buster
+define('ODR_IMAGE_OPTIMIZER_PATH', plugin_dir_path(__FILE__));
+define('ODR_IMAGE_OPTIMIZER_URL', plugin_dir_url(__FILE__));
+define('ODR_IMAGE_OPTIMIZER_BASENAME', plugin_basename(__FILE__));
 
 // Include the autoloader
-require_once IMAGE_OPTIMIZER_PATH . 'includes/class-autoloader.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/class-autoloader.php';
 
 // Register the autoloader
 \ImageOptimizer\Autoloader::register();
 
 // Manually include core classes to ensure they're loaded
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/interface-optimizer.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-result.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-optimizer-config.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-resizing-config.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-image-file.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-image-context.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-tool-registry.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-container.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-permissions-manager.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-database.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-media-transformer.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-image-resizer.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-resizing-processor.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-optimizer.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-optimizer-contract-validator.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-dip-audit.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-hook-contract-validator.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-isolation-audit.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-permission-enforcement-audit.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-hook-complexity-analyzer.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-api.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-size-selector.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-size-registry.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-layout-policy.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-header-manager.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-asset-manager.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-priority-service.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-cleanup-service.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Admin/class-settings-service.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-responsive-image-service.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Frontend/class-frontend-delivery.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-webp-frontend-delivery.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/admin/class-dashboard.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/admin/class-settings-policy.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/admin/class-settings.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Frontend/WebpDelivery.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Frontend/ResponsiveImages.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/interface-optimizer.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-result.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-optimizer-config.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-resizing-config.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-image-file.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-image-context.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-tool-registry.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-container.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-permissions-manager.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-database.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-media-transformer.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-image-resizer.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-resizing-processor.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-optimizer.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-optimizer-contract-validator.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-dip-audit.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-hook-contract-validator.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-isolation-audit.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-permission-enforcement-audit.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-hook-complexity-analyzer.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-api.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Services/class-size-selector.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Services/class-size-registry.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Services/class-layout-policy.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Services/class-header-manager.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Services/class-asset-manager.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Services/class-priority-service.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Services/class-cleanup-service.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Services/class-navigation-deferral-service.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Admin/class-settings-service.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-responsive-image-service.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Frontend/class-frontend-delivery.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-webp-frontend-delivery.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/admin/class-dashboard.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/admin/class-settings-policy.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/admin/class-settings.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Frontend/WebpDelivery.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Frontend/ResponsiveImages.php';
 
 /**
  * The main plugin class
@@ -180,11 +181,14 @@ add_action('admin_menu', function () {
 
 /**
  * Initialize performance optimizations (before content renders)
+ *
+ * Uses DI Container to manage service lifecycle.
+ * Runs at template_redirect (early, before wp_head) to detect LCP and apply optimizations.
  */
 add_action('template_redirect', function () {
     if (! is_admin()) {
         // Detect LCP image ID early (before wp_head)
-        $priority_service = new \ImageOptimizer\Services\PriorityService();
+        $priority_service = \ImageOptimizer\Core\Container::get_priority_service();
         $priority_service->detect_lcp_id();
 
         // Apply cache headers for long-term caching
@@ -192,17 +196,34 @@ add_action('template_redirect', function () {
         $header_manager->apply_cache_headers();
 
         // Optimize critical rendering path
-        $asset_manager = new \ImageOptimizer\Services\AssetManager();
+        $asset_manager = \ImageOptimizer\Core\Container::get_asset_manager();
         $asset_manager->optimize_critical_path();
     }
 }, 1);
 
 /**
- * Initialize frontend styles and fonts in wp_head (very early)
+ * Override WordPress font-display fallback at priority 0 (absolutely first in head)
+ * Must run before ALL other styles to ensure font-display: swap !important takes precedence
+ *
+ * Uses DI Container to manage PriorityService lifecycle.
  */
 add_action('wp_head', function () {
     if (! is_admin()) {
-        $priority_service = new \ImageOptimizer\Services\PriorityService();
+        $priority_service = \ImageOptimizer\Core\Container::get_priority_service();
+        $priority_service->override_font_display();
+    }
+}, 0);
+
+/**
+ * Initialize frontend styles and fonts in wp_head (very early)
+ *
+ * Uses DI Container for PriorityService and AssetManager.
+ * Services are cached in Container singleton, ensuring consistent instance
+ * for state tracking (e.g., LCP ID detection -> preload injection).
+ */
+add_action('wp_head', function () {
+    if (! is_admin()) {
+        $priority_service = \ImageOptimizer\Core\Container::get_priority_service();
 
         // Inject LCP preload hint (tell browser to download 704px image immediately)
         $priority_service->inject_preload();
@@ -211,10 +232,11 @@ add_action('wp_head', function () {
         $priority_service->preload_theme_font();
 
         // Inline small CSS to eliminate render-blocking request
-        $asset_manager = new \ImageOptimizer\Services\AssetManager();
+        $asset_manager = \ImageOptimizer\Core\Container::get_asset_manager();
         $asset_manager->inline_frontend_styles();
 
         // Preload critical fonts (breaks dependency chain)
+        // DEPRECATED: Now disabled, uses preload_theme_font() instead
         $asset_manager->preload_critical_fonts();
     }
 }, 1);
@@ -238,14 +260,31 @@ add_action('wp', function () {
 });
 
 /**
+ * Defer navigation scripts to first user interaction (priority 998 = very late, after all plugins/themes enqueue)
+ *
+ * CRITICAL: Must run at priority 998 (just before CleanupService at 999)
+ * This ensures ALL scripts are registered before we dequeue/deregister navigation scripts.
+ * If we run too early, scripts enqueued later will override our dequeue.
+ *
+ * Uses DI Container to manage NavigationDeferralService lifecycle.
+ */
+add_action('wp_enqueue_scripts', function () {
+    if (! is_admin()) {
+        $deferral = \ImageOptimizer\Core\Container::get_navigation_deferral_service();
+        $deferral->defer_navigation();
+    }
+}, 998);
+
+/**
  * Remove WordPress bloat (priority 999 = extremely late, after all plugins/themes enqueue)
  *
+ * Uses DI Container to manage CleanupService lifecycle.
  * Runs at maximum priority to ensure all scripts are enqueued before we dequeue.
  * This prevents race conditions where scripts are enqueued after our dequeue.
  */
 add_action('wp_enqueue_scripts', function () {
     if (! is_admin()) {
-        $cleanup = new \ImageOptimizer\Services\CleanupService();
+        $cleanup = \ImageOptimizer\Core\Container::get_cleanup_service();
         $cleanup->remove_bloat();
     }
 }, 999);

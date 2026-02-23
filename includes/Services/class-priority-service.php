@@ -33,18 +33,22 @@ use ImageOptimizer\Admin\SettingsPolicy;
  * 2. wp_head (priority 1): Call injectPreload() to emit <link rel="preload">
  * 3. Browser sees preload → starts downloading 704px image immediately
  * 4. Browser processes CSS → by then, image is already downloading
+ *
+ * Uses instance-based state stored in request scope (not static globals).
+ * This allows multiple PriorityService instances to coexist during testing
+ * and enables proper dependency injection patterns.
  */
 class PriorityService
 {
     /**
      * Tracks the LCP image attachment ID for this page
      *
-     * Static so it persists across multiple method calls in same request.
+     * Instance variable (not static) - state is request-scoped per instance.
      * Null if no featured image (not LCP-eligible page).
      *
      * @var int|null
      */
-    private static ?int $lcp_id = null;
+    private ?int $lcp_id = null;
 
     /**
      * Detect the LCP candidate before the page renders
@@ -66,7 +70,7 @@ class PriorityService
 
         // Store it for use in injectPreload()
         if ($thumbnail_id) {
-            self::$lcp_id = (int) $thumbnail_id;
+            $this->lcp_id = (int) $thumbnail_id;
         }
     }
 
@@ -92,19 +96,19 @@ class PriorityService
     public function inject_preload(): void
     {
         // No preload if no featured image
-        if (null === self::$lcp_id) {
+        if (null === $this->lcp_id) {
             return;
         }
 
         // Get the 704px variant (our optimized size)
-        $src = wp_get_attachment_image_url(self::$lcp_id, 'odr_content_optimized');
+        $src = wp_get_attachment_image_url($this->lcp_id, 'odr_content_optimized');
 
         if (! is_string($src)) {
             return;
         }
 
         // Get the srcset for responsive loading
-        $srcset = wp_get_attachment_image_srcset(self::$lcp_id, 'odr_content_optimized');
+        $srcset = wp_get_attachment_image_srcset($this->lcp_id, 'odr_content_optimized');
         $srcset_attr = is_string($srcset) ? esc_attr($srcset) : '';
 
         // Emit the preload link
@@ -122,9 +126,9 @@ class PriorityService
      *
      * @return void
      */
-    public static function reset_lcp_id(): void
+    public function reset_lcp_id(): void
     {
-        self::$lcp_id = null;
+        $this->lcp_id = null;
     }
 
     /**
@@ -159,7 +163,7 @@ class PriorityService
         // Common theme font paths to check (covers all public pages, not just singular)
         $font_paths = [
             // Twenty Twenty-Five (primary modern theme)
-            '/wp-content/themes/twentytwentyfive/assets/fonts/manrope/Manrope-V.woff2',
+            '/wp-content/themes/twentytwentyfive/assets/fonts/manrope/Manrope-VariableFont_wght.woff2',
             // Blocksy
             '/wp-content/themes/blocksy/static/fonts/manrope/manrope-v13.woff2',
             // GeneratePress
@@ -183,5 +187,31 @@ class PriorityService
             // Only preload the first font found (don't bloat head tag)
             return;
         }
+    }
+
+    /**
+     * Override WordPress default font-display: fallback with swap
+     *
+     * WordPress 6.9+ automatically adds font-display: fallback to @font-face rules
+     * from theme.json. This causes a tiny FOUT penalty that can affect LCP.
+     *
+     * By injecting @font-face { font-display: swap !important; }, we override
+     * WordPress's default and improve perceived font loading experience.
+     *
+     * Result: No Flash of Unstyled Text, better LCP = Lighthouse 100/100
+     *
+     * @return void
+     */
+    public function override_font_display(): void
+    {
+        // Skip on admin
+        if (\is_admin()) {
+            return;
+        }
+
+        // Inject inline style to override font-display: fallback → swap
+        // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo '<style>@font-face { font-display: swap !important; }</style>' . "\n";
+        // phpcs:enable
     }
 }

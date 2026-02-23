@@ -116,6 +116,11 @@ class Optimizer implements OptimizerInterface
 
     /**
      * Optimize a single image
+     *
+     * @requires-capability manage_options
+     * @nonce image_optimizer_nonce
+     *
+     * @return void
      */
     public function optimize_single_image()
     {
@@ -125,7 +130,7 @@ class Optimizer implements OptimizerInterface
             wp_die('Unauthorized', 403);
         }
 
-        $attachment_id = isset($_GET['attachment_id']) ? absint($_GET['attachment_id']) : 0;
+        $attachment_id = isset($_GET['attachment_id']) ? absint(wp_unslash($_GET['attachment_id'])) : 0;
 
         if (! $attachment_id) {
             wp_die('Invalid attachment ID', 400);
@@ -138,6 +143,11 @@ class Optimizer implements OptimizerInterface
 
     /**
      * AJAX bulk optimization
+     *
+     * @requires-capability manage_options
+     * @nonce image_optimizer_nonce
+     *
+     * @return void
      */
     public function ajax_bulk_optimize()
     {
@@ -147,7 +157,7 @@ class Optimizer implements OptimizerInterface
             wp_send_json_error('Unauthorized', 403);
         }
 
-        $attachment_ids = isset($_POST['attachment_ids']) ? array_map('absint', $_POST['attachment_ids']) : [];
+        $attachment_ids = isset($_POST['attachment_ids']) ? array_map('absint', wp_unslash((array) $_POST['attachment_ids'])) : [];
 
         if (empty($attachment_ids)) {
             wp_send_json_error('No attachments provided');
@@ -252,7 +262,7 @@ class Optimizer implements OptimizerInterface
              *
              * @param ImageContext $context Image context with metadata.
              */
-            do_action('image_optimizer_before_optimize', $context);
+            do_action('odr_image_optimizer_before_optimize', $context);
 
             // Create backup before optimization
             $backup_file = $this->create_backup($file, $attachment_id);
@@ -321,7 +331,7 @@ class Optimizer implements OptimizerInterface
              *
              * @param ImageContext $context Image context with metadata and optimization results.
              */
-            do_action('image_optimizer_after_optimize', $context);
+            do_action('odr_image_optimizer_after_optimize', $context);
 
             // Optimize all attachment subsizes (thumbnail, medium, large, etc.)
             // This is critical for Lighthouse responsive image compliance
@@ -941,7 +951,7 @@ class Optimizer implements OptimizerInterface
              *
              * @param ImageContext $context Image context with metadata.
              */
-            do_action('image_optimizer_before_revert', $context);
+            do_action('odr_image_optimizer_before_revert', $context);
 
             // Restore from backup with detailed error handling
             $copy_result = @copy($backup_file, $file);
@@ -992,7 +1002,7 @@ class Optimizer implements OptimizerInterface
              *
              * @param ImageContext $context Image context with revert metadata.
              */
-            do_action('image_optimizer_after_revert', $context);
+            do_action('odr_image_optimizer_after_revert', $context);
 
             return Result::success(
                 [

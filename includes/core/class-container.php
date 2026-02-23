@@ -18,6 +18,8 @@ if (! defined('ABSPATH')) {
     exit('Direct access denied.');
 }
 
+use ImageOptimizer\Adapter\WordPressAdapter;
+
 /**
  * Service container for dependency injection
  */
@@ -117,6 +119,71 @@ class Container
             self::$instances['resizing_processor'] = new ResizingProcessor($resizer);
         }
         return self::$instances['resizing_processor'];
+    }
+
+    /**
+     * Get or create a WordPressAdapter instance
+     *
+     * @return WordPressAdapter The WordPress adapter service.
+     */
+    public static function get_wordpress_adapter(): WordPressAdapter
+    {
+        if (! isset(self::$instances['wordpress_adapter'])) {
+            self::$instances['wordpress_adapter'] = new WordPressAdapter();
+        }
+        return self::$instances['wordpress_adapter'];
+    }
+
+    /**
+     * Get or create a PriorityService instance
+     *
+     * @return \ImageOptimizer\Services\PriorityService The priority service.
+     */
+    public static function get_priority_service(): \ImageOptimizer\Services\PriorityService
+    {
+        if (! isset(self::$instances['priority_service'])) {
+            self::$instances['priority_service'] = new \ImageOptimizer\Services\PriorityService();
+        }
+        return self::$instances['priority_service'];
+    }
+
+    /**
+     * Get or create an AssetManager instance
+     *
+     * @return \ImageOptimizer\Services\AssetManager The asset manager service.
+     */
+    public static function get_asset_manager(): \ImageOptimizer\Services\AssetManager
+    {
+        if (! isset(self::$instances['asset_manager'])) {
+            self::$instances['asset_manager'] = new \ImageOptimizer\Services\AssetManager();
+        }
+        return self::$instances['asset_manager'];
+    }
+
+    /**
+     * Get or create a CleanupService instance
+     *
+     * @return \ImageOptimizer\Services\CleanupService The cleanup service.
+     */
+    public static function get_cleanup_service(): \ImageOptimizer\Services\CleanupService
+    {
+        if (! isset(self::$instances['cleanup_service'])) {
+            self::$instances['cleanup_service'] = new \ImageOptimizer\Services\CleanupService();
+        }
+        return self::$instances['cleanup_service'];
+    }
+
+    /**
+     * Get or create a NavigationDeferralService instance
+     *
+     * @return \ImageOptimizer\Services\NavigationDeferralService The navigation deferral service.
+     */
+    public static function get_navigation_deferral_service(): \ImageOptimizer\Services\NavigationDeferralService
+    {
+        if (! isset(self::$instances['navigation_deferral_service'])) {
+            self::$instances['navigation_deferral_service'] = new \ImageOptimizer\Services\NavigationDeferralService();
+        }
+        return self::$instances['navigation_deferral_service'];
     }
 
     /**

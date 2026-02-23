@@ -35,15 +35,15 @@ class HookComplexityAnalyzer
      */
     public const IDEAL_HOOK_STRUCTURE = [
         'filters'  => [
-            'image_optimizer_engine'      => 'Choose which optimizer to use',
-            'image_optimizer_result'      => 'Modify optimization result',
+            'odr_image_optimizer_engine'      => 'Choose which optimizer to use',
+            'odr_image_optimizer_result'      => 'Modify optimization result',
         ],
         'actions'  => [
-            'image_optimizer_post_process' => 'WebP, thumbnails, etc',
+            'odr_image_optimizer_post_process' => 'WebP, thumbnails, etc',
         ],
         'data_hooks' => [
-            'image_optimizer_before_optimize' => 'Pass ImageContext before optimization',
-            'image_optimizer_after_optimize'  => 'Pass ImageContext after optimization',
+            'odr_image_optimizer_before_optimize' => 'Pass ImageContext before optimization',
+            'odr_image_optimizer_after_optimize'  => 'Pass ImageContext after optimization',
         ],
     ];
 
@@ -79,8 +79,8 @@ class HookComplexityAnalyzer
         $optimizer_hooks = [];
 
         foreach ($wp_filter as $hook_name => $hook_data) {
-            // Only look at image_optimizer hooks
-            if (stripos($hook_name, 'image_optimizer') === false) {
+            // Only look at odr_image_optimizer hooks
+            if (stripos($hook_name, 'odr_image_optimizer') === false) {
                 continue;
             }
 
@@ -166,8 +166,8 @@ class HookComplexityAnalyzer
         $has_array_hooks = false;
 
         foreach ($hooks as $hook) {
-            if (strpos($hook['name'], 'image_optimizer_before') !== false ||
-                strpos($hook['name'], 'image_optimizer_after') !== false) {
+            if (strpos($hook['name'], 'odr_image_optimizer_before') !== false ||
+                strpos($hook['name'], 'odr_image_optimizer_after') !== false) {
                 $has_context_hooks = true;
             }
             if (strpos($hook['name'], 'optimize') !== false) {
@@ -196,26 +196,26 @@ class HookComplexityAnalyzer
     {
         return [
             'primary_filter'     => [
-                'name'        => 'image_optimizer_engine',
+                'name'        => 'odr_image_optimizer_engine',
                 'description' => 'Choose which optimizer to use',
-                'usage'       => 'apply_filters("image_optimizer_engine", null, $context)',
+                'usage'       => 'apply_filters("odr_image_optimizer_engine", null, $context)',
                 'returns'     => 'OptimizerInterface or null to use default',
             ],
             'primary_action'     => [
-                'name'        => 'image_optimizer_post_process',
+                'name'        => 'odr_image_optimizer_post_process',
                 'description' => 'Post-processing (WebP, thumbnails, etc)',
-                'usage'       => 'do_action("image_optimizer_post_process", $result, $context)',
+                'usage'       => 'do_action("odr_image_optimizer_post_process", $result, $context)',
                 'parameters'  => 'Result object and ImageContext',
             ],
             'data_hooks'         => [
                 [
-                    'name'        => 'image_optimizer_before_optimize',
+                    'name'        => 'odr_image_optimizer_before_optimize',
                     'type'        => 'action',
                     'description' => 'Before optimization starts',
                     'context'     => 'ImageContext with original file info',
                 ],
                 [
-                    'name'        => 'image_optimizer_after_optimize',
+                    'name'        => 'odr_image_optimizer_after_optimize',
                     'type'        => 'action',
                     'description' => 'After optimization completes',
                     'context'     => 'ImageContext with optimization result',
@@ -272,12 +272,12 @@ class HookComplexityAnalyzer
         // Recommendations
         $report .= "\n\nRecommended Hook Structure:\n";
         $report .= "Primary Filter:\n";
-        $report .= "  - image_optimizer_engine: Choose optimizer implementation\n\n";
+        $report .= "  - odr_image_optimizer_engine: Choose optimizer implementation\n\n";
         $report .= "Primary Action:\n";
-        $report .= "  - image_optimizer_post_process: WebP, caching, etc\n\n";
+        $report .= "  - odr_image_optimizer_post_process: WebP, caching, etc\n\n";
         $report .= "Data Hooks (pass ImageContext):\n";
-        $report .= "  - image_optimizer_before_optimize\n";
-        $report .= "  - image_optimizer_after_optimize\n";
+        $report .= "  - odr_image_optimizer_before_optimize\n";
+        $report .= "  - odr_image_optimizer_after_optimize\n";
 
         return $report;
     }

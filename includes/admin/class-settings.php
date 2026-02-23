@@ -38,6 +38,8 @@ class Settings
      *
      * Adds capability check to ensure only admins can save settings.
      *
+     * @requires-capability manage_options
+     *
      * @return void
      */
     public function register_settings(): void
@@ -185,9 +187,9 @@ class Settings
 
         wp_enqueue_style(
             'odr-image-optimizer-settings',
-            IMAGE_OPTIMIZER_URL . 'assets/css/settings.css',
+            ODR_IMAGE_OPTIMIZER_URL . 'assets/css/settings.css',
             [],
-            IMAGE_OPTIMIZER_VERSION,
+            ODR_IMAGE_OPTIMIZER_VERSION,
         );
     }
 

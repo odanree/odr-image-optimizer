@@ -132,7 +132,11 @@ class API
     /**
      * Check admin permission
      *
-     * @return bool
+     * Verifies if current user has manage_options capability.
+     *
+     * @requires-capability manage_options (for intended API caller)
+     *
+     * @return bool True if user can manage options, false otherwise
      */
     public function check_admin_permission()
     {

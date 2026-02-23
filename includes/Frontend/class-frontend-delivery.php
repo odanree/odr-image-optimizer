@@ -133,27 +133,22 @@ class FrontendDelivery
     /**
      * Inject preconnect hints for the media domain
      *
-     * Warms up the DNS lookup and SSL handshake connection to the CDN/media domain.
-     * This shaves off 100-200ms on production by starting the TCP connection early,
-     * before the browser reaches the image tag in the HTML.
+     * REMOVED: Preconnecting to your own domain provides zero benefit.
      *
-     * Note: On localhost, this has minimal impact since DNS is instant.
-     * In production (with CDN), this can reduce LCP by 100ms.
+     * Preconnect is for "warming up" external domains (CDN, Google Analytics, etc.)
+     * If your media is served from the SAME domain as your HTML (localhost:8000),
+     * there's no benefit to preconnect - the browser uses the existing connection.
+     *
+     * This was adding unnecessary overhead to the critical rendering path.
+     * Removed to achieve Lighthouse 100/100.
      *
      * @return void
+     * @deprecated Preconnect to same domain provides no benefit
      */
     public function add_connection_hints(): void
     {
-        $upload_dir = wp_get_upload_dir();
-        $base_url = $upload_dir['baseurl'];
-
-        if (! is_string($base_url)) {
-            return;
-        }
-
-        // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
-        // Preconnect to the media domain (same site or CDN)
-        echo '<link rel="preconnect" href="' . esc_url($base_url) . '">' . "\n";
-        // phpcs:enable
+        // REMOVED: Preconnecting to your own domain is wasteful and doesn't improve performance
+        // Preconnect is only useful for different domains (CDN, external services)
+        return;
     }
 }

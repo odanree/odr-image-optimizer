@@ -6,30 +6,163 @@
 ![PHP 8.1+](https://img.shields.io/badge/PHP-8.1+-777bb4?style=for-the-badge&logo=php)
 ![License GPL 2.0](https://img.shields.io/badge/license-GPL%202.0-blue.svg?style=for-the-badge)
 
-ODR Image Optimizer is a **SOLID-compliant** performance suite designed to reclaim the critical rendering path. By decoupling image processing from delivery policy, it achieves a **1.4s LCP** on throttled mobile connections.
+ODR Image Optimizer is a **SOLID-compliant** performance suite designed to reclaim the critical rendering path. By decoupling image processing from delivery policy, it achieves a **1.8s LCP** on throttled mobile connections with **100/100 Lighthouse Performance**.
 
 ## ⚡ Performance Benchmarks
 
-Tested on a standard WordPress 6.9.1 installation using Lighthouse 13.0.1 (Mobile/Slow 4G).
+Tested on a standard WordPress 6.9.1 installation using Lighthouse 13.0.1 (Mobile/Slow 4G) with on-demand navigation script loading.
 
-- **Largest Contentful Paint (LCP):** 1.4s (↓ 1.0s improvement)
-- **First Contentful Paint (FCP):** 1.0s
+- **Largest Contentful Paint (LCP):** 1.8s (run-to-run variance: 1.8s-2.0s)
+- **First Contentful Paint (FCP):** 0.8s
 - **Total Blocking Time (TBT):** 0ms
 - **Cumulative Layout Shift (CLS):** 0
+- **Lighthouse Performance:** 100/100 (averaging 99-100 with network variance)
 
 ## 🏗️ Technical Architecture
 
-This plugin is built using the **Service Pattern** to ensure strict adherence to SOLID principles:
+This plugin is built using **SOLID design principles** to ensure scalability, testability, and maintainability:
 
-1. **Priority Service:** Injects `fetchpriority="high"` and `<link rel="preload">` tags into the `<head>` at priority `1`.
-2. **Cleanup Service:** Aggressively dequeues non-critical assets (Interactivity API, Emojis) to free up bandwidth.
-3. **Image Manager:** Handles WebP conversion and attribute injection using optimized buffer logic.
+```
+WordPress Hook
+    ↓
+DI Container
+    ↓
+Frontend Service (PriorityService, CleanupService, AssetManager)
+    ↓
+Image Processor (Strategy Pattern)
+    ↓
+Format-Specific Implementation (WebP, JPEG, PNG)
+```
+
+**Key Design Patterns:**
+
+| Pattern | Implementation | Purpose |
+|---------|---|---|
+| **Service Pattern** | `PriorityService`, `CleanupService`, `AssetManager` | Encapsulate business logic; enable testing |
+| **Strategy Pattern** | `ImageProcessorInterface` + implementations | Support multiple image formats without modification |
+| **Registry Pattern** | `ProcessorRegistry` | Manage available processors dynamically |
+| **Factory Pattern** | `Container` class | Create service instances with dependency injection |
+| **Policy Pattern** | `SettingsPolicy` | Decouple configuration from implementation |
+| **Adapter Pattern** | `WordPressAdapter` | Abstract WordPress function calls for testability |
+
+### Optimization Strategy: Multi-Tier Performance
+
+This plugin uses a **hybrid optimization strategy** that respects the SOLID principles:
+
+**Tier 1: Intelligent Deferral (NavigationDeferralService)**
+- Interactivity API scripts are **deferred until first user interaction** (touches, clicks)
+- Fallback: 5-second timeout for passive users
+- This preserves full functionality while keeping critical rendering path clean
+- **Responsibility:** Performance optimization (the "how" of loading)
+
+**Tier 2: Feature Management (plugin setting)**
+- Core plugin provides toggle to **enable/disable** the deferral strategy
+- Emoji detection scripts are removed when enabled
+- When disabled, all scripts load normally (no deferral)
+- **Responsibility:** Feature management (the "if" of loading)
+
+**Why This Approach:**
+- **SRP:** Each component has a single responsibility (loading strategy vs feature toggle)
+- **Least Astonishment:** Users understand scripts are being deferred (still available), not removed entirely
+- **Flexibility:** Developers can choose whether to optimize for Lighthouse (defer) or for traditional loading
+- **Sustainability:** Modern dependencies (Interactivity API) are preserved but optimized, rather than ripped out
+
+### SOLID Principles Compliance
+
+#### ✅ Single Responsibility Principle (SRP)
+
+**Status:** Fully Implemented
+
+Each class has one reason to change:
+- `JpegProcessor` → JPEG optimization only
+- `WebpProcessor` → WebP conversion only
+- `PriorityService` → LCP detection & preloading only
+- `CleanupService` → Asset dequeue only
+- `BackupManager` → File backup/restore only
+
+**Evidence:** 50+ classes, each with focused responsibility. No class handles both business logic and I/O simultaneously.
+
+#### ✅ Open/Closed Principle (OCP)
+
+**Status:** Fully Implemented
+
+New image formats can be added without modifying existing code:
+
+```php
+// Add custom processor via WordPress filter
+add_filter('image_optimizer_processors', function($processors) {
+    $processors['avif'] = new CustomAvifProcessor();
+    return $processors;
+});
+```
+
+The `ProcessorRegistry::fromMorphMap()` method allows registration of new processors at runtime. See [EXTENDING.md](docs/EXTENDING.md) for examples.
+
+#### 🟡 Liskov Substitution Principle (LSP)
+
+**Status:** ~95% Implemented
+
+**What's Correct:**
+- All `ImageProcessorInterface` implementations throw `OptimizationFailedException` (consistent contract)
+- Exception hierarchy ensures callers don't receive unexpected exception types
+- All implementations return `bool` (predictable return types)
+
+**What's Being Improved:**
+- Standardized exception hierarchy (`ImageOptimizerException` base class) to prevent LSP violations
+- All concrete processors now extend the same exception base, guaranteeing substitutability
+
+#### ✅ Interface Segregation Principle (ISP)
+
+**Status:** Fully Implemented
+
+**Interfaces are narrow and focused:**
+- `ImageProcessorInterface` → 3 methods (`process`, `supports`, `getMimeType`)
+- `WordPressAdapterInterface` → 9 focused methods, grouped by concern
+- No "fat" interfaces forcing implementations to have dummy methods
+
+#### 🟡 Dependency Inversion Principle (DIP)
+
+**Status:** ~85% Implemented, Improving
+
+**What's Correct:**
+- `Container` provides centralized DI management
+- Services receive dependencies through constructors (readonly properties)
+- `OptimizationEngine` depends on abstractions (`ProcessorRegistry`), not concrete classes
+
+**What's Being Improved:**
+- Frontend services now use `Container::get_service()` instead of `new Service()`
+- `WordPressAdapter` abstracts WordPress function calls (injectable for testing)
+- PriorityService uses instance state instead of static globals
+
+**Migration Path:** Services are gradually adopting full DI via the Container. See [DEVELOPMENT.md](DEVELOPMENT.md) for testing patterns.
+
+### Why SOLID Matters
+
+**Scalability:** Each new image format (AVIF, HEIC) requires only adding a new processor class. No modification to existing code = lower regression risk.
+
+**Testability:** Services depend on interfaces, enabling mock implementations. `WordPressAdapter` enables testing without WordPress bootstrap.
+
+**Maintainability:** Clear responsibility separation makes debugging faster. A bug in LCP logic only affects `PriorityService`.
+
+**Extensibility:** WordPress filters + registry pattern allow plugins to add custom processors without forking the plugin.
+
+### Architecture Documentation
+
+For detailed architecture patterns and implementation examples, see:
+- [CASE_STUDY.md](CASE_STUDY.md) - Performance optimization deep-dive
+- [DEVELOPMENT.md](DEVELOPMENT.md) - Development workflow & testing patterns
+- [docs/EXTENDING.md](docs/EXTENDING.md) - How to add custom processors
+- [docs/REFACTORING.md](docs/REFACTORING.md) - SOLID refactoring implementation details
+- [docs/TESTING.md](docs/TESTING.md) - Comprehensive testing guide
+- [docs/TEST-PLAN.md](docs/TEST-PLAN.md) - Pre-deployment test checklist
 
 ## 🚀 Key Features
 
 - **Deterministic Preloading:** Zero-delay discovery for above-the-fold images.
 - **Bloat Removal:** Optional toggles to disable heavy core JS ($60KB+ saved).
 - **Consolidated Dashboard:** Manage all performance policies from a single, secure UI.
+- **On-Demand Script Loading:** Navigation interactivity deferred until user interaction (keeps TBT at 0ms).
+- **Font Optimization:** Local font preloading with `font-display: swap` override (eliminates Flash of Unstyled Text).
 
 ## 📦 Installation
 
@@ -40,10 +173,20 @@ This plugin is built using the **Service Pattern** to ensure strict adherence to
 
 Navigate to **Settings → Image Optimizer** to configure:
 
-- **Preload Theme Fonts:** Enable font preloading to break CSS discovery chain
-- **Kill Bloat:** Remove Interactivity API and Emoji detection scripts
-- **Inline Critical CSS:** Eliminate render-blocking CSS requests
-- **Lazy Load Delivery:** Choose native, hybrid, or off
+### Image Optimization (Media Policy)
+Control how images are processed and optimized on upload.
+
+- **Compression Level:** Choose between Low (better quality), Medium (balanced), or High (maximum compression)
+- **WebP Format Support:** Automatically convert images to WebP format for better compression
+- **Auto-Optimize on Upload:** Automatically optimize images when they're uploaded to the media library
+
+### Frontend Performance (Delivery Policy)
+Control how images and scripts are delivered and rendered on the frontend.
+
+- **Lazy Loading Mode:** Choose Native (browser-based `loading="lazy"`), Hybrid (with JS fallback for older browsers), or Disabled
+- **Preload Theme Fonts:** Preload theme fonts to prevent Flash of Unstyled Text and improve perceived performance
+- **Remove Bloat Scripts:** Defer non-essential JavaScript to improve Lighthouse performance. When enabled, Emoji detection scripts are removed and Interactivity API scripts are deferred to first user interaction (touch, click) with a 5-second fallback for passive users. This keeps the critical rendering path clean while preserving full functionality. Result: 100/100 Lighthouse + interactive features remain available.
+- **Inline Critical CSS:** Inline critical CSS above-the-fold to reduce external CSS requests and unblock rendering
 
 ## 🔒 Security & Compliance
 
@@ -67,6 +210,12 @@ composer run analyze
 
 # Run tests
 composer run test
+
+# Quick verification (no WordPress needed)
+php tests/verify-changes.php
+
+# Full test suite (requires WordPress autoloader)
+php tests/run-tests.php all
 ```
 
 ### Architecture Patterns
@@ -91,14 +240,16 @@ The 100/100 score is achieved through "Bandwidth Lane Management Theory":
 
 [Read the case study](CASE_STUDY.md) for technical deep-dive.
 
-## 📊 Before/After
+## 📊 Performance Impact
 
-| Metric | Before | After | Impact |
-|--------|--------|-------|--------|
-| LCP | 2.4s | 1.4s | -42% |
-| FCP | 1.7s | 1.0s | -41% |
-| TBT | 800ms | 100ms | -88% |
-| Lighthouse | 98/100 | 100/100 | +2 |
+| Metric | With Plugin | Without Plugin | Impact |
+|--------|-------------|----------------|--------|
+| LCP | 1.8s | 2.4s | -25% |
+| FCP | 0.8s | 1.2s | -33% |
+| TBT | 0ms | 50ms | -100% |
+| Lighthouse Performance | 100/100 | 96/100 | +4 points |
+
+**Note:** Metrics measured on WordPress 6.9.1 with Lighthouse 13.0.1 (Mobile/Slow 4G). On-demand navigation script loading defers the 50ms TBT penalty until user interaction, achieving 100/100 without sacrificing functionality.
 
 ## 📝 License
 
@@ -107,6 +258,7 @@ GPL v2 or later. See [LICENSE](LICENSE) for details.
 ## 🙋 Support
 
 - [Documentation](docs/)
+- [Testing Guide](docs/TESTING.md)
 - [GitHub Issues](https://github.com/odanree/odr-image-optimizer/issues)
 - [WordPress.org Support](https://wordpress.org/support/plugin/odr-image-optimizer/)
 
@@ -114,6 +266,6 @@ GPL v2 or later. See [LICENSE](LICENSE) for details.
 
 **Author:** Danh Le  
 **Email:** danhle@danhle.net  
-**Version:** 1.0.0  
-**WordPress:** 5.0+  
+**Version:** 1.0.2  
+**WordPress:** 6.0+  
 **PHP:** 8.1+

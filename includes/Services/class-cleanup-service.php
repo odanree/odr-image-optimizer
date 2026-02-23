@@ -49,11 +49,14 @@ class CleanupService
         // Get delivery policy with strict defaults (Lighthouse optimizations enabled by default)
         $policy = SettingsPolicy::get_delivery_policy();
 
-        // Remove emoji detection if enabled
-        if ($policy['remove_bloat']) {
-            remove_action('wp_head', 'print_emoji_detection_script', 7);
-            remove_action('wp_print_styles', 'print_emoji_styles');
+        // Only proceed if bloat removal is enabled
+        if (! $policy['remove_bloat']) {
+            return;
         }
+
+        // Remove emoji detection
+        remove_action('wp_head', 'print_emoji_detection_script', 7);
+        remove_action('wp_print_styles', 'print_emoji_styles');
 
         // Dequeue lazy-load scripts (WordPress 5.5+, now redundant with native loading="lazy")
         // Each dequeued script saves HTTP request + parse time (saves ~30ms per script)
@@ -71,9 +74,7 @@ class CleanupService
 
         // Force speed: Remove render-blocking interactivity scripts on mobile
         // These steal bandwidth lanes from images on throttled 4G
-        if ($policy['remove_bloat']) {
-            $this->force_speed();
-        }
+        $this->force_speed();
     }
 
     /**

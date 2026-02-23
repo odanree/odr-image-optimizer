@@ -1,0 +1,52 @@
+# Development files
+.github export-ignore
+.gitignore export-ignore
+.php-cs-fixer.cache export-ignore
+.php-cs-fixer.php export-ignore
+.phpunit.result.cache export-ignore
+.distignore export-ignore
+phpstan.neon export-ignore
+
+# Documentation - Development only
+CASE_STUDY.md export-ignore
+CHANGELOG.md export-ignore
+CONTRIBUTING.md export-ignore
+DEVELOPMENT.md export-ignore
+SECURITY.md export-ignore
+PROJECT_STRUCTURE.md export-ignore
+README.md export-ignore
+SUBMISSION.md export-ignore
+
+# Tests
+phpunit.xml export-ignore
+tests/ export-ignore
+
+# Dependencies
+composer.json export-ignore
+composer.lock export-ignore
+vendor/ export-ignore
+
+# Node
+package.json export-ignore
+package-lock.json export-ignore
+node_modules/ export-ignore
+
+# Build & Scripts
+fix_config_injection.sed export-ignore
+
+# Documentation folder
+docs/ export-ignore
+
+# IDE & Editor Config
+.editorconfig export-ignore
+.prettierrc export-ignore
+.vscode/ export-ignore
+.idea/ export-ignore
+
+# OS files
+.DS_Store export-ignore
+Thumbs.db export-ignore
+
+# Build artifacts
+*.cache export-ignore
+*.log export-ignore

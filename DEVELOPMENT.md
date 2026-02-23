@@ -68,6 +68,50 @@ Configuration: phpunit.xml
 Tests: 3, Assertions: 12, ✓ All green
 ```
 
+## Additional Testing Scripts
+
+Located in `/tests/` directory:
+
+### Quick Verification (No WordPress Needed)
+```bash
+php tests/verify-changes.php
+```
+
+Runs ~23 automated checks:
+- File syntax validation
+- Content pattern verification
+- Structure compliance
+- No WordPress bootstrap required
+- Takes ~5 seconds
+
+**Output:**
+```
+✅ includes/core/class-container.php
+✅ includes/Services/class-priority-service.php
+...
+Passed: 23/23
+✅ All refactoring changes verified!
+```
+
+### Full Test Suite (Requires WordPress)
+```bash
+php tests/run-tests.php all
+```
+
+Comprehensive tests for SOLID principles:
+- Container lifecycle and caching
+- Instance state isolation
+- Exception hierarchy validation
+- Adapter pattern compliance
+- Interface segregation verification
+
+**Uses:** Plugin autoloader + WordPress helpers
+
+### Extended Testing Documentation
+- **Testing Guide:** `docs/TESTING.md` - 7 test categories with procedures
+- **Test Plan:** `docs/TEST-PLAN.md` - Pre-deployment checklist
+- **Refactoring Details:** `docs/REFACTORING.md` - SOLID implementation notes
+
 ## Workflow Example
 
 ### Before Committing
@@ -143,3 +187,5 @@ This project requires **PHP 8.2+** for:
 - Format code before analysis/tests to avoid false positives
 - All configs are in repository root for IDE integration
 - Tests directory is excluded from analysis (test code has different rules)
+- Extended docs live in `/docs/` directory (see [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md))
+- Test verification scripts are in `/tests/` for organization

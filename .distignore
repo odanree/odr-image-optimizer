@@ -1,0 +1,50 @@
+/.github
+/.git
+/.gitignore
+/.php-cs-fixer.cache
+/.php-cs-fixer.php
+/.phpunit.result.cache
+
+# Development & Documentation
+/CASE_STUDY.md
+/CHANGELOG.md
+/CONTRIBUTING.md
+/DEVELOPMENT.md
+/SECURITY.md
+/PROJECT_STRUCTURE.md
+/README.md
+
+# Tests
+/phpunit.xml
+/tests
+
+# Dependencies
+composer.json
+composer.lock
+/vendor
+
+# Node
+package.json
+package-lock.json
+/node_modules
+
+# Build & Scripts
+/fix_config_injection.sed
+
+# Documentation folder (optional - keep for reference but not required)
+/docs
+
+# IDE & Editor Config (if present)
+.editorconfig
+.prettierrc
+.vscode
+.idea
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.cache
+*.log
+

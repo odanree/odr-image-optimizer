@@ -45,7 +45,7 @@ class ResizingProcessor
      *
      * Hooks at the appropriate points:
      * 1. wp_generate_attachment_metadata - Process resizing on upload
-     * 2. image_optimizer_before_optimize - Resize before compression
+     * 2. odr_image_optimizer_before_optimize - Resize before compression
      */
     public function register_hooks(): void
     {
@@ -53,7 +53,7 @@ class ResizingProcessor
         add_filter('wp_generate_attachment_metadata', [ $this, 'resize_on_metadata_generation' ], 9, 2);
 
         // Hook into optimization pipeline to pass resize information
-        add_filter('image_optimizer_before_optimize', [ $this, 'maybe_resize_before_optimize' ], 10, 1);
+        add_filter('odr_image_optimizer_before_optimize', [ $this, 'maybe_resize_before_optimize' ], 10, 1);
     }
 
     /**
@@ -101,7 +101,7 @@ class ResizingProcessor
     /**
      * Hook into optimization pipeline to resize if needed
      *
-     * Fired by do_action('image_optimizer_before_optimize', $context)
+     * Fired by do_action('odr_image_optimizer_before_optimize', $context)
      * Allows resizing to happen before compression.
      *
      * @param ImageContext $context Image context with attachment data.
