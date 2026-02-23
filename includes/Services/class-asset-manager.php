@@ -20,7 +20,6 @@ if (! defined('ABSPATH')) {
     exit('Direct access denied.');
 }
 
-use ImageOptimizer\Admin\SettingsPolicy;
 
 /**
  * Eliminates render-blocking and non-critical assets
