@@ -29,10 +29,10 @@ class BackupFailedException extends ImageOptimizerException
     /**
      * Constructor with exception chaining support
      *
-     * @param string          $message The error message.
-     * @param int             $code The error code.
-     * @param \Throwable|null $previous Previous exception for chaining.
-     * @param array           $context Additional context data.
+     * @param string              $message The error message.
+     * @param int                 $code The error code.
+     * @param \Throwable|null     $previous Previous exception for chaining.
+     * @param array<string, mixed> $context Additional context data.
      */
     public function __construct(
         string $message = 'Backup operation failed',

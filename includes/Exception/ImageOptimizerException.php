@@ -38,17 +38,17 @@ class ImageOptimizerException extends \Exception
     /**
      * Exception context (additional debugging info)
      *
-     * @var array
+     * @var array<string, mixed>
      */
     protected array $context = [];
 
     /**
      * Constructor with optional context
      *
-     * @param string          $message The error message.
-     * @param int             $code The error code.
-     * @param \Throwable|null $previous Previous exception for chaining.
-     * @param array           $context Additional context data.
+     * @param string              $message The error message.
+     * @param int                 $code The error code.
+     * @param \Throwable|null     $previous Previous exception for chaining.
+     * @param array<string, mixed> $context Additional context data.
      */
     public function __construct(
         string $message = 'Image Optimizer error',
@@ -63,7 +63,7 @@ class ImageOptimizerException extends \Exception
     /**
      * Get exception context for debugging
      *
-     * @return array Context information.
+     * @return array<string, mixed> Context information.
      */
     public function get_context(): array
     {
