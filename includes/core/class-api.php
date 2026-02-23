@@ -143,11 +143,40 @@ class API
     /**
      * Check admin permission
      *
-     * @return bool
+     * Verifies both WordPress capability and request nonce for POST requests.
+     * Nonce can be passed via:
+     * - X-WP-Nonce header (standard for REST)
+     * - Or as parameter in request body
+     *
+     * @param \WP_REST_Request|null $request The request object (optional).
+     *
+     * @return bool True if permitted and nonce valid.
      */
-    public function check_admin_permission()
+    public function check_admin_permission($request = null)
     {
-        return current_user_can('manage_options');
+        // Check capability first
+        if (! current_user_can('manage_options')) {
+            return false;
+        }
+
+        // For POST requests, verify nonce
+        if ($request instanceof \WP_REST_Request) {
+            $method = $request->get_method();
+            if ('POST' === $method) {
+                // Get nonce from header or parameters
+                $nonce = $request->get_header('X-WP-Nonce');
+                if (! $nonce) {
+                    $nonce = $request->get_param(self::NONCE_FIELD);
+                }
+
+                // Verify nonce
+                if (! $nonce || ! \wp_verify_nonce($nonce, 'wp_rest')) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**

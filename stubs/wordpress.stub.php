@@ -611,3 +611,32 @@ class Exception {
  * @return WP_Image_Editor|WP_Error
  */
 function wp_get_image_editor($path, $args = array()) {}
+
+/**
+ * Create nonce
+ *
+ * @param string $action
+ * @param string $name
+ * @return string
+ */
+function wp_create_nonce($action = -1, $name = '_wpnonce') {}
+
+/**
+ * Verify nonce
+ *
+ * @param string $nonce
+ * @param string $action
+ * @return false|int
+ */
+function wp_verify_nonce($nonce, $action = -1) {}
+
+/**
+ * Nonce field output
+ *
+ * @param string $action
+ * @param string $name
+ * @param bool $referer
+ * @param bool $echo
+ * @return string
+ */
+function wp_nonce_field($action = -1, $name = '_wpnonce', $referer = true, $echo = true) {}
