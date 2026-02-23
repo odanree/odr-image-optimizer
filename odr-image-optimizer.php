@@ -198,6 +198,17 @@ add_action('template_redirect', function () {
 }, 1);
 
 /**
+ * Override WordPress font-display fallback at priority 0 (absolutely first in head)
+ * Must run before ALL other styles to ensure font-display: swap !important takes precedence
+ */
+add_action('wp_head', function () {
+    if (! is_admin()) {
+        $priority_service = new \ImageOptimizer\Services\PriorityService();
+        $priority_service->override_font_display();
+    }
+}, 0);
+
+/**
  * Initialize frontend styles and fonts in wp_head (very early)
  */
 add_action('wp_head', function () {
@@ -215,6 +226,7 @@ add_action('wp_head', function () {
         $asset_manager->inline_frontend_styles();
 
         // Preload critical fonts (breaks dependency chain)
+        // DEPRECATED: Now disabled, uses preload_theme_font() instead
         $asset_manager->preload_critical_fonts();
     }
 }, 1);
