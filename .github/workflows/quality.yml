@@ -2,7 +2,7 @@ name: Code Quality & Tests
 
 on:
   push:
-    branches: [ main, refactor/modern-php-srp, develop ]
+    branches: [ main, refactor/modern-php-srp, develop, 'fix/**', 'feat/**', 'refactor/**' ]
   pull_request:
     branches: [ main, develop ]
 
