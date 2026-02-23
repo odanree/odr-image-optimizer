@@ -7,7 +7,7 @@
 .distignore export-ignore
 phpstan.neon export-ignore
 
-# Documentation
+# Documentation - Development only
 CASE_STUDY.md export-ignore
 CHANGELOG.md export-ignore
 CONTRIBUTING.md export-ignore
@@ -15,6 +15,7 @@ DEVELOPMENT.md export-ignore
 SECURITY.md export-ignore
 PROJECT_STRUCTURE.md export-ignore
 README.md export-ignore
+SUBMISSION.md export-ignore
 
 # Tests
 phpunit.xml export-ignore
