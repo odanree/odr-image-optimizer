@@ -151,10 +151,12 @@ For detailed architecture patterns and implementation examples, see:
 
 Navigate to **Settings → Image Optimizer** to configure:
 
-- **Preload Theme Fonts:** Enable font preloading to break CSS discovery chain
-- **Kill Bloat:** Remove Interactivity API and Emoji detection scripts
-- **Inline Critical CSS:** Eliminate render-blocking CSS requests
-- **Lazy Load Delivery:** Choose native, hybrid, or off
+- **Preload Theme Fonts:** Speed up font discovery by preloading local theme fonts early
+- **Disable Core Bloat:** Remove WordPress Emoji and Interactivity API scripts ($60KB+ savings)
+- **Inline Critical CSS:** Prevent render-blocking CSS from delaying page load
+- **Native Lazy Loading:** Enable browser-native lazy loading for images
+- **Remove Emoji Detection Script:** Disable WordPress emoji script (redundant if bloat disabled)
+- **Use font-display: swap:** Enable faster font rendering (prevents Flash of Unstyled Text)
 
 ## 🔒 Security & Compliance
 
