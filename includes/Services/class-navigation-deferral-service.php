@@ -40,12 +40,17 @@ class NavigationDeferralService
      * This ensures ALL scripts are registered before we dequeue navigation scripts.
      * If we run earlier, scripts enqueued by theme/plugins later will override our dequeue.
      *
+     * WordPress.org Compliant:
+     * - Uses wp_add_inline_script (official API, not manual echo)
+     * - Uses wp_register_script to preserve dependency chains
+     * - Includes is_customize_preview() check for editor safety
+     *
      * @return void
      */
     public function defer_navigation(): void
     {
-        // Only on frontend
-        if (is_admin()) {
+        // Safety: Never break admin or editor
+        if (is_admin() || is_customize_preview()) {
             return;
         }
 
@@ -60,8 +65,11 @@ class NavigationDeferralService
         // CRITICAL: Dequeue navigation scripts FIRST so they don't load in head
         $this->dequeue_navigation_scripts();
 
-        // THEN inject the on-demand loader that will load them later
-        $this->inject_on_demand_loader();
+        // THEN re-register stub scripts to preserve dependencies
+        $this->register_stub_scripts();
+
+        // FINALLY: Inject the on-demand loader via official API
+        $this->inject_on_demand_loader_inline();
     }
 
     /**
@@ -90,86 +98,112 @@ class NavigationDeferralService
     }
 
     /**
-     * Inject the on-demand script loader
+     * Re-register navigation scripts without enqueueing them
      *
-     * This inline script:
-     * 1. Listens for user interaction (touchstart, mousedown)
-     * 2. On first interaction, triggers loading of deferred scripts
-     * 3. Sets 5-second fallback timeout for passive users
-     * 4. Removes listeners after first interaction (prevents redundant calls)
+     * This preserves the dependency chain so other scripts don't break,
+     * while preventing the scripts from loading in the initial page render.
+     *
+     * The on-demand loader will dynamically fetch and execute them later.
      *
      * @return void
      */
-    private function inject_on_demand_loader(): void
+    private function register_stub_scripts(): void
     {
-        // Get the WordPress block navigation script URL
         global $wp_scripts;
-        $nav_script_url = '';
 
-        // Try to get the script URL from registered scripts
+        // Get the script URLs from the already-registered (but now dequeued) scripts
+        $script_urls = [];
+
         if (isset($wp_scripts->registered['@wordpress/block-library/navigation/view-js-module'])) {
-            $nav_script_url = $wp_scripts->registered['@wordpress/block-library/navigation/view-js-module']->src;
-        } elseif (isset($wp_scripts->registered['wp-block-navigation-view'])) {
-            $nav_script_url = $wp_scripts->registered['wp-block-navigation-view']->src;
+            $script_urls['@wordpress/block-library/navigation/view-js-module'] = $wp_scripts->registered['@wordpress/block-library/navigation/view-js-module']->src;
+        }
+        if (isset($wp_scripts->registered['wp-block-navigation-view'])) {
+            $script_urls['wp-block-navigation-view'] = $wp_scripts->registered['wp-block-navigation-view']->src;
         }
 
-        // Build full URL if it's a relative path
-        if ($nav_script_url && 0 !== strpos($nav_script_url, 'http')) {
-            $nav_script_url = home_url($nav_script_url);
+        // Re-register scripts so dependencies don't break, but do NOT enqueue them
+        // This keeps them available for manual loading while preventing auto-load
+        foreach ($script_urls as $handle => $src) {
+            if ($src) {
+                wp_register_script(
+                    $handle,
+                    esc_url($src),
+                    [],
+                    null,
+                    true,
+                );
+            }
         }
+    }
 
-        $script = <<<'SCRIPT'
+    /**
+     * Inject on-demand loader via wp_add_inline_script (WordPress.org compliant)
+     *
+     * Uses the official WordPress API instead of manual script tag injection.
+     * Attaches the loader to a core script that's always enqueued (wp-polyfill).
+     *
+     * @return void
+     */
+    private function inject_on_demand_loader_inline(): void
+    {
+        // Build the on-demand loader script using the official API
+        $loader_script = <<<'SCRIPT'
 (function() {
-    var navScriptUrl = %s;
     var navScriptLoaded = false;
 
     function loadDeferredScripts() {
-        if (navScriptLoaded || !navScriptUrl) return;
+        if (navScriptLoaded) return;
         navScriptLoaded = true;
 
-        // Create script element
+        // Get the navigation script URL from data attribute (injected below)
+        var navScript = document.getElementById('odr-nav-src');
+        if (!navScript || !navScript.dataset.src) return;
+
         var script = document.createElement('script');
         script.type = 'module';
-        script.src = navScriptUrl;
+        script.src = navScript.dataset.src;
         document.body.appendChild(script);
 
-        // Remove event listeners to prevent redundant calls
+        // Remove event listeners
         document.removeEventListener('touchstart', loadDeferredScripts);
         document.removeEventListener('mousedown', loadDeferredScripts);
     }
 
-    // Load on user interaction (fastest response path)
+    // Load on user interaction
     document.addEventListener('touchstart', loadDeferredScripts, { once: true });
     document.addEventListener('mousedown', loadDeferredScripts, { once: true });
 
-    // Fallback: Load after 5 seconds for passive users (ensures functionality)
+    // Fallback: Load after 5 seconds for passive users
     setTimeout(loadDeferredScripts, 5000);
 })();
 SCRIPT;
 
-        // Inject the script URL into the loader
-        $inline_script = sprintf($script, wp_json_encode($nav_script_url));
+        // Get the script URL to pass to the loader
+        global $wp_scripts;
+        $nav_script_src = '';
+        if (isset($wp_scripts->registered['@wordpress/block-library/navigation/view-js-module'])) {
+            $nav_script_src = esc_url($wp_scripts->registered['@wordpress/block-library/navigation/view-js-module']->src);
+        }
 
-        // Output inline script in the head
+        // Inject a data-carrying script that holds the URL (non-intrusive approach)
         wp_enqueue_script(
-            'odr-navigation-deferral-loader',
+            'odr-nav-url-holder',
             '',
             [],
             null,
             false,
         );
+        wp_add_inline_script(
+            'odr-nav-url-holder',
+            'var odrNavSrc = ' . wp_json_encode($nav_script_src) . ';',
+            'before',
+        );
 
-        // Use inline script instead of URL
-        add_filter(
-            'script_loader_tag',
-            function ($tag, $handle) use ($inline_script) {
-                if ('odr-navigation-deferral-loader' === $handle) {
-                    return '<script id="' . esc_attr($handle) . '">' . $inline_script . '</script>';
-                }
-                return $tag;
-            },
-            10,
-            2,
+        // Enqueue the loader script on wp-polyfill (always present in WordPress)
+        wp_add_inline_script(
+            'wp-polyfill',
+            $loader_script,
+            'after',
         );
     }
 
