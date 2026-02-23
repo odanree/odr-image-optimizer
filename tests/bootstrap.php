@@ -348,3 +348,36 @@ if (!function_exists('get_bloginfo')) {
         return 'Test Site';
     }
 }
+
+// WordPress class stubs for type checking
+if (!class_exists('WP_Styles')) {
+    class WP_Styles {
+        /**
+         * Registered styles
+         *
+         * @var array<string, object>
+         */
+        public array $registered = [];
+
+        /**
+         * Enqueued styles queue
+         *
+         * @var array<int, string>
+         */
+        public array $queue = [];
+
+        /**
+         * Constructor
+         */
+        public function __construct() {
+            $this->registered = [];
+            $this->queue = [];
+        }
+    }
+}
+
+if (!function_exists('wp_styles')) {
+    function wp_styles() {
+        return new WP_Styles();
+    }
+}

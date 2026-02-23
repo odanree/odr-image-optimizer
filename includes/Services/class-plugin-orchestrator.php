@@ -123,6 +123,10 @@ class Plugin_Orchestrator
         // Injects settings so it can respect user preferences
         (new Asset_Service($this->settings))->register();
 
+        // 5.5. Defer non-critical CSS to improve LCP (70ms render delay fix)
+        // Defers block CSS like navigation, comments that appear below the fold
+        (new CSS_Defer_Service())->register();
+
         // 6. Optimize Largest Contentful Paint (LCP)
         // Only runs if enabled in settings (check database via SettingsPolicy)
         if (SettingsPolicy::should_preload_fonts()) {
