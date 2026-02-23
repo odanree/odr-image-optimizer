@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Admin Dashboard
  *
@@ -8,6 +10,10 @@
  */
 
 namespace ImageOptimizer\Admin;
+
+if (! defined('ABSPATH')) {
+    exit('Direct access denied.');
+}
 
 /**
  * Dashboard class
