@@ -171,6 +171,9 @@ class MetadataMigrator
      * Converts all size entries from JPG to WebP if WebP files exist.
      * Also migrates main file if WebP version exists.
      *
+     * NUCLEAR OPTION: Iterate directly with reference (&) to mutate array in-place
+     * and make a single database update (not one per size).
+     *
      * @param int    $attachmentId The attachment ID.
      * @param string $uploadDir    Full path to uploads directory.
      *
@@ -178,29 +181,88 @@ class MetadataMigrator
      */
     public function migrate_all_sizes(int $attachmentId, string $uploadDir): int
     {
+        // Get metadata from database
+        $metadata = $this->manager->getMetadata($attachmentId);
+        if (! is_array($metadata)) {
+            return 0;
+        }
+
+        // Validate file key exists
+        if (! isset($metadata['file']) || ! is_string($metadata['file'])) {
+            return 0;
+        }
+
+        // Validate sizes array exists
+        if (! isset($metadata['sizes']) || ! is_array($metadata['sizes'])) {
+            return 0;
+        }
+
+        $upload_dir_info = wp_upload_dir();
+        $upload_base = $upload_dir_info['basedir'];
+        $relative_path = dirname($metadata['file']);
+
         $count = 0;
 
-        // First, migrate main file
-        if ($this->migrate_main_file($attachmentId, $uploadDir)) {
-            $count++;
-        }
+        // NUCLEAR OPTION: Iterate directly over $metadata['sizes'] with reference (&)
+        // This mutates the actual metadata array, not a copy
+        foreach ($metadata['sizes'] as $slug => &$size_data) {
+            // Skip if not an array
+            if (! is_array($size_data)) {
+                continue;
+            }
 
-        // Then migrate all sizes
-        $metadata = $this->manager->getMetadata($attachmentId);
+            // Get the current JPG filename
+            $jpg_file = $size_data['file'] ?? '';
+            if (! is_string($jpg_file) || empty($jpg_file)) {
+                continue;
+            }
 
-        if (! is_array($metadata) || ! isset($metadata['sizes'])) {
-            return $count;
-        }
+            // Determine target WebP filename
+            $webp_filename = str_replace(
+                [ '.jpg', '.jpeg', '.png', '.JPG', '.JPEG', '.PNG' ],
+                '.webp',
+                $jpg_file,
+            );
 
-        $sizes = $metadata['sizes'];
-        if (! is_array($sizes)) {
-            return $count;
-        }
+            // Build full path to WebP file
+            $full_path = $upload_base . '/' . $relative_path . '/' . $webp_filename;
 
-        foreach (array_keys($sizes) as $sizeName) {
-            if (is_string($sizeName) && $this->migrate_size_to_webp($attachmentId, $sizeName, $uploadDir)) {
+            // Only migrate if WebP actually exists on disk
+            if (file_exists($full_path)) {
+                // Hard-update the metadata strings
+                $size_data['file'] = $webp_filename;
+                $size_data['mime-type'] = 'image/webp';
+                $size_data['filesize'] = (int) filesize($full_path);
+
                 $count++;
             }
+        }
+
+        // Break the reference to avoid accidental mutations
+        unset($size_data);
+
+        // Also update the primary 'file' key
+        // WordPress uses this as source path for all size calculations
+        $metadata['file'] = str_replace(
+            [ '.jpg', '.jpeg', '.png', '.JPG', '.JPEG', '.PNG' ],
+            '.webp',
+            $metadata['file'],
+        );
+
+        // Single database update with all transformed metadata
+        // All mutations from the foreach loop persist because we iterated with reference (&)
+        $updated = wp_update_attachment_metadata($attachmentId, $metadata);
+
+        // Verify update was successful
+        if ($updated === false) {
+            error_log(
+                sprintf(
+                    'Failed to update metadata for attachment %d during migrate_all_sizes. Result: %s',
+                    $attachmentId,
+                    var_export($updated, true),
+                ),
+            );
+            return 0;
         }
 
         return $count;
