@@ -38,21 +38,21 @@ class Core
      *
      * @var string
      */
-    public $version = IMAGE_OPTIMIZER_VERSION;
+    public $version = ODR_IMAGE_OPTIMIZER_VERSION;
 
     /**
      * The plugin path
      *
      * @var string
      */
-    public $path = IMAGE_OPTIMIZER_PATH;
+    public $path = ODR_IMAGE_OPTIMIZER_PATH;
 
     /**
      * The plugin URL
      *
      * @var string
      */
-    public $url = IMAGE_OPTIMIZER_URL;
+    public $url = ODR_IMAGE_OPTIMIZER_URL;
 
     /**
      * Get the singleton instance
@@ -191,9 +191,9 @@ class Core
     {
         wp_enqueue_script(
             'image-optimizer-lazy',
-            IMAGE_OPTIMIZER_URL . 'assets/js/lazy-load.js',
+            ODR_IMAGE_OPTIMIZER_URL . 'assets/js/lazy-load.js',
             [],
-            IMAGE_OPTIMIZER_VERSION,
+            ODR_IMAGE_OPTIMIZER_VERSION,
             true,
         );
 

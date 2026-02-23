@@ -87,7 +87,7 @@ class AssetManager
             return;
         }
 
-        $css_path = IMAGE_OPTIMIZER_PATH . 'assets/css/frontend.css';
+        $css_path = ODR_IMAGE_OPTIMIZER_PATH . 'assets/css/frontend.css';
 
         if (! file_exists($css_path)) {
             return;

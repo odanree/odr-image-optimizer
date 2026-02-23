@@ -44,14 +44,14 @@ class Dashboard
 
         wp_enqueue_style(
             'image-optimizer-dashboard',
-            IMAGE_OPTIMIZER_URL . 'assets/css/dashboard.css?t=' . $cache_buster,
+            ODR_IMAGE_OPTIMIZER_URL . 'assets/css/dashboard.css?t=' . $cache_buster,
             [],
             false,
         );
 
         wp_enqueue_script(
             'image-optimizer-dashboard',
-            IMAGE_OPTIMIZER_URL . 'assets/js/dashboard.js?t=' . $cache_buster,
+            ODR_IMAGE_OPTIMIZER_URL . 'assets/js/dashboard.js?t=' . $cache_buster,
             [],
             false,
             true,

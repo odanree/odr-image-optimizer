@@ -49,7 +49,7 @@ class Autoloader
         }
 
         // Construct full file path
-        $file = IMAGE_OPTIMIZER_PATH . 'includes/' . $dir_path . $file_name;
+        $file = ODR_IMAGE_OPTIMIZER_PATH . 'includes/' . $dir_path . $file_name;
 
         // Load the file if it exists
         if (file_exists($file)) {

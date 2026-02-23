@@ -32,57 +32,57 @@ if (! defined('ABSPATH')) {
     exit('Direct access denied.');
 }
 
-// Define plugin constants
-define('IMAGE_OPTIMIZER_VERSION', time()); // Cache buster
-define('IMAGE_OPTIMIZER_PATH', plugin_dir_path(__FILE__));
-define('IMAGE_OPTIMIZER_URL', plugin_dir_url(__FILE__));
-define('IMAGE_OPTIMIZER_BASENAME', plugin_basename(__FILE__));
+// Define plugin constants with ODR_ prefix for WordPress.org compliance
+define('ODR_IMAGE_OPTIMIZER_VERSION', time()); // Cache buster
+define('ODR_IMAGE_OPTIMIZER_PATH', plugin_dir_path(__FILE__));
+define('ODR_IMAGE_OPTIMIZER_URL', plugin_dir_url(__FILE__));
+define('ODR_IMAGE_OPTIMIZER_BASENAME', plugin_basename(__FILE__));
 
 // Include the autoloader
-require_once IMAGE_OPTIMIZER_PATH . 'includes/class-autoloader.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/class-autoloader.php';
 
 // Register the autoloader
 \ImageOptimizer\Autoloader::register();
 
 // Manually include core classes to ensure they're loaded
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/interface-optimizer.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-result.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-optimizer-config.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-resizing-config.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-image-file.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-image-context.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-tool-registry.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-container.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-permissions-manager.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-database.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-media-transformer.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-image-resizer.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-resizing-processor.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-optimizer.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-optimizer-contract-validator.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-dip-audit.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-hook-contract-validator.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-isolation-audit.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-permission-enforcement-audit.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-hook-complexity-analyzer.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/core/class-api.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-size-selector.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-size-registry.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-layout-policy.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-header-manager.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-asset-manager.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-priority-service.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-cleanup-service.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-navigation-deferral-service.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Admin/class-settings-service.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-responsive-image-service.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Frontend/class-frontend-delivery.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-webp-frontend-delivery.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/admin/class-dashboard.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/admin/class-settings-policy.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/admin/class-settings.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Frontend/WebpDelivery.php';
-require_once IMAGE_OPTIMIZER_PATH . 'includes/Frontend/ResponsiveImages.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/interface-optimizer.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-result.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-optimizer-config.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-resizing-config.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-image-file.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-image-context.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-tool-registry.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-container.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-permissions-manager.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-database.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-media-transformer.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-image-resizer.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-resizing-processor.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-optimizer.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-optimizer-contract-validator.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-dip-audit.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-hook-contract-validator.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-isolation-audit.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-permission-enforcement-audit.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-hook-complexity-analyzer.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/core/class-api.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Services/class-size-selector.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Services/class-size-registry.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Services/class-layout-policy.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Services/class-header-manager.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Services/class-asset-manager.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Services/class-priority-service.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Services/class-cleanup-service.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Services/class-navigation-deferral-service.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Admin/class-settings-service.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-responsive-image-service.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Frontend/class-frontend-delivery.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-webp-frontend-delivery.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/admin/class-dashboard.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/admin/class-settings-policy.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/admin/class-settings.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Frontend/WebpDelivery.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Frontend/ResponsiveImages.php';
 
 /**
  * The main plugin class
