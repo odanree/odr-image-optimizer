@@ -1160,6 +1160,11 @@ class Optimizer implements OptimizerInterface
 
             $restored_size = filesize($file);
 
+            // CRITICAL: Get original size BEFORE saving revert record
+            // Otherwise get_optimization_history() will return the NEW revert record with wrong size
+            $optimization_history = Database::get_optimization_history($attachment_id);
+            $original_size = $optimization_history ? (int) $optimization_history->original_size : $restored_size;
+
             // Delete WebP versions if they exist
             $this->delete_webp_version($file);
 
@@ -1168,10 +1173,11 @@ class Optimizer implements OptimizerInterface
             $context->set('freed_space', $optimized_size - $restored_size);
 
             // Update optimization result to mark as reverted
+            // NOTE: Don't overwrite original_size - save it from BEFORE revert
             Database::save_optimization_result(
                 $attachment_id,
                 [
-                    'original_size'  => $restored_size,
+                    'original_size'  => $original_size,  // Use the REAL original size from previous record
                     'optimized_size' => $optimized_size,
                     'compression_ratio' => 0,
                     'method'         => 'reverted',
@@ -1189,11 +1195,6 @@ class Optimizer implements OptimizerInterface
              * @param ImageContext $context Image context with revert metadata.
              */
             do_action('image_optimizer_after_revert', $context);
-
-            // Get the original size from optimization history
-            // (What the file size was BEFORE optimization, not after revert)
-            $optimization_history = Database::get_optimization_history($attachment_id);
-            $original_size = $optimization_history ? (int) $optimization_history->original_size : $restored_size;
 
             return Result::success(
                 [
