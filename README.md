@@ -6,16 +6,17 @@
 ![PHP 8.1+](https://img.shields.io/badge/PHP-8.1+-777bb4?style=for-the-badge&logo=php)
 ![License GPL 2.0](https://img.shields.io/badge/license-GPL%202.0-blue.svg?style=for-the-badge)
 
-ODR Image Optimizer is a **SOLID-compliant** performance suite designed to reclaim the critical rendering path. By decoupling image processing from delivery policy, it achieves a **1.4s LCP** on throttled mobile connections.
+ODR Image Optimizer is a **SOLID-compliant** performance suite designed to reclaim the critical rendering path. By decoupling image processing from delivery policy, it achieves a **1.8s LCP** on throttled mobile connections with **100/100 Lighthouse Performance**.
 
 ## ⚡ Performance Benchmarks
 
-Tested on a standard WordPress 6.9.1 installation using Lighthouse 13.0.1 (Mobile/Slow 4G).
+Tested on a standard WordPress 6.9.1 installation using Lighthouse 13.0.1 (Mobile/Slow 4G) with on-demand navigation script loading.
 
-- **Largest Contentful Paint (LCP):** 1.4s (↓ 1.0s improvement)
-- **First Contentful Paint (FCP):** 1.0s
+- **Largest Contentful Paint (LCP):** 1.8s (run-to-run variance: 1.8s-2.0s)
+- **First Contentful Paint (FCP):** 0.8s
 - **Total Blocking Time (TBT):** 0ms
 - **Cumulative Layout Shift (CLS):** 0
+- **Lighthouse Performance:** 100/100 (averaging 99-100 with network variance)
 
 ## 🏗️ Technical Architecture
 
@@ -30,6 +31,8 @@ This plugin is built using the **Service Pattern** to ensure strict adherence to
 - **Deterministic Preloading:** Zero-delay discovery for above-the-fold images.
 - **Bloat Removal:** Optional toggles to disable heavy core JS ($60KB+ saved).
 - **Consolidated Dashboard:** Manage all performance policies from a single, secure UI.
+- **On-Demand Script Loading:** Navigation interactivity deferred until user interaction (keeps TBT at 0ms).
+- **Font Optimization:** Local font preloading with `font-display: swap` override (eliminates Flash of Unstyled Text).
 
 ## 📦 Installation
 
@@ -91,14 +94,16 @@ The 100/100 score is achieved through "Bandwidth Lane Management Theory":
 
 [Read the case study](CASE_STUDY.md) for technical deep-dive.
 
-## 📊 Before/After
+## 📊 Performance Impact
 
-| Metric | Before | After | Impact |
-|--------|--------|-------|--------|
-| LCP | 2.4s | 1.4s | -42% |
-| FCP | 1.7s | 1.0s | -41% |
-| TBT | 800ms | 100ms | -88% |
-| Lighthouse | 98/100 | 100/100 | +2 |
+| Metric | With Plugin | Without Plugin | Impact |
+|--------|-------------|----------------|--------|
+| LCP | 1.8s | 2.4s | -25% |
+| FCP | 0.8s | 1.2s | -33% |
+| TBT | 0ms | 50ms | -100% |
+| Lighthouse Performance | 100/100 | 96/100 | +4 points |
+
+**Note:** Metrics measured on WordPress 6.9.1 with Lighthouse 13.0.1 (Mobile/Slow 4G). On-demand navigation script loading defers the 50ms TBT penalty until user interaction, achieving 100/100 without sacrificing functionality.
 
 ## 📝 License
 
@@ -114,6 +119,6 @@ GPL v2 or later. See [LICENSE](LICENSE) for details.
 
 **Author:** Danh Le  
 **Email:** danhle@danhle.net  
-**Version:** 1.0.0  
-**WordPress:** 5.0+  
+**Version:** 1.0.2  
+**WordPress:** 6.0+  
 **PHP:** 8.1+
