@@ -73,6 +73,7 @@ require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-header-manager.php'
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-asset-manager.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-priority-service.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-cleanup-service.php';
+require_once IMAGE_OPTIMIZER_PATH . 'includes/Services/class-navigation-deferral-service.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Admin/class-settings-service.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-responsive-image-service.php';
 require_once IMAGE_OPTIMIZER_PATH . 'includes/Frontend/class-frontend-delivery.php';
