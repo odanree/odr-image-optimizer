@@ -48,7 +48,15 @@ class SettingsService
     public function register(): void
     {
         // Register the settings group for options.php form handling
-        register_setting('odr_optimizer_group', self::OPTION_NAME);
+        register_setting(
+            'odr_optimizer_group',
+            self::OPTION_NAME,
+            [
+                'type'              => 'array',
+                'sanitize_callback' => [ $this, 'sanitize_settings' ],
+                'show_in_rest'      => false,
+            ],
+        );
 
         // Add settings section
         add_settings_section(
@@ -136,5 +144,36 @@ class SettingsService
         $options = self::get_option();
 
         return $options[ $key ] ?? $default;
+    }
+
+    /**
+     * Sanitize settings before saving
+     *
+     * @param mixed $value The settings value to sanitize.
+     * @return array Sanitized settings array.
+     */
+    public function sanitize_settings($value): array
+    {
+        if (! is_array($value)) {
+            return [];
+        }
+
+        $sanitized = [];
+        $allowed_keys = [
+            'preload_fonts',
+            'kill_bloat',
+            'inline_css',
+            'remove_bloat',
+            'lazy_load',
+        ];
+
+        foreach ($allowed_keys as $key) {
+            if (isset($value[ $key ])) {
+                // Convert any truthy value to boolean
+                $sanitized[ $key ] = ! empty($value[ $key ]);
+            }
+        }
+
+        return $sanitized;
     }
 }

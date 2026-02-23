@@ -1,3 +1,7 @@
+# DO NOT DISTRIBUTE - This file is for development only
+# Add this line to exclude .gitattributes itself from git archive
+.gitattributes export-ignore
+
 # Development files
 .github export-ignore
 .gitignore export-ignore
@@ -16,6 +20,27 @@ SECURITY.md export-ignore
 PROJECT_STRUCTURE.md export-ignore
 README.md export-ignore
 SUBMISSION.md export-ignore
+
+# Testing
+phpunit.xml export-ignore
+tests/ export-ignore
+
+# Dependencies
+composer.json export-ignore
+composer.lock export-ignore
+vendor/ export-ignore
+package.json export-ignore
+package-lock.json export-ignore
+node_modules/ export-ignore
+
+# IDE & OS
+.editorconfig export-ignore
+.vscode/ export-ignore
+.idea/ export-ignore
+*.swp export-ignore
+*.swo export-ignore
+.DS_Store export-ignore
+Thumbs.db export-ignore
 
 # Tests
 phpunit.xml export-ignore
