@@ -257,6 +257,7 @@ class MetadataMigrator
             }
 
             // Build WebP size entry from ConversionResult
+            // CRITICAL: Must hardcode 'mime-type' to 'image/webp' (never trust result->mimeType)
             $webpFile = \basename($result->outputPath);
             $sizeEntry = [
                 'file'      => $webpFile,                    // e.g., yosemite-unsplash-704x469.webp
@@ -277,8 +278,21 @@ class MetadataMigrator
         }
 
         // Update metadata with all new WebP entries
+        // CRITICAL: Preserve all other metadata fields (image_meta, etc.)
         $metadata['sizes'] = $sizes;
-        \wp_update_attachment_metadata($attachmentId, $metadata);
+        $updated = \wp_update_attachment_metadata($attachmentId, $metadata);
+
+        // Verify update was successful
+        if ($updated === false) {
+            error_log(
+                sprintf(
+                    'Failed to update metadata for attachment %d. Result: %s',
+                    $attachmentId,
+                    var_export($updated, true),
+                ),
+            );
+            return 0;
+        }
 
         return $count;
     }

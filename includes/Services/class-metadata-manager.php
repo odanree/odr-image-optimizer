@@ -87,11 +87,12 @@ class MetadataManager
         // Build the size entry from result
         // KEY: Use converted filename (e.g., .webp not .jpg)
         // This ensures WordPress srcset uses converted files
+        // CRITICAL: Hardcode mime-type to 'image/webp' (never use result->mimeType)
         $sizeEntry = [
             'file'      => \basename($result->outputPath),  // e.g., image-704x469.webp
             'width'     => $result->getWidth(),             // 704
             'height'    => $result->getHeight(),            // 469
-            'mime-type' => $result->mimeType,               // image/webp
+            'mime-type' => 'image/webp',                    // HARDCODED, never image/jpeg
         ];
 
         // Add filesize if available
@@ -104,9 +105,9 @@ class MetadataManager
         $metadata['sizes'] = $sizes;
 
         // Persist to database
-        \wp_update_attachment_metadata($attachmentId, $metadata);
+        $updated = \wp_update_attachment_metadata($attachmentId, $metadata);
 
-        return true;
+        return $updated !== false;
     }
 
     /**
