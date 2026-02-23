@@ -43,11 +43,6 @@ class SettingsService
      * Called on admin_init hook.
      * Registers the settings group and adds toggle fields.
      *
-     * Note on Interactivity API optimization:
-     * By default, Interactivity API scripts are intelligently deferred to first user interaction.
-     * Enabling "Optimize Core Scripts (Aggressive Mode)" completely prevents these scripts
-     * from loading on any page. Choose based on your theme's interactivity needs.
-     *
      * @return void
      */
     public function register(): void
@@ -65,7 +60,7 @@ class SettingsService
 
         // Register individual toggle fields
         $this->add_toggle('preload_fonts', 'Preload Theme Fonts');
-        $this->add_toggle('kill_bloat', 'Optimize Core Scripts (Aggressive Mode)');
+        $this->add_toggle('kill_bloat', 'Disable Core Bloat (Emoji/Interactivity JS)');
         $this->add_toggle('inline_css', 'Inline Critical CSS');
         $this->add_toggle('lazy_load', 'Native Lazy Loading');
         $this->add_toggle('remove_emoji', 'Remove Emoji Detection Script');

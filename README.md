@@ -173,12 +173,20 @@ For detailed architecture patterns and implementation examples, see:
 
 Navigate to **Settings → Image Optimizer** to configure:
 
-- **Preload Theme Fonts:** Speed up font discovery by preloading local theme fonts early
-- **Optimize Core Scripts:** Defers the Interactivity API for on-demand loading and completely removes legacy WordPress Emoji scripts. By default, these scripts are intelligently deferred to improve LCP. Enable "Aggressive" mode to completely prevent these scripts from loading.
-- **Inline Critical CSS:** Prevent render-blocking CSS from delaying page load
-- **Native Lazy Loading:** Enable browser-native lazy loading for images
-- **Remove Emoji Detection Script:** Disable WordPress emoji script (completely removed, not deferred)
-- **Use font-display: swap:** Enable faster font rendering (prevents Flash of Unstyled Text)
+### Image Optimization (Media Policy)
+Control how images are processed and optimized on upload.
+
+- **Compression Level:** Choose between Low (better quality), Medium (balanced), or High (maximum compression)
+- **WebP Format Support:** Automatically convert images to WebP format for better compression
+- **Auto-Optimize on Upload:** Automatically optimize images when they're uploaded to the media library
+
+### Frontend Performance (Delivery Policy)
+Control how images and scripts are delivered and rendered on the frontend.
+
+- **Lazy Loading Mode:** Choose Native (browser-based `loading="lazy"`), Hybrid (with JS fallback for older browsers), or Disabled
+- **Preload Theme Fonts:** Preload theme fonts to prevent Flash of Unstyled Text and improve perceived performance
+- **Remove Bloat Scripts:** Remove non-essential JavaScript (Emoji detection, Interactivity API) to free up bandwidth and processing for critical resources. By default, Interactivity API is deferred to first user interaction via mu-plugin; enable this to completely prevent these scripts from loading.
+- **Inline Critical CSS:** Inline critical CSS above-the-fold to reduce external CSS requests and unblock rendering
 
 ## 🔒 Security & Compliance
 
