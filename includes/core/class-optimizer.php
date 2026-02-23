@@ -351,8 +351,8 @@ class Optimizer implements OptimizerInterface
             // After subsizes are optimized to WebP, update metadata to reflect new filenames and mime-types
             if (function_exists('wp_upload_dir')) {
                 $upload_dir = wp_upload_dir();
-                $migrator = new \ODRImageOptimizer\Services\MetadataMigrator(
-                    new \ODRImageOptimizer\Services\MetadataManager(),
+                $migrator = new \ImageOptimizer\Services\MetadataMigrator(
+                    new \ImageOptimizer\Services\MetadataManager(),
                 );
                 $migrator->migrate_all_sizes((int) $attachment_id, $upload_dir['basedir']);
                 error_log(sprintf('[OPTIMIZER] Metadata migration completed for attachment %d', $attachment_id));
