@@ -38,6 +38,8 @@ class Settings
      *
      * Adds capability check to ensure only admins can save settings.
      *
+     * @requires-capability manage_options
+     *
      * @return void
      */
     public function register_settings(): void

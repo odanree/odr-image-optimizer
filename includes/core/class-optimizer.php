@@ -116,6 +116,11 @@ class Optimizer implements OptimizerInterface
 
     /**
      * Optimize a single image
+     *
+     * @requires-capability manage_options
+     * @nonce image_optimizer_nonce
+     *
+     * @return void
      */
     public function optimize_single_image()
     {
@@ -138,6 +143,11 @@ class Optimizer implements OptimizerInterface
 
     /**
      * AJAX bulk optimization
+     *
+     * @requires-capability manage_options
+     * @nonce image_optimizer_nonce
+     *
+     * @return void
      */
     public function ajax_bulk_optimize()
     {
