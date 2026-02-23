@@ -62,13 +62,17 @@ class NavigationDeferralService
             return;
         }
 
-        // CRITICAL: Dequeue navigation scripts FIRST so they don't load in head
+        // CRITICAL ORDER:
+        // 1. Get URLs FIRST (before deregister removes them)
+        $script_urls = $this->capture_script_urls();
+
+        // 2. THEN dequeue navigation scripts so they don't load in head
         $this->dequeue_navigation_scripts();
 
-        // THEN re-register stub scripts to preserve dependencies
-        $this->register_stub_scripts();
+        // 3. Re-register stub scripts with the URLs we captured
+        $this->register_stub_scripts_with_urls($script_urls);
 
-        // FINALLY: Inject the on-demand loader via official API
+        // 4. Finally, inject the on-demand loader via official API
         $this->inject_on_demand_loader_inline();
     }
 
@@ -79,8 +83,8 @@ class NavigationDeferralService
      * By dequeuing them here, they won't be included in the initial page load.
      * The on-demand loader will re-load them on first user interaction.
      *
-     * CRITICAL: Must run at priority 999 (after ALL theme/plugin scripts are enqueued)
-     * If we run too early, theme scripts enqueued later will override the dequeue.
+     * CRITICAL: Must run AFTER capture_script_urls() so we have the URLs
+     * Also must run at priority 998 (after ALL theme/plugin scripts are enqueued)
      *
      * @return void
      */
@@ -98,6 +102,33 @@ class NavigationDeferralService
     }
 
     /**
+     * Capture script URLs BEFORE deregistering them
+     *
+     * This must run FIRST, before dequeue_navigation_scripts() is called,
+     * because deregister removes scripts from $wp_scripts->registered.
+     *
+     * @return array<string, string> Map of handle => src URL
+     */
+    private function capture_script_urls(): array
+    {
+        global $wp_scripts;
+        $script_urls = [];
+
+        // Get URLs while scripts still exist in registry
+        if (isset($wp_scripts->registered['@wordpress/block-library/navigation/view-js-module'])) {
+            $script_urls['@wordpress/block-library/navigation/view-js-module'] = $wp_scripts->registered['@wordpress/block-library/navigation/view-js-module']->src;
+        }
+        if (isset($wp_scripts->registered['wp-block-navigation-view'])) {
+            $script_urls['wp-block-navigation-view'] = $wp_scripts->registered['wp-block-navigation-view']->src;
+        }
+        if (isset($wp_scripts->registered['wp-block-library/navigation/view'])) {
+            $script_urls['wp-block-library/navigation/view'] = $wp_scripts->registered['wp-block-library/navigation/view']->src;
+        }
+
+        return $script_urls;
+    }
+
+    /**
      * Re-register navigation scripts without enqueueing them
      *
      * This preserves the dependency chain so other scripts don't break,
@@ -105,23 +136,13 @@ class NavigationDeferralService
      *
      * The on-demand loader will dynamically fetch and execute them later.
      *
+     * @param array<string, string> $script_urls Map of handle => src URL.
      * @return void
      */
-    private function register_stub_scripts(): void
+    private function register_stub_scripts_with_urls(array $script_urls): void
     {
-        global $wp_scripts;
-
-        // Get the script URLs from the already-registered (but now dequeued) scripts
-        $script_urls = [];
-
-        if (isset($wp_scripts->registered['@wordpress/block-library/navigation/view-js-module'])) {
-            $script_urls['@wordpress/block-library/navigation/view-js-module'] = $wp_scripts->registered['@wordpress/block-library/navigation/view-js-module']->src;
-        }
-        if (isset($wp_scripts->registered['wp-block-navigation-view'])) {
-            $script_urls['wp-block-navigation-view'] = $wp_scripts->registered['wp-block-navigation-view']->src;
-        }
-
-        // Re-register scripts so dependencies don't break, but do NOT enqueue them
+        // Re-register scripts with the captured URLs so dependencies don't break,
+        // but do NOT enqueue them
         // This keeps them available for manual loading while preventing auto-load
         foreach ($script_urls as $handle => $src) {
             if ($src) {
