@@ -36,8 +36,9 @@ class NavigationDeferralService
     /**
      * Defer non-critical navigation scripts
      *
-     * Called at wp_enqueue_scripts (priority 20 = early, before theme enqueues).
-     * This allows theme scripts to be deferred by our handler.
+     * Called at wp_enqueue_scripts (priority 998 = very late, after all plugins/themes enqueue).
+     * This ensures ALL scripts are registered before we dequeue navigation scripts.
+     * If we run earlier, scripts enqueued by theme/plugins later will override our dequeue.
      *
      * @return void
      */
@@ -70,15 +71,21 @@ class NavigationDeferralService
      * By dequeuing them here, they won't be included in the initial page load.
      * The on-demand loader will re-load them on first user interaction.
      *
+     * CRITICAL: Must run at priority 999 (after ALL theme/plugin scripts are enqueued)
+     * If we run too early, theme scripts enqueued later will override the dequeue.
+     *
      * @return void
      */
     private function dequeue_navigation_scripts(): void
     {
-        // Dequeue the block library navigation view script (WordPress 6.3+)
+        // Use wp_deregister_script to prevent registration entirely (stronger than dequeue)
+        wp_deregister_script('@wordpress/block-library/navigation/view-js-module');
+        wp_deregister_script('wp-block-navigation-view');
+        wp_deregister_script('wp-block-library/navigation/view');
+
+        // Also dequeue as backup (in case already registered)
         wp_dequeue_script('@wordpress/block-library/navigation/view-js-module');
         wp_dequeue_script('wp-block-navigation-view');
-
-        // Also dequeue the legacy view script in case it's used
         wp_dequeue_script('wp-block-library/navigation/view');
     }
 
@@ -115,26 +122,26 @@ class NavigationDeferralService
 (function() {
     var navScriptUrl = %s;
     var navScriptLoaded = false;
-    
+
     function loadDeferredScripts() {
         if (navScriptLoaded || !navScriptUrl) return;
         navScriptLoaded = true;
-        
+
         // Create script element
         var script = document.createElement('script');
         script.type = 'module';
         script.src = navScriptUrl;
         document.body.appendChild(script);
-        
+
         // Remove event listeners to prevent redundant calls
         document.removeEventListener('touchstart', loadDeferredScripts);
         document.removeEventListener('mousedown', loadDeferredScripts);
     }
-    
+
     // Load on user interaction (fastest response path)
     document.addEventListener('touchstart', loadDeferredScripts, { once: true });
     document.addEventListener('mousedown', loadDeferredScripts, { once: true });
-    
+
     // Fallback: Load after 5 seconds for passive users (ensures functionality)
     setTimeout(loadDeferredScripts, 5000);
 })();

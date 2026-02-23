@@ -260,17 +260,20 @@ add_action('wp', function () {
 });
 
 /**
- * Defer navigation scripts to first user interaction (priority 20 = early)
+ * Defer navigation scripts to first user interaction (priority 998 = very late, after all plugins/themes enqueue)
+ *
+ * CRITICAL: Must run at priority 998 (just before CleanupService at 999)
+ * This ensures ALL scripts are registered before we dequeue/deregister navigation scripts.
+ * If we run too early, scripts enqueued later will override our dequeue.
  *
  * Uses DI Container to manage NavigationDeferralService lifecycle.
- * Runs early to inject the on-demand loader before other scripts are deferred.
  */
 add_action('wp_enqueue_scripts', function () {
     if (! is_admin()) {
         $deferral = \ImageOptimizer\Core\Container::get_navigation_deferral_service();
         $deferral->defer_navigation();
     }
-}, 20);
+}, 998);
 
 /**
  * Remove WordPress bloat (priority 999 = extremely late, after all plugins/themes enqueue)
