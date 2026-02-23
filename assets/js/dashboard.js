@@ -145,7 +145,7 @@
 		fetch(restUrl + 'optimize/' + id, {
 			method: 'POST',
 			headers: {
-				'X-WP-Nonce': imageOptimizerData.nonce,
+				'X-WP-Nonce': imageOptimizerData.rest_nonce,
 				'Content-Type': 'application/json'
 			}
 		})
