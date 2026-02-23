@@ -347,6 +347,17 @@ class Optimizer implements OptimizerInterface
             // This is critical for Lighthouse responsive image compliance
             $this->optimize_attachment_subsizes((int) $attachment_id);
 
+            // CRITICAL: Migrate metadata to point to WebP files
+            // After subsizes are optimized to WebP, update metadata to reflect new filenames and mime-types
+            if (function_exists('wp_upload_dir')) {
+                $upload_dir = wp_upload_dir();
+                $migrator = new \ODRImageOptimizer\Services\MetadataMigrator(
+                    new \ODRImageOptimizer\Services\MetadataManager(),
+                );
+                $migrator->migrate_all_sizes((int) $attachment_id, $upload_dir['basedir']);
+                error_log(sprintf('[OPTIMIZER] Metadata migration completed for attachment %d', $attachment_id));
+            }
+
             return Result::success(
                 [
                     'original_size'      => $original_size,
