@@ -5,6 +5,8 @@ declare(strict_types=1);
 /**
  * Backup Manager - Handles image backups
  *
+ * Uses WordPress Filesystem API for proper permission handling and security.
+ *
  * @package ImageOptimizer\Backup
  */
 
@@ -24,6 +26,25 @@ readonly class BackupManager
     ) {}
 
     /**
+     * Initialize WordPress Filesystem API
+     *
+     * @return bool True if filesystem is initialized
+     */
+    private function init_filesystem(): bool
+    {
+        if (! function_exists('WP_Filesystem')) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+        }
+
+        global $wp_filesystem;
+        if (! $wp_filesystem) {
+            WP_Filesystem();
+        }
+
+        return $wp_filesystem instanceof \WP_Filesystem_Base;
+    }
+
+    /**
      * Create a backup of an image file
      *
      * @param string $filePath Path to the original file
@@ -34,7 +55,13 @@ readonly class BackupManager
      */
     public function createBackup(string $filePath, string $identifier): string
     {
-        if (!file_exists($filePath)) {
+        if (! $this->init_filesystem()) {
+            throw new BackupFailedException('Failed to initialize filesystem');
+        }
+
+        global $wp_filesystem;
+
+        if (! $wp_filesystem->exists($filePath)) {
             throw new BackupFailedException("Source file not found: {$filePath}");
         }
 
@@ -42,18 +69,18 @@ readonly class BackupManager
         $backupDirectory = dirname($backupPath);
 
         // Create backup directory if it doesn't exist
-        if (!is_dir($backupDirectory)) {
-            if (!@mkdir($backupDirectory, 0755, true)) {
+        if (! $wp_filesystem->is_dir($backupDirectory)) {
+            if (! $wp_filesystem->mkdir($backupDirectory, 0755)) {
                 throw new BackupFailedException("Failed to create backup directory: {$backupDirectory}");
             }
         }
 
         // Don't overwrite existing backup
-        if (file_exists($backupPath)) {
+        if ($wp_filesystem->exists($backupPath)) {
             return $backupPath;
         }
 
-        if (!@copy($filePath, $backupPath)) {
+        if (! $wp_filesystem->copy($filePath, $backupPath)) {
             throw new BackupFailedException("Failed to copy file to backup: {$filePath}");
         }
 
@@ -71,13 +98,19 @@ readonly class BackupManager
      */
     public function restore(string $filePath, string $identifier): bool
     {
+        if (! $this->init_filesystem()) {
+            throw new BackupFailedException('Failed to initialize filesystem');
+        }
+
+        global $wp_filesystem;
+
         $backupPath = $this->getBackupPath($filePath, $identifier);
 
-        if (!file_exists($backupPath)) {
+        if (! $wp_filesystem->exists($backupPath)) {
             throw new BackupFailedException("Backup not found: {$backupPath}");
         }
 
-        if (!@copy($backupPath, $filePath)) {
+        if (! $wp_filesystem->copy($backupPath, $filePath)) {
             throw new BackupFailedException('Failed to restore file from backup');
         }
 
@@ -93,7 +126,13 @@ readonly class BackupManager
      */
     public function hasBackup(string $filePath, string $identifier): bool
     {
-        return file_exists($this->getBackupPath($filePath, $identifier));
+        if (! $this->init_filesystem()) {
+            return false;
+        }
+
+        global $wp_filesystem;
+
+        return $wp_filesystem->exists($this->getBackupPath($filePath, $identifier));
     }
 
     /**
@@ -105,13 +144,19 @@ readonly class BackupManager
      */
     public function deleteBackup(string $filePath, string $identifier): bool
     {
+        if (! $this->init_filesystem()) {
+            return false;
+        }
+
+        global $wp_filesystem;
+
         $backupPath = $this->getBackupPath($filePath, $identifier);
 
-        if (!file_exists($backupPath)) {
+        if (! $wp_filesystem->exists($backupPath)) {
             return true; // Already deleted
         }
 
-        return @unlink($backupPath);
+        return $wp_filesystem->delete($backupPath);
     }
 
     /**

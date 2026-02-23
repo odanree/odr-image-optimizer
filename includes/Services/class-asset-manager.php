@@ -100,9 +100,9 @@ class AssetManager
             return;
         }
 
-        // Inline directly into the head
+        // Inline directly into the head - CSS from static file is safe, but escape for output
         // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
-        echo '<style id="odr-optimizer-inline-css">' . $css . '</style>' . "\n";
+        echo '<style id="odr-optimizer-inline-css">' . wp_kses_post($css) . '</style>' . "\n";
         // phpcs:enable
     }
 

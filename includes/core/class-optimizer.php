@@ -125,7 +125,7 @@ class Optimizer implements OptimizerInterface
             wp_die('Unauthorized', 403);
         }
 
-        $attachment_id = isset($_GET['attachment_id']) ? absint($_GET['attachment_id']) : 0;
+        $attachment_id = isset($_GET['attachment_id']) ? absint(wp_unslash($_GET['attachment_id'])) : 0;
 
         if (! $attachment_id) {
             wp_die('Invalid attachment ID', 400);
@@ -147,7 +147,7 @@ class Optimizer implements OptimizerInterface
             wp_send_json_error('Unauthorized', 403);
         }
 
-        $attachment_ids = isset($_POST['attachment_ids']) ? array_map('absint', $_POST['attachment_ids']) : [];
+        $attachment_ids = isset($_POST['attachment_ids']) ? array_map('absint', wp_unslash((array) $_POST['attachment_ids'])) : [];
 
         if (empty($attachment_ids)) {
             wp_send_json_error('No attachments provided');
