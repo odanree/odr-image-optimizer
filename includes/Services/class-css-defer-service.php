@@ -137,7 +137,8 @@ class CSS_Defer_Service
 
                 // Log deferral for debugging
                 // @phpstan-ignore-next-line WordPress WP_Styles object properties
-                \error_log(\sprintf('[CSS_DEFER] Deferred %s (%s bytes)', $handle, \strlen($style_obj->extra['after'] ?? '')));
+                $css_size = \is_string($style_obj->extra['after'] ?? null) ? \strlen($style_obj->extra['after']) : 0;
+                \error_log(\sprintf('[CSS_DEFER] Deferred %s (%s bytes)', $handle, $css_size));
             }
         }
     }
