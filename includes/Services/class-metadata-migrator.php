@@ -271,11 +271,11 @@ class MetadataMigrator
     /**
      * Migrate sizes from ConversionResult batch
      *
-     * Batch operation used by orchestrator after image processing.
-     * AGGRESSIVELY overwrites old JPG size entries with new WebP entries.
+     * After optimization, WebP files exist on disk but metadata still references JPG.
+     * This method sweeps ALL sizes and updates them if WebP versions exist.
      *
-     * Nuclear option: Iterate directly over metadata['sizes'] with reference (&)
-     * to ensure mutations persist in the actual metadata array before database update.
+     * CRITICAL: Iterate directly over metadata['sizes'] with reference (&)
+     * to ensure mutations persist in actual metadata array.
      *
      * @param int                              $attachmentId The attachment ID.
      * @param array<string, ConversionResult> $results      Array of size_name => ConversionResult pairs.
@@ -284,17 +284,13 @@ class MetadataMigrator
      */
     public function migrate_from_results(int $attachmentId, array $results): int
     {
-        if (empty($results)) {
-            return 0;
-        }
-
-        // Get current metadata (source of truth)
+        // Get metadata from database
         $metadata = $this->manager->getMetadata($attachmentId);
         if (! is_array($metadata)) {
             return 0;
         }
 
-        // Validate file key exists and is a string
+        // Validate file key exists
         if (! isset($metadata['file']) || ! is_string($metadata['file'])) {
             return 0;
         }
@@ -304,72 +300,68 @@ class MetadataMigrator
             return 0;
         }
 
-        // Get upload directory for file existence checks
-        $upload_dir = wp_upload_dir();
-        $upload_base = $upload_dir['basedir'];
+        $upload_dir_info = wp_upload_dir();
+        $upload_base = $upload_dir_info['basedir'];
         $relative_path = dirname($metadata['file']);
 
         $count = 0;
 
-        // NUCLEAR OPTION: Iterate directly over $metadata['sizes'] with reference (&)
-        // This ensures mutations happen directly in the metadata array, not a copy
-        foreach ($metadata['sizes'] as $slug => &$size) {
+        // CRITICAL FIX: Iterate directly over metadata['sizes'] with reference (&)
+        // This mutates the actual metadata array, not a copy
+        // Don't iterate over $results - sweep ALL sizes in metadata
+        foreach ($metadata['sizes'] as $slug => &$size_data) {
             // Skip if not an array
-            if (! is_array($size)) {
+            if (! is_array($size_data)) {
                 continue;
             }
 
             // Get the current JPG filename
-            $jpg_file = $size['file'] ?? '';
+            $jpg_file = $size_data['file'] ?? '';
             if (! is_string($jpg_file) || empty($jpg_file)) {
                 continue;
             }
 
-            // 1. Determine the target WebP filename
+            // Determine target WebP filename
             $webp_filename = str_replace(
                 [ '.jpg', '.jpeg', '.png', '.JPG', '.JPEG', '.PNG' ],
                 '.webp',
                 $jpg_file,
             );
 
-            // 2. Build full path to WebP file
+            // Build full path to WebP file
             $full_path = $upload_base . '/' . $relative_path . '/' . $webp_filename;
 
-            // 3. Only migrate if the WebP actually exists on disk
+            // Only migrate if WebP actually exists on disk
             if (file_exists($full_path)) {
-                // MUST change file to .webp
-                $size['file'] = $webp_filename;
-
-                // MUST change mime-type to image/webp
-                $size['mime-type'] = 'image/webp';
-
-                // Bonus: Update to the actual WebP filesize for accuracy
-                $size['filesize'] = (int) filesize($full_path);
+                // Hard-update the metadata strings
+                $size_data['file'] = $webp_filename;
+                $size_data['mime-type'] = 'image/webp';
+                $size_data['filesize'] = (int) filesize($full_path);
 
                 $count++;
             }
         }
 
         // Break the reference to avoid accidental mutations
-        unset($size);
+        unset($size_data);
 
-        // CRITICAL: Also migrate the main file path!
-        // WordPress uses this as the source path for all subsizes
+        // Also update the primary 'file' key
+        // WordPress uses this as source path for all size calculations
         $metadata['file'] = str_replace(
             [ '.jpg', '.jpeg', '.png', '.JPG', '.JPEG', '.PNG' ],
             '.webp',
             $metadata['file'],
         );
 
-        // Update metadata with all transformed WebP entries
-        // Mutations to $metadata['sizes'] persist because we iterated with reference (&)
+        // Single database update with all transformed metadata
+        // All mutations from the foreach loop persist because we iterated with reference (&)
         $updated = wp_update_attachment_metadata($attachmentId, $metadata);
 
         // Verify update was successful
         if ($updated === false) {
             error_log(
                 sprintf(
-                    'Failed to update metadata for attachment %d during migration. Result: %s',
+                    'Failed to update metadata for attachment %d during migrate_from_results. Result: %s',
                     $attachmentId,
                     var_export($updated, true),
                 ),
