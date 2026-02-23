@@ -20,11 +20,119 @@ Tested on a standard WordPress 6.9.1 installation using Lighthouse 13.0.1 (Mobil
 
 ## 🏗️ Technical Architecture
 
-This plugin is built using the **Service Pattern** to ensure strict adherence to SOLID principles:
+This plugin is built using **SOLID design principles** to ensure scalability, testability, and maintainability:
 
-1. **Priority Service:** Injects `fetchpriority="high"` and `<link rel="preload">` tags into the `<head>` at priority `1`.
-2. **Cleanup Service:** Aggressively dequeues non-critical assets (Interactivity API, Emojis) to free up bandwidth.
-3. **Image Manager:** Handles WebP conversion and attribute injection using optimized buffer logic.
+```
+WordPress Hook
+    ↓
+DI Container
+    ↓
+Frontend Service (PriorityService, CleanupService, AssetManager)
+    ↓
+Image Processor (Strategy Pattern)
+    ↓
+Format-Specific Implementation (WebP, JPEG, PNG)
+```
+
+**Key Design Patterns:**
+
+| Pattern | Implementation | Purpose |
+|---------|---|---|
+| **Service Pattern** | `PriorityService`, `CleanupService`, `AssetManager` | Encapsulate business logic; enable testing |
+| **Strategy Pattern** | `ImageProcessorInterface` + implementations | Support multiple image formats without modification |
+| **Registry Pattern** | `ProcessorRegistry` | Manage available processors dynamically |
+| **Factory Pattern** | `Container` class | Create service instances with dependency injection |
+| **Policy Pattern** | `SettingsPolicy` | Decouple configuration from implementation |
+| **Adapter Pattern** | `WordPressAdapter` | Abstract WordPress function calls for testability |
+
+### SOLID Principles Compliance
+
+#### ✅ Single Responsibility Principle (SRP)
+
+**Status:** Fully Implemented
+
+Each class has one reason to change:
+- `JpegProcessor` → JPEG optimization only
+- `WebpProcessor` → WebP conversion only
+- `PriorityService` → LCP detection & preloading only
+- `CleanupService` → Asset dequeue only
+- `BackupManager` → File backup/restore only
+
+**Evidence:** 50+ classes, each with focused responsibility. No class handles both business logic and I/O simultaneously.
+
+#### ✅ Open/Closed Principle (OCP)
+
+**Status:** Fully Implemented
+
+New image formats can be added without modifying existing code:
+
+```php
+// Add custom processor via WordPress filter
+add_filter('image_optimizer_processors', function($processors) {
+    $processors['avif'] = new CustomAvifProcessor();
+    return $processors;
+});
+```
+
+The `ProcessorRegistry::fromMorphMap()` method allows registration of new processors at runtime. See [EXTENDING.md](docs/EXTENDING.md) for examples.
+
+#### 🟡 Liskov Substitution Principle (LSP)
+
+**Status:** ~95% Implemented
+
+**What's Correct:**
+- All `ImageProcessorInterface` implementations throw `OptimizationFailedException` (consistent contract)
+- Exception hierarchy ensures callers don't receive unexpected exception types
+- All implementations return `bool` (predictable return types)
+
+**What's Being Improved:**
+- Standardized exception hierarchy (`ImageOptimizerException` base class) to prevent LSP violations
+- All concrete processors now extend the same exception base, guaranteeing substitutability
+
+#### ✅ Interface Segregation Principle (ISP)
+
+**Status:** Fully Implemented
+
+**Interfaces are narrow and focused:**
+- `ImageProcessorInterface` → 3 methods (`process`, `supports`, `getMimeType`)
+- `WordPressAdapterInterface` → 9 focused methods, grouped by concern
+- No "fat" interfaces forcing implementations to have dummy methods
+
+#### 🟡 Dependency Inversion Principle (DIP)
+
+**Status:** ~85% Implemented, Improving
+
+**What's Correct:**
+- `Container` provides centralized DI management
+- Services receive dependencies through constructors (readonly properties)
+- `OptimizationEngine` depends on abstractions (`ProcessorRegistry`), not concrete classes
+
+**What's Being Improved:**
+- Frontend services now use `Container::get_service()` instead of `new Service()`
+- `WordPressAdapter` abstracts WordPress function calls (injectable for testing)
+- PriorityService uses instance state instead of static globals
+
+**Migration Path:** Services are gradually adopting full DI via the Container. See [DEVELOPMENT.md](DEVELOPMENT.md) for testing patterns.
+
+### Why SOLID Matters
+
+**Scalability:** Each new image format (AVIF, HEIC) requires only adding a new processor class. No modification to existing code = lower regression risk.
+
+**Testability:** Services depend on interfaces, enabling mock implementations. `WordPressAdapter` enables testing without WordPress bootstrap.
+
+**Maintainability:** Clear responsibility separation makes debugging faster. A bug in LCP logic only affects `PriorityService`.
+
+**Extensibility:** WordPress filters + registry pattern allow plugins to add custom processors without forking the plugin.
+
+### Architecture Documentation
+
+For detailed architecture patterns and implementation examples, see:
+- [CASE_STUDY.md](CASE_STUDY.md) - Performance optimization deep-dive
+- [DEVELOPMENT.md](DEVELOPMENT.md) - Development workflow & testing patterns
+- [docs/EXTENDING.md](docs/EXTENDING.md) - How to add custom processors
+- [docs/REFACTORING.md](docs/REFACTORING.md) - SOLID refactoring implementation details
+- [docs/TESTING.md](docs/TESTING.md) - Comprehensive testing guide
+- [docs/TEST-PLAN.md](docs/TEST-PLAN.md) - Pre-deployment test checklist
 
 ## 🚀 Key Features
 
@@ -70,6 +178,12 @@ composer run analyze
 
 # Run tests
 composer run test
+
+# Quick verification (no WordPress needed)
+php tests/verify-changes.php
+
+# Full test suite (requires WordPress autoloader)
+php tests/run-tests.php all
 ```
 
 ### Architecture Patterns
@@ -112,6 +226,7 @@ GPL v2 or later. See [LICENSE](LICENSE) for details.
 ## 🙋 Support
 
 - [Documentation](docs/)
+- [Testing Guide](docs/TESTING.md)
 - [GitHub Issues](https://github.com/odanree/odr-image-optimizer/issues)
 - [WordPress.org Support](https://wordpress.org/support/plugin/odr-image-optimizer/)
 

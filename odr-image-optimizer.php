@@ -180,11 +180,14 @@ add_action('admin_menu', function () {
 
 /**
  * Initialize performance optimizations (before content renders)
+ *
+ * Uses DI Container to manage service lifecycle.
+ * Runs at template_redirect (early, before wp_head) to detect LCP and apply optimizations.
  */
 add_action('template_redirect', function () {
     if (! is_admin()) {
         // Detect LCP image ID early (before wp_head)
-        $priority_service = new \ImageOptimizer\Services\PriorityService();
+        $priority_service = \ImageOptimizer\Core\Container::get_priority_service();
         $priority_service->detect_lcp_id();
 
         // Apply cache headers for long-term caching
@@ -192,7 +195,7 @@ add_action('template_redirect', function () {
         $header_manager->apply_cache_headers();
 
         // Optimize critical rendering path
-        $asset_manager = new \ImageOptimizer\Services\AssetManager();
+        $asset_manager = \ImageOptimizer\Core\Container::get_asset_manager();
         $asset_manager->optimize_critical_path();
     }
 }, 1);
@@ -200,20 +203,26 @@ add_action('template_redirect', function () {
 /**
  * Override WordPress font-display fallback at priority 0 (absolutely first in head)
  * Must run before ALL other styles to ensure font-display: swap !important takes precedence
+ *
+ * Uses DI Container to manage PriorityService lifecycle.
  */
 add_action('wp_head', function () {
     if (! is_admin()) {
-        $priority_service = new \ImageOptimizer\Services\PriorityService();
+        $priority_service = \ImageOptimizer\Core\Container::get_priority_service();
         $priority_service->override_font_display();
     }
 }, 0);
 
 /**
  * Initialize frontend styles and fonts in wp_head (very early)
+ *
+ * Uses DI Container for PriorityService and AssetManager.
+ * Services are cached in Container singleton, ensuring consistent instance
+ * for state tracking (e.g., LCP ID detection -> preload injection).
  */
 add_action('wp_head', function () {
     if (! is_admin()) {
-        $priority_service = new \ImageOptimizer\Services\PriorityService();
+        $priority_service = \ImageOptimizer\Core\Container::get_priority_service();
 
         // Inject LCP preload hint (tell browser to download 704px image immediately)
         $priority_service->inject_preload();
@@ -222,7 +231,7 @@ add_action('wp_head', function () {
         $priority_service->preload_theme_font();
 
         // Inline small CSS to eliminate render-blocking request
-        $asset_manager = new \ImageOptimizer\Services\AssetManager();
+        $asset_manager = \ImageOptimizer\Core\Container::get_asset_manager();
         $asset_manager->inline_frontend_styles();
 
         // Preload critical fonts (breaks dependency chain)
@@ -252,12 +261,13 @@ add_action('wp', function () {
 /**
  * Remove WordPress bloat (priority 999 = extremely late, after all plugins/themes enqueue)
  *
+ * Uses DI Container to manage CleanupService lifecycle.
  * Runs at maximum priority to ensure all scripts are enqueued before we dequeue.
  * This prevents race conditions where scripts are enqueued after our dequeue.
  */
 add_action('wp_enqueue_scripts', function () {
     if (! is_admin()) {
-        $cleanup = new \ImageOptimizer\Services\CleanupService();
+        $cleanup = \ImageOptimizer\Core\Container::get_cleanup_service();
         $cleanup->remove_bloat();
     }
 }, 999);

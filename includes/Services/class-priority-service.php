@@ -33,18 +33,22 @@ use ImageOptimizer\Admin\SettingsPolicy;
  * 2. wp_head (priority 1): Call injectPreload() to emit <link rel="preload">
  * 3. Browser sees preload → starts downloading 704px image immediately
  * 4. Browser processes CSS → by then, image is already downloading
+ *
+ * Uses instance-based state stored in request scope (not static globals).
+ * This allows multiple PriorityService instances to coexist during testing
+ * and enables proper dependency injection patterns.
  */
 class PriorityService
 {
     /**
      * Tracks the LCP image attachment ID for this page
      *
-     * Static so it persists across multiple method calls in same request.
+     * Instance variable (not static) - state is request-scoped per instance.
      * Null if no featured image (not LCP-eligible page).
      *
      * @var int|null
      */
-    private static ?int $lcp_id = null;
+    private ?int $lcp_id = null;
 
     /**
      * Detect the LCP candidate before the page renders
@@ -66,7 +70,7 @@ class PriorityService
 
         // Store it for use in injectPreload()
         if ($thumbnail_id) {
-            self::$lcp_id = (int) $thumbnail_id;
+            $this->lcp_id = (int) $thumbnail_id;
         }
     }
 
@@ -92,19 +96,19 @@ class PriorityService
     public function inject_preload(): void
     {
         // No preload if no featured image
-        if (null === self::$lcp_id) {
+        if (null === $this->lcp_id) {
             return;
         }
 
         // Get the 704px variant (our optimized size)
-        $src = wp_get_attachment_image_url(self::$lcp_id, 'odr_content_optimized');
+        $src = wp_get_attachment_image_url($this->lcp_id, 'odr_content_optimized');
 
         if (! is_string($src)) {
             return;
         }
 
         // Get the srcset for responsive loading
-        $srcset = wp_get_attachment_image_srcset(self::$lcp_id, 'odr_content_optimized');
+        $srcset = wp_get_attachment_image_srcset($this->lcp_id, 'odr_content_optimized');
         $srcset_attr = is_string($srcset) ? esc_attr($srcset) : '';
 
         // Emit the preload link
@@ -122,9 +126,9 @@ class PriorityService
      *
      * @return void
      */
-    public static function reset_lcp_id(): void
+    public function reset_lcp_id(): void
     {
-        self::$lcp_id = null;
+        $this->lcp_id = null;
     }
 
     /**
