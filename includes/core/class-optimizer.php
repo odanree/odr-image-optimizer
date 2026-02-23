@@ -1190,9 +1190,15 @@ class Optimizer implements OptimizerInterface
              */
             do_action('image_optimizer_after_revert', $context);
 
+            // Get the original size from optimization history
+            // (What the file size was BEFORE optimization, not after revert)
+            $optimization_history = Database::get_optimization_history($attachment_id);
+            $original_size = $optimization_history ? (int) $optimization_history->original_size : $restored_size;
+
             return Result::success(
                 [
-                    'restored_size' => $restored_size,
+                    'restored_size' => $original_size,  // Show original pre-optimized size, not current file size
+                    'freed_space' => 0,
                 ],
                 'Image successfully reverted to original',
             );
