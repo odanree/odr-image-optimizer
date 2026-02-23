@@ -284,25 +284,32 @@ class MetadataMigrator
      */
     public function migrate_from_results(int $attachmentId, array $results): int
     {
+        error_log(sprintf('[MIGRATOR] migrate_from_results called for attachment %d', $attachmentId));
+
         // Get metadata from database
         $metadata = $this->manager->getMetadata($attachmentId);
         if (! is_array($metadata)) {
+            error_log(sprintf('[MIGRATOR] No metadata found for attachment %d', $attachmentId));
             return 0;
         }
 
         // Validate file key exists
         if (! isset($metadata['file']) || ! is_string($metadata['file'])) {
+            error_log(sprintf('[MIGRATOR] Invalid or missing file key for attachment %d', $attachmentId));
             return 0;
         }
 
         // Validate sizes array exists
         if (! isset($metadata['sizes']) || ! is_array($metadata['sizes'])) {
+            error_log(sprintf('[MIGRATOR] No sizes array for attachment %d', $attachmentId));
             return 0;
         }
 
         $upload_dir_info = wp_upload_dir();
         $upload_base = $upload_dir_info['basedir'];
         $relative_path = dirname($metadata['file']);
+
+        error_log(sprintf('[MIGRATOR] Sweeping %d sizes for attachment %d', count($metadata['sizes']), $attachmentId));
 
         $count = 0;
 
@@ -333,17 +340,23 @@ class MetadataMigrator
 
             // Only migrate if WebP actually exists on disk
             if (file_exists($full_path)) {
+                error_log(sprintf('[MIGRATOR] Found WebP for size %s: %s', $slug, $webp_filename));
+
                 // Hard-update the metadata strings
                 $size_data['file'] = $webp_filename;
                 $size_data['mime-type'] = 'image/webp';
                 $size_data['filesize'] = (int) filesize($full_path);
 
                 $count++;
+            } else {
+                error_log(sprintf('[MIGRATOR] WebP NOT found at: %s', $full_path));
             }
         }
 
         // Break the reference to avoid accidental mutations
         unset($size_data);
+
+        error_log(sprintf('[MIGRATOR] Migrated %d sizes, updating main file path', $count));
 
         // Also update the primary 'file' key
         // WordPress uses this as source path for all size calculations
@@ -353,21 +366,26 @@ class MetadataMigrator
             $metadata['file'],
         );
 
+        error_log(sprintf('[MIGRATOR] Main file now: %s', $metadata['file']));
+
         // Single database update with all transformed metadata
         // All mutations from the foreach loop persist because we iterated with reference (&)
+        error_log(sprintf('[MIGRATOR] Calling wp_update_attachment_metadata for attachment %d', $attachmentId));
         $updated = wp_update_attachment_metadata($attachmentId, $metadata);
 
         // Verify update was successful
         if ($updated === false) {
             error_log(
                 sprintf(
-                    'Failed to update metadata for attachment %d during migrate_from_results. Result: %s',
+                    '[MIGRATOR] FAILED to update metadata for attachment %d. Result: %s',
                     $attachmentId,
                     var_export($updated, true),
                 ),
             );
             return 0;
         }
+
+        error_log(sprintf('[MIGRATOR] Successfully updated metadata for attachment %d. Result: %s', $attachmentId, var_export($updated, true)));
 
         return $count;
     }
