@@ -210,7 +210,12 @@ class MetadataMigrator
      * Migrate sizes from ConversionResult batch
      *
      * Batch operation used by orchestrator after image processing.
-     * Accepts multiple ConversionResult objects for different sizes/retina versions.
+     * AGGRESSIVELY overwrites old JPG size entries with new WebP entries.
+     *
+     * For each ConversionResult:
+     * - Replaces 'file' key: .jpg → .webp
+     * - Replaces 'mime-type': image/jpeg → image/webp
+     * - Updates 'filesize' with actual WebP file size
      *
      * @param int                              $attachmentId The attachment ID.
      * @param array<string, ConversionResult> $results      Array of size_name => ConversionResult pairs.
@@ -219,9 +224,26 @@ class MetadataMigrator
      */
     public function migrate_from_results(int $attachmentId, array $results): int
     {
+        if (empty($results)) {
+            return 0;
+        }
+
+        // Get current metadata (source of truth)
+        $metadata = $this->manager->getMetadata($attachmentId);
+        if (! is_array($metadata)) {
+            return 0;
+        }
+
+        $sizes = $metadata['sizes'] ?? [];
+        if (! is_array($sizes)) {
+            $sizes = [];
+        }
+
         $count = 0;
+
+        // For each ConversionResult, aggressively overwrite the old JPG entry
         foreach ($results as $sizeName => $result) {
-            // Ensure we have a ConversionResult instance and string size name
+            // Validate inputs
             if (! is_string($sizeName)) {
                 continue;
             }
@@ -230,10 +252,33 @@ class MetadataMigrator
                 continue;
             }
 
-            if ($this->manager->registerSize($attachmentId, $sizeName, $result)) {
-                $count++;
+            if ($result->isFailure()) {
+                continue;
             }
+
+            // Build WebP size entry from ConversionResult
+            $webpFile = \basename($result->outputPath);
+            $sizeEntry = [
+                'file'      => $webpFile,                    // e.g., yosemite-unsplash-704x469.webp
+                'width'     => $result->getWidth(),
+                'height'    => $result->getHeight(),
+                'mime-type' => 'image/webp',                 // ALWAYS image/webp (aggressive override)
+            ];
+
+            // Add actual filesize from disk
+            if (\file_exists($result->outputPath)) {
+                $sizeEntry['filesize'] = (int) \filesize($result->outputPath);
+            }
+
+            // AGGRESSIVELY overwrite existing size entry
+            // This replaces any old JPG entry with new WebP entry
+            $sizes[ $sizeName ] = $sizeEntry;
+            $count++;
         }
+
+        // Update metadata with all new WebP entries
+        $metadata['sizes'] = $sizes;
+        \wp_update_attachment_metadata($attachmentId, $metadata);
 
         return $count;
     }
