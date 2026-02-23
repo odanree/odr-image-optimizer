@@ -5,6 +5,7 @@
 .php-cs-fixer.php export-ignore
 .phpunit.result.cache export-ignore
 .distignore export-ignore
+phpstan.neon export-ignore
 
 # Documentation
 CASE_STUDY.md export-ignore
