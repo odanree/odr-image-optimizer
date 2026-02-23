@@ -279,3 +279,72 @@ if (!function_exists('has_filter')) {
         return false;
     }
 }
+
+if (!function_exists('has_action')) {
+    function has_action($hook, $function_to_check = false) {
+        return \has_filter($hook, $function_to_check);
+    }
+}
+
+if (!function_exists('wp_strip_post_tags')) {
+    function wp_strip_post_tags($post, $remove_blocks = false) {
+        if (is_object($post)) {
+            $post = $post->post_content;
+        }
+        return strip_tags($post);
+    }
+}
+
+if (!function_exists('wp_trim_words')) {
+    function wp_trim_words($text, $num_words = 55, $more = null) {
+        if (null === $more) {
+            $more = __('&hellip;');
+        }
+        $original_text = $text;
+        $text = wp_strip_all_tags($text);
+        $words_array = preg_split("/[\s]+/u", $text, ($num_words + 1), PREG_SPLIT_NO_EMPTY);
+        if (count($words_array) > $num_words) {
+            array_pop($words_array);
+            $text = implode(' ', $words_array);
+            $text = $text . $more;
+        } else {
+            $text = implode(' ', $words_array);
+        }
+        return $text;
+    }
+}
+
+if (!function_exists('wp_strip_all_tags')) {
+    function wp_strip_all_tags($text, $remove_breaks = false) {
+        if (is_null($text)) {
+            return '';
+        }
+        $text = preg_replace('@<(script|style)[^>]*?>.*?</\\1>@si', '', $text);
+        $text = strip_tags($text);
+        if ($remove_breaks) {
+            $text = preg_replace('/[\r\n\t ]+/', ' ', $text);
+        }
+        return trim($text);
+    }
+}
+
+if (!function_exists('is_home')) {
+    function is_home() {
+        return false;
+    }
+}
+
+if (!function_exists('is_singular')) {
+    function is_singular($post_types = '') {
+        return false;
+    }
+}
+
+if (!function_exists('get_bloginfo')) {
+    function get_bloginfo($show = '') {
+        if ('description' === $show) {
+            return 'Test Site Description';
+        }
+        return 'Test Site';
+    }
+}

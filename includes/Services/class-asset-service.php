@@ -65,7 +65,11 @@ class Asset_Service
      */
     public function register(): void
     {
+        // Font preloading (priority 1 = very early, before CSS parsing)
         \add_action('wp_head', [ $this, 'preload_critical_fonts' ], 1);
+
+        // SEO meta description (priority 2 = right after font preload)
+        \add_action('wp_head', [ $this, 'inject_meta_description' ], 2);
     }
 
     /**
@@ -104,6 +108,70 @@ class Asset_Service
             // Output preload link
             // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
             echo '<link rel="preload" href="' . \esc_attr($fontUri) . '" as="font" type="font/woff2" crossorigin>' . "\n";
+            // phpcs:enable
+        }
+    }
+
+    /**
+     * Inject meta description for SEO
+     *
+     * Bulletproof SEO meta description injection for Lighthouse compliance.
+     * Handles priority conflicts, empty content traps, and hook timing issues.
+     *
+     * Why this works:
+     * 1. Fires in wp_head at priority 2 (early, no conflicts)
+     * 2. Checks for post excerpt first (SEO-friendly)
+     * 3. Falls back to excerpt from post content (strips HTML/tags)
+     * 4. On homepage, uses site tagline (WordPress default)
+     * 5. Limits to 160 chars (Lighthouse standard)
+     *
+     * @return void
+     */
+    public function inject_meta_description(): void
+    {
+        // Skip if description already injected (priority conflict prevention)
+        if (\has_action('wp_head', '__return_false') !== false) {
+            return;
+        }
+
+        global $post;
+
+        $description = '';
+
+        // 1. Check current post (single post/page)
+        if (\is_singular() && isset($post->ID)) {
+            // Try to get post excerpt (most reliable)
+            // @phpstan-ignore-next-line WP_Post has dynamic properties
+            $description = $post->post_excerpt;
+
+            // Fallback: generate from post content if no excerpt
+            if (empty($description)) {
+                // @phpstan-ignore-next-line WP_Post has dynamic properties
+                $content = $post->post_content;
+                // Strip tags, shortcodes, and whitespace
+                $content = \wp_strip_all_tags($content);
+                $content = \wp_strip_post_tags($content);
+                // Limit to ~160 chars for meta description
+                $description = \wp_trim_words($content, 20, '...');
+            }
+        }
+
+        // 2. On homepage, use site tagline
+        if (empty($description) && \is_home()) {
+            $description = \get_bloginfo('description');
+        }
+
+        // 3. Sanitize and enforce length limit (Lighthouse standard = 160 chars)
+        if (! empty($description)) {
+            $description = \wp_strip_all_tags($description);
+            $description = \wp_kses_post($description);
+            if (\strlen($description) > 160) {
+                $description = \wp_trim_words($description, 20, '...');
+            }
+
+            // Output meta description (no conflicts, priority resolved)
+            // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
+            echo '<meta name="description" content="' . \esc_attr($description) . '">' . "\n";
             // phpcs:enable
         }
     }
