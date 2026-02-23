@@ -228,6 +228,19 @@ class Settings_Repository
     }
 
     /**
+     * Check if SEO meta tag injection is enabled
+     *
+     * Injects meta description and Open Graph tags for SEO + Lighthouse compliance.
+     * Controlled by: Settings → "Inject SEO Meta Tags" toggle
+     *
+     * @return bool True if SEO meta injection is enabled (default: true)
+     */
+    public function should_inject_seo_meta(): bool
+    {
+        return $this->is_enabled('inject_seo_meta', true);
+    }
+
+    /**
      * Get category of available settings
      *
      * Helper for building admin UI by category.

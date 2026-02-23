@@ -118,6 +118,8 @@ class Asset_Service
      * Bulletproof SEO meta description injection for Lighthouse compliance.
      * Handles priority conflicts, empty content traps, and hook timing issues.
      *
+     * Controlled by: Settings → "Inject SEO Meta Tags" toggle
+     *
      * Why this works:
      * 1. Fires in wp_head at priority 2 (early, no conflicts)
      * 2. Checks for post excerpt first (SEO-friendly)
@@ -129,10 +131,18 @@ class Asset_Service
      */
     public function inject_meta_description(): void
     {
+        // Check if SEO injection is enabled in settings
+        if (! $this->settings || ! $this->settings->should_inject_seo_meta()) {
+            error_log('[ASSET_SERVICE] SEO meta injection disabled in settings, skipping');
+            return;
+        }
+
         // Skip if description already injected (priority conflict prevention)
         if (\has_action('wp_head', '__return_false') !== false) {
             return;
         }
+
+        error_log('[ASSET_SERVICE] inject_meta_description called');
 
         global $post;
 
@@ -140,6 +150,7 @@ class Asset_Service
 
         // 1. Check current post (single post/page)
         if (\is_singular() && isset($post->ID)) {
+            error_log('[ASSET_SERVICE] On singular page');
             // Try to get post excerpt (most reliable)
             // @phpstan-ignore-next-line WP_Post has dynamic properties
             $description = $post->post_excerpt;
@@ -158,8 +169,11 @@ class Asset_Service
 
         // 2. On homepage, use site tagline
         if (empty($description) && \is_home()) {
+            error_log('[ASSET_SERVICE] On homepage');
             $description = \get_bloginfo('description');
         }
+
+        error_log(sprintf('[ASSET_SERVICE] Description: %s', $description));
 
         // 3. Sanitize and enforce length limit (Lighthouse standard = 160 chars)
         if (! empty($description)) {
@@ -173,6 +187,9 @@ class Asset_Service
             // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
             echo '<meta name="description" content="' . \esc_attr($description) . '">' . "\n";
             // phpcs:enable
+            error_log(sprintf('[ASSET_SERVICE] Meta description injected: %s', $description));
+        } else {
+            error_log('[ASSET_SERVICE] No description found, skipping');
         }
     }
 }
