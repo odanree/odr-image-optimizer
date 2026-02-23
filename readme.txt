@@ -4,7 +4,7 @@ Tags: images, performance, webp, lcp, speed, optimizer
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,6 +63,15 @@ No. ODR works on all images, new and existing. Simply activate and the plugin ha
 3. Lighthouse 100/100 Achievement
 
 == Changelog ==
+
+= 1.0.2 =
+* Fix: Achieve Lighthouse 100/100 with complete WordPress.org compliance
+* Fix: Navigation script deferral now works on-demand (click/touch interaction)
+* Fix: Settings toggle now fully controls all feature behaviors
+* Refactor: Moved navigation deferral from mu-plugin to main plugin service
+* Refactor: Complete SOLID principles implementation with DI Container
+* Refactor: All WordPress hooks prefixed with `odr_` for global namespace safety
+* Docs: Enhanced documentation for WordPress.org submission
 
 = 1.0.0 =
 * Initial release.
