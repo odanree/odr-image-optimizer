@@ -174,6 +174,19 @@ class Container
     }
 
     /**
+     * Get or create a NavigationDeferralService instance
+     *
+     * @return \ImageOptimizer\Services\NavigationDeferralService The navigation deferral service.
+     */
+    public static function get_navigation_deferral_service(): \ImageOptimizer\Services\NavigationDeferralService
+    {
+        if (! isset(self::$instances['navigation_deferral_service'])) {
+            self::$instances['navigation_deferral_service'] = new \ImageOptimizer\Services\NavigationDeferralService();
+        }
+        return self::$instances['navigation_deferral_service'];
+    }
+
+    /**
      * Set a custom instance (for testing or overrides)
      *
      * @param string $service The service name.
