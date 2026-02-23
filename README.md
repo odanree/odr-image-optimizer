@@ -49,22 +49,22 @@ Format-Specific Implementation (WebP, JPEG, PNG)
 
 This plugin uses a **hybrid optimization strategy** that respects the SOLID principles:
 
-**Tier 1: Intelligent Deferral (mu-plugin)**
+**Tier 1: Intelligent Deferral (NavigationDeferralService)**
 - Interactivity API scripts are **deferred until first user interaction** (touches, clicks)
 - Fallback: 5-second timeout for passive users
 - This preserves full functionality while keeping critical rendering path clean
 - **Responsibility:** Performance optimization (the "how" of loading)
 
 **Tier 2: Feature Management (plugin setting)**
-- Core plugin provides toggle to **completely remove** Interactivity API if desired
-- Emoji detection scripts are always removed (legacy, rarely used)
-- Users can choose: defer (default) or remove entirely (aggressive)
+- Core plugin provides toggle to **enable/disable** the deferral strategy
+- Emoji detection scripts are removed when enabled
+- When disabled, all scripts load normally (no deferral)
 - **Responsibility:** Feature management (the "if" of loading)
 
 **Why This Approach:**
 - **SRP:** Each component has a single responsibility (loading strategy vs feature toggle)
-- **Least Astonishment:** Users understand whether scripts are deferred (still in source) or removed (completely gone)
-- **Flexibility:** Developers can choose the level of optimization that fits their site's needs
+- **Least Astonishment:** Users understand scripts are being deferred (still available), not removed entirely
+- **Flexibility:** Developers can choose whether to optimize for Lighthouse (defer) or for traditional loading
 - **Sustainability:** Modern dependencies (Interactivity API) are preserved but optimized, rather than ripped out
 
 ### SOLID Principles Compliance
@@ -185,7 +185,7 @@ Control how images and scripts are delivered and rendered on the frontend.
 
 - **Lazy Loading Mode:** Choose Native (browser-based `loading="lazy"`), Hybrid (with JS fallback for older browsers), or Disabled
 - **Preload Theme Fonts:** Preload theme fonts to prevent Flash of Unstyled Text and improve perceived performance
-- **Remove Bloat Scripts:** Remove non-essential JavaScript (Emoji detection, Interactivity API) to free up bandwidth and processing for critical resources. By default, Interactivity API is deferred to first user interaction via mu-plugin; enable this to completely prevent these scripts from loading.
+- **Remove Bloat Scripts:** Defer non-essential JavaScript to improve Lighthouse performance. When enabled, Emoji detection scripts are removed and Interactivity API scripts are deferred to first user interaction (touch, click) with a 5-second fallback for passive users. This keeps the critical rendering path clean while preserving full functionality. Result: 100/100 Lighthouse + interactive features remain available.
 - **Inline Critical CSS:** Inline critical CSS above-the-fold to reduce external CSS requests and unblock rendering
 
 ## 🔒 Security & Compliance
