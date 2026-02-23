@@ -45,6 +45,28 @@ Format-Specific Implementation (WebP, JPEG, PNG)
 | **Policy Pattern** | `SettingsPolicy` | Decouple configuration from implementation |
 | **Adapter Pattern** | `WordPressAdapter` | Abstract WordPress function calls for testability |
 
+### Optimization Strategy: Multi-Tier Performance
+
+This plugin uses a **hybrid optimization strategy** that respects the SOLID principles:
+
+**Tier 1: Intelligent Deferral (mu-plugin)**
+- Interactivity API scripts are **deferred until first user interaction** (touches, clicks)
+- Fallback: 5-second timeout for passive users
+- This preserves full functionality while keeping critical rendering path clean
+- **Responsibility:** Performance optimization (the "how" of loading)
+
+**Tier 2: Feature Management (plugin setting)**
+- Core plugin provides toggle to **completely remove** Interactivity API if desired
+- Emoji detection scripts are always removed (legacy, rarely used)
+- Users can choose: defer (default) or remove entirely (aggressive)
+- **Responsibility:** Feature management (the "if" of loading)
+
+**Why This Approach:**
+- **SRP:** Each component has a single responsibility (loading strategy vs feature toggle)
+- **Least Astonishment:** Users understand whether scripts are deferred (still in source) or removed (completely gone)
+- **Flexibility:** Developers can choose the level of optimization that fits their site's needs
+- **Sustainability:** Modern dependencies (Interactivity API) are preserved but optimized, rather than ripped out
+
 ### SOLID Principles Compliance
 
 #### ✅ Single Responsibility Principle (SRP)
@@ -152,10 +174,10 @@ For detailed architecture patterns and implementation examples, see:
 Navigate to **Settings → Image Optimizer** to configure:
 
 - **Preload Theme Fonts:** Speed up font discovery by preloading local theme fonts early
-- **Disable Core Bloat:** Remove WordPress Emoji and Interactivity API scripts ($60KB+ savings)
+- **Optimize Core Scripts:** Defers the Interactivity API for on-demand loading and completely removes legacy WordPress Emoji scripts. By default, these scripts are intelligently deferred to improve LCP. Enable "Aggressive" mode to completely prevent these scripts from loading.
 - **Inline Critical CSS:** Prevent render-blocking CSS from delaying page load
 - **Native Lazy Loading:** Enable browser-native lazy loading for images
-- **Remove Emoji Detection Script:** Disable WordPress emoji script (redundant if bloat disabled)
+- **Remove Emoji Detection Script:** Disable WordPress emoji script (completely removed, not deferred)
 - **Use font-display: swap:** Enable faster font rendering (prevents Flash of Unstyled Text)
 
 ## 🔒 Security & Compliance
