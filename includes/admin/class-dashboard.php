@@ -40,7 +40,7 @@ class Dashboard
         }
 
         // Use current time as cache buster with microtime for maximum uniqueness
-        $cache_buster = str_replace('.', '', microtime(true));
+        $cache_buster = str_replace('.', '', (string) microtime(true));
 
         wp_enqueue_style(
             'image-optimizer-dashboard',
