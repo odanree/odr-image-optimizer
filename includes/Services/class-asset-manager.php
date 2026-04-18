@@ -100,10 +100,11 @@ class AssetManager
             return;
         }
 
-        // Inline directly into the head - CSS from static file is safe, but escape for output
-        // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
-        echo '<style id="odr-optimizer-inline-css">' . wp_kses_post($css) . '</style>' . "\n";
-        // phpcs:enable
+        // Register a virtual style handle (no external file) so wp_add_inline_style()
+        // can attach to it. This outputs a <style> tag via the standard WP enqueue API.
+        wp_register_style('odr-image-optimizer-critical', false, [], ODR_IMAGE_OPTIMIZER_VERSION);
+        wp_enqueue_style('odr-image-optimizer-critical');
+        wp_add_inline_style('odr-image-optimizer-critical', $css);
     }
 
     /**

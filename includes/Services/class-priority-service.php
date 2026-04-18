@@ -209,9 +209,11 @@ class PriorityService
             return;
         }
 
-        // Inject inline style to override font-display: fallback → swap
-        // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
-        echo '<style>@font-face { font-display: swap !important; }</style>' . "\n";
-        // phpcs:enable
+        // Register a virtual style handle (no external file) so wp_add_inline_style()
+        // can attach to it. Priority 0 on wp_head runs before wp_print_styles (priority 8),
+        // so the handle is still in the queue when WordPress outputs head styles.
+        wp_register_style('odr-image-optimizer-font-display', false, [], ODR_IMAGE_OPTIMIZER_VERSION);
+        wp_enqueue_style('odr-image-optimizer-font-display');
+        wp_add_inline_style('odr-image-optimizer-font-display', '@font-face { font-display: swap !important; }');
     }
 }
