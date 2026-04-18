@@ -18,11 +18,11 @@ parameters:
       message: '#ImageOptimizer\\Core\\OptimizationEngine#'
     # WordPress function and constant stubs for Services
     - identifier: function.notFound
-      message: '#(add_image_size|apply_filters|wp_get_attachment_metadata|wp_get_attachment_image_url|wp_get_attachment_image_srcset|is_admin|wp_dequeue_script|sanitize_text_field|wp_unslash|file_exists|file_get_contents|is_singular|get_post_thumbnail_id|esc_attr|esc_url|remove_action|content_url|get_option|WP_Filesystem|wp_kses_post|wp_enqueue_script|add_filter|home_url|wp_json_encode|wp_deregister_script|is_customize_preview|wp_register_script|wp_add_inline_script)#'
+      message: '#(add_image_size|apply_filters|wp_get_attachment_metadata|wp_get_attachment_image_url|wp_get_attachment_image_srcset|is_admin|wp_dequeue_script|sanitize_text_field|wp_unslash|file_exists|file_get_contents|is_singular|get_post_thumbnail_id|esc_attr|esc_url|remove_action|content_url|get_option|WP_Filesystem|wp_kses_post|wp_enqueue_script|add_filter|home_url|wp_json_encode|wp_deregister_script|is_customize_preview|wp_register_script|wp_add_inline_script|wp_register_style|wp_enqueue_style|wp_add_inline_style)#'
     - identifier: class.notFound
       message: '#WP_Filesystem_Base#'
     - identifier: constant.notFound
-      message: '#IMAGE_OPTIMIZER_PATH#'
+      message: '#(IMAGE_OPTIMIZER_PATH|ODR_IMAGE_OPTIMIZER_VERSION)#'
     # Admin SettingsService/SettingsPolicy are in excluded dir
     - identifier: class.notFound
       message: '#ImageOptimizer\\Admin\\(SettingsService|SettingsPolicy)#'
