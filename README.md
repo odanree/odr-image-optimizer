@@ -266,6 +266,6 @@ GPL v2 or later. See [LICENSE](LICENSE) for details.
 
 **Author:** Danh Le  
 **Email:** danhle@danhle.net  
-**Version:** 1.0.2  
+**Version:** 1.0.3  
 **WordPress:** 6.0+  
 **PHP:** 8.1+
