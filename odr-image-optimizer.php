@@ -74,7 +74,7 @@ require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Services/class-asset-manager.p
 require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Services/class-priority-service.php';
 require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Services/class-cleanup-service.php';
 require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Services/class-navigation-deferral-service.php';
-require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Admin/class-settings-service.php';
+require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/admin/class-settings-service.php';
 require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-responsive-image-service.php';
 require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/Frontend/class-frontend-delivery.php';
 require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/frontend/class-webp-frontend-delivery.php';
