@@ -145,7 +145,7 @@ class WebPFrontendDelivery
     public static function add_webp_picture_element(
         string $html,
         int $attachment_id,
-        string $size,
+        string|array $size,
         bool $icon,
         array $attr,
     ): string {
