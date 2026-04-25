@@ -32,14 +32,14 @@ class ResponsiveImageService
      * Uses WordPress native wp_get_attachment_image() which automatically
      * includes srcset, sizes, and other responsive attributes.
      *
-     * @param int    $attachment_id WordPress attachment ID.
-     * @param string $size Image size slug (default: 'medium').
-     * @param array  $attr Additional attributes for img tag.
+     * @param int          $attachment_id WordPress attachment ID.
+     * @param string|array $size Image size slug or [width, height] array (default: 'medium').
+     * @param array        $attr Additional attributes for img tag.
      * @return string HTML img tag with srcset and sizes attributes.
      */
     public static function render_responsive_image(
         int $attachment_id,
-        string $size = 'medium',
+        string|array $size = 'medium',
         array $attr = [],
     ): string {
         // Default attributes for responsive behavior
@@ -92,14 +92,14 @@ class ResponsiveImageService
      * Advanced: Uses <picture> element for format selection
      * Browser downloads most appropriate format and size
      *
-     * @param int    $attachment_id WordPress attachment ID.
-     * @param string $size Image size slug.
-     * @param array  $attr Additional img attributes.
+     * @param int          $attachment_id WordPress attachment ID.
+     * @param string|array $size Image size slug or [width, height] array.
+     * @param array        $attr Additional img attributes.
      * @return string HTML picture element with WebP source and JPEG fallback.
      */
     public static function render_picture_element(
         int $attachment_id,
-        string $size = 'medium',
+        string|array $size = 'medium',
         array $attr = [],
     ): string {
         $jpg_srcset = wp_get_attachment_image_srcset($attachment_id, $size);
