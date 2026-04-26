@@ -98,7 +98,7 @@ class WebpDelivery
             }
 
             // Return WebP URL
-            return 'src=' . $quote . $webp_url . $quote;
+            return 'src=' . $quote . esc_url($webp_url) . $quote;
         }, $content);
     }
 

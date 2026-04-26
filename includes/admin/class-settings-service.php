@@ -163,8 +163,9 @@ class SettingsService
             'preload_fonts',
             'kill_bloat',
             'inline_css',
-            'remove_bloat',
             'lazy_load',
+            'remove_emoji',
+            'font_swap',
         ];
 
         foreach ($allowed_keys as $key) {
