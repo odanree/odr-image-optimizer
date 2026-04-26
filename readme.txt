@@ -3,8 +3,8 @@ Contributors: odanree
 Tags: images, performance, webp, lcp, speed, optimizer
 Requires at least: 6.0
 Tested up to: 6.9
-Requires PHP: 8.2
-Stable tag: 1.0.2
+Requires PHP: 8.1
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,6 +63,9 @@ No. ODR works on all images, new and existing. Simply activate and the plugin ha
 3. Lighthouse 100/100 Achievement
 
 == Changelog ==
+
+= 1.0.3 =
+* Fix: Accept array $size in add_webp_picture_element() and render_picture_element() to match WordPress core behavior and prevent TypeError on WooCommerce order emails
 
 = 1.0.2 =
 * Fix: Achieve Lighthouse 100/100 with complete WordPress.org compliance
