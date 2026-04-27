@@ -143,7 +143,8 @@ readonly class DatabaseRepository
     {
         $table = $this->wpdb->prefix . 'image_optimizer_history';
 
-        $result = $this->wpdb->get_row( // phpcs:ignore PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $result = $this->wpdb->get_row( // phpcs:ignore PluginCheck.Security.DirectDB.UnescapedDBParameter
+            // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             "SELECT
                 COUNT(*) as total_optimized,
                 SUM(original_size) as total_original_size,
@@ -152,6 +153,7 @@ readonly class DatabaseRepository
                 SUM(webp_available) as webp_count
             FROM {$table}
             WHERE status = 'completed'",
+            // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         );
 
         return (array) ($result ?? []);

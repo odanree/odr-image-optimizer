@@ -131,13 +131,15 @@ class WebpDelivery
         }
 
         // Check optimization history
-        $history = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $history = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
             $wpdb->prepare(
+                // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
                 "SELECT webp_available FROM {$table}
 				WHERE attachment_id = %d
 				AND webp_available = 1
 				AND status = 'completed'
 				ORDER BY optimized_at DESC LIMIT 1",
+                // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
                 $attachment->ID,
             ),
         );
