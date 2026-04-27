@@ -156,6 +156,7 @@ class WebpDelivery
             return false;
         }
 
-        return strpos($_SERVER['HTTP_ACCEPT'], 'image/webp') !== false;
+        $accept = sanitize_text_field(wp_unslash($_SERVER['HTTP_ACCEPT']));
+        return strpos($accept, 'image/webp') !== false;
     }
 }

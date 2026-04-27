@@ -138,6 +138,6 @@ readonly class WebpConverter
             return true; // Already deleted or doesn't exist
         }
 
-        return @unlink($webpPath);
+        return wp_delete_file($webpPath);
     }
 }

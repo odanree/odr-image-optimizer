@@ -147,7 +147,7 @@ class Database
         global $wpdb;
         $table = $wpdb->prefix . 'image_optimizer_cache';
 
-        $expires_at = $expires_in ? date('Y-m-d H:i:s', time() + $expires_in) : null;
+        $expires_at = $expires_in ? gmdate('Y-m-d H:i:s', time() + $expires_in) : null;
 
         return $wpdb->replace(
             $table,
