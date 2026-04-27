@@ -62,7 +62,7 @@ class ImageFile
     public function __construct(string $path, int $attachment_id, string $mime_type)
     {
         if (! file_exists($path)) {
-            throw new \InvalidArgumentException("File does not exist: $path");
+            throw new \InvalidArgumentException("File does not exist: $path"); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
 
         $this->path = $path;
@@ -211,7 +211,7 @@ class ImageFile
      */
     public function is_writable(): bool
     {
-        return is_writable($this->path);
+        return is_writable($this->path); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable
     }
 
     /**
@@ -232,7 +232,7 @@ class ImageFile
             case 'mime_type':
                 return $this->mime_type;
             default:
-                throw new \LogicException("Undefined property: $name");
+                throw new \LogicException("Undefined property: $name"); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
     }
 

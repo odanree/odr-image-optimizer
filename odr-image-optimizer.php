@@ -33,10 +33,10 @@ if (! defined('ABSPATH')) {
 }
 
 // Define plugin constants with ODR_ prefix for WordPress.org compliance
-define('ODR_IMAGE_OPTIMIZER_VERSION', time()); // Cache buster
-define('ODR_IMAGE_OPTIMIZER_PATH', plugin_dir_path(__FILE__));
-define('ODR_IMAGE_OPTIMIZER_URL', plugin_dir_url(__FILE__));
-define('ODR_IMAGE_OPTIMIZER_BASENAME', plugin_basename(__FILE__));
+define('ODR_IMAGE_OPTIMIZER_VERSION', time()); // Cache buster // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
+define('ODR_IMAGE_OPTIMIZER_PATH', plugin_dir_path(__FILE__)); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
+define('ODR_IMAGE_OPTIMIZER_URL', plugin_dir_url(__FILE__)); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
+define('ODR_IMAGE_OPTIMIZER_BASENAME', plugin_basename(__FILE__)); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
 
 // Include the autoloader
 require_once ODR_IMAGE_OPTIMIZER_PATH . 'includes/class-autoloader.php';

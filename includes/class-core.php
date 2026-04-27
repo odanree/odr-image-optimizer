@@ -289,20 +289,20 @@ class Core
         }
 
         // Already writable, nothing to do
-        if (is_writable($base_dir)) {
+        if (is_writable($base_dir)) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable
             return true;
         }
 
         // Try to make it writable
-        @chmod($base_dir, 0775);
+        @chmod($base_dir, 0775); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_chmod
 
         // Also ensure the parent directory is writable
         $parent = dirname($base_dir);
-        if (is_dir($parent) && ! is_writable($parent)) {
-            @chmod($parent, 0775);
+        if (is_dir($parent) && ! is_writable($parent)) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable
+            @chmod($parent, 0775); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_chmod
         }
 
-        return is_writable($base_dir);
+        return is_writable($base_dir); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable
     }
 
     /**

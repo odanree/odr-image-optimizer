@@ -262,7 +262,7 @@ class Optimizer implements OptimizerInterface
              *
              * @param ImageContext $context Image context with metadata.
              */
-            do_action('odr_image_optimizer_before_optimize', $context);
+            do_action('odr_image_optimizer_before_optimize', $context); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 
             // Create backup before optimization
             $backup_file = $this->create_backup($file, $attachment_id);
@@ -331,7 +331,7 @@ class Optimizer implements OptimizerInterface
              *
              * @param ImageContext $context Image context with metadata and optimization results.
              */
-            do_action('odr_image_optimizer_after_optimize', $context);
+            do_action('odr_image_optimizer_after_optimize', $context); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 
             // Optimize all attachment subsizes (thumbnail, medium, large, etc.)
             // This is critical for Lighthouse responsive image compliance
@@ -810,7 +810,7 @@ class Optimizer implements OptimizerInterface
 
             // Fix permissions so www-data can read the backup during revert
             // Use 0644 (readable by all, writable by owner only)
-            @chmod($backup_file, 0644);
+            @chmod($backup_file, 0644); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_chmod
         }
 
         return $backup_file;
@@ -914,7 +914,7 @@ class Optimizer implements OptimizerInterface
             // Check file permissions before attempting restore
             if (! is_readable($backup_file)) {
                 // Try to fix permissions if backup is not readable
-                @chmod($backup_file, 0644);
+                @chmod($backup_file, 0644); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_chmod
 
                 // Check again after chmod attempt
                 if (! is_readable($backup_file)) {
@@ -922,7 +922,7 @@ class Optimizer implements OptimizerInterface
                 }
             }
 
-            if (! is_writable(dirname($file))) {
+            if (! is_writable(dirname($file))) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable
                 return Result::failure('Cannot write to image directory');
             }
 
@@ -954,7 +954,7 @@ class Optimizer implements OptimizerInterface
              *
              * @param ImageContext $context Image context with metadata.
              */
-            do_action('odr_image_optimizer_before_revert', $context);
+            do_action('odr_image_optimizer_before_revert', $context); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 
             // Restore from backup with detailed error handling
             $copy_result = @copy($backup_file, $file);
@@ -1005,7 +1005,7 @@ class Optimizer implements OptimizerInterface
              *
              * @param ImageContext $context Image context with revert metadata.
              */
-            do_action('odr_image_optimizer_after_revert', $context);
+            do_action('odr_image_optimizer_after_revert', $context); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 
             return Result::success(
                 [

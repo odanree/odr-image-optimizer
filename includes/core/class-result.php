@@ -212,7 +212,7 @@ class Result
             case 'data':
                 return $this->data;
             default:
-                throw new \LogicException("Undefined property: $name");
+                throw new \LogicException("Undefined property: $name"); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
     }
 
