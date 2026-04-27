@@ -168,7 +168,7 @@ readonly class DatabaseRepository
     public function cacheSet(string $key, mixed $value, ?int $expiresIn = null): bool
     {
         $table = $this->wpdb->prefix . 'image_optimizer_cache';
-        $expiresAt = $expiresIn ? date('Y-m-d H:i:s', time() + $expiresIn) : null;
+        $expiresAt = $expiresIn ? gmdate('Y-m-d H:i:s', time() + $expiresIn) : null;
 
         $result = $this->wpdb->replace(
             $table,

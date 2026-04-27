@@ -872,7 +872,10 @@ class Optimizer implements OptimizerInterface
                 }
             } catch (\Exception $e) {
                 // Log error but continue with other subsizes
-                error_log("Failed to optimize subsize {$size_name}: " . $e->getMessage());
+                if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                    // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+                    error_log( "Failed to optimize subsize {$size_name}: " . $e->getMessage() );
+                }
             }
         }
 
@@ -1026,7 +1029,7 @@ class Optimizer implements OptimizerInterface
         $webp_file = $file_path . '.webp';
 
         if (file_exists($webp_file)) {
-            return unlink($webp_file);
+            return wp_delete_file($webp_file);
         }
 
         return true;
