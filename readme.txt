@@ -4,7 +4,7 @@ Tags: images, performance, webp, speed, optimizer
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -65,6 +65,14 @@ No. ODR works on all images, new and existing. Simply activate and the plugin ha
 3. Lighthouse 100/100 Achievement
 
 == Changelog ==
+
+= 1.0.5 =
+* Fix: Add ABSPATH direct-access guard to all index.php stub files
+* Fix: Replace unlink() with wp_delete_file() (WebpConverter, class-optimizer)
+* Fix: Replace date() with gmdate() (class-database, DatabaseRepository)
+* Fix: Gate error_log() calls behind WP_DEBUG check
+* Fix: Sanitize $_SERVER['HTTP_ACCEPT'] via wp_unslash/sanitize_text_field
+* Fix: Reduce readme.txt tags to 5; add required short description
 
 = 1.0.4 =
 * Fix: Align sanitize_settings() whitelist with registered fields (add remove_emoji, font_swap; remove stale remove_bloat key)
