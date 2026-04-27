@@ -13,7 +13,7 @@ declare(strict_types=1);
  * Plugin Name:       ODR Image Optimizer
  * Plugin URI:        https://github.com/odanree/odr-image-optimizer
  * Description:       Professional high-performance image suite. Features SOLID-compliant WebP conversion, intelligent LCP preloading, and automated critical path cleanup for a 100/100 Lighthouse score.
- * Version:           1.0.6
+ * Version:           1.0.7
  * Author:            Danh Le
  * Author URI:        https://danhle.net
  * License:           GPL v2 or later
@@ -23,7 +23,7 @@ declare(strict_types=1);
  * Requires at least: 6.0
  * Requires PHP:      8.1
  * Tested up to:      6.9
- * Stable tag:        1.0.6
+ * Stable tag:        1.0.7
  * Tags:              images, performance, webp, lcp, speed, optimizer
  */
 
@@ -33,7 +33,7 @@ if (! defined('ABSPATH')) {
 }
 
 // Define plugin constants with ODR_ prefix for WordPress.org compliance
-define('ODR_IMAGE_OPTIMIZER_VERSION', time()); // Cache buster // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
+define('ODR_IMAGE_OPTIMIZER_VERSION', time()); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
 define('ODR_IMAGE_OPTIMIZER_PATH', plugin_dir_path(__FILE__)); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
 define('ODR_IMAGE_OPTIMIZER_URL', plugin_dir_url(__FILE__)); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
 define('ODR_IMAGE_OPTIMIZER_BASENAME', plugin_basename(__FILE__)); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound

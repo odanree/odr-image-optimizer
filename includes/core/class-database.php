@@ -77,9 +77,9 @@ class Database
         global $wpdb;
         $table = $wpdb->prefix . 'image_optimizer_history';
 
-        return $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        return $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
             $wpdb->prepare(
-                "SELECT * FROM $table WHERE attachment_id = %d ORDER BY optimized_at DESC LIMIT 1",
+                "SELECT * FROM $table WHERE attachment_id = %d ORDER BY optimized_at DESC LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
                 $attachment_id,
             ),
         );
@@ -124,9 +124,9 @@ class Database
         global $wpdb;
         $table = $wpdb->prefix . 'image_optimizer_cache';
 
-        $result = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $result = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
             $wpdb->prepare(
-                "SELECT cache_value FROM $table WHERE cache_key = %s AND (expires_at IS NULL OR expires_at > NOW())",
+                "SELECT cache_value FROM $table WHERE cache_key = %s AND (expires_at IS NULL OR expires_at > NOW())", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
                 $key,
             ),
         );
@@ -170,15 +170,17 @@ class Database
         global $wpdb;
         $table = $wpdb->prefix . 'image_optimizer_history';
 
-        return $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        return $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+            // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             "SELECT
 				COUNT(*) as total_optimized,
 				SUM(original_size) as total_original_size,
 				SUM(optimized_size) as total_optimized_size,
 				AVG(compression_ratio) as average_compression,
 				SUM(webp_available) as webp_count
-			FROM $table 
+			FROM $table
 			WHERE status = 'completed'",
+            // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         );
     }
 }
