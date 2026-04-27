@@ -233,6 +233,71 @@ php -l includes/Exception/ProcessorNotAvailableException.php
 
 ---
 
+## Local wp-env Integration Testing (WooCommerce code paths)
+
+Use this methodology for bugs that require WooCommerce context — e.g. order emails, checkout, product image rendering. Gives an isolated, reproducible environment without touching prod.
+
+### Setup (one-time)
+
+Requires `vps-woocommerce-stack` repo checked out alongside this one. The stack's `.wp-env.json` maps `../odr-image-optimizer` as a local plugin.
+
+```bash
+cd ../vps-woocommerce-stack
+
+# Windows: check excluded ports first
+netsh interface ipv4 show excludedportrange protocol=tcp
+
+export WP_ENV_PORT=9080
+export WP_ENV_TESTS_PORT=9091
+npx wp-env start
+```
+
+Admin: `http://localhost:9080/wp-admin` — user `admin` / pass `password`
+
+Fix memory limit if needed (ODR image conversion requires > 40M default):
+```bash
+docker exec [wordpress-container-id] //bin/sh -c \
+  "sed -i \"s/define( 'WP_MEMORY_LIMIT', 256M )/define( 'WP_MEMORY_LIMIT', '256M' )/\" //var/www/html/wp-config.php"
+# Or: npx wp-env run cli wp config set WP_MEMORY_LIMIT '256M'
+```
+
+### Test procedure for WooCommerce image path bugs
+
+1. **Create a product with a JPEG image**
+   - Upload any JPEG via `/wp-admin/media-new.php`
+   - Assign as product image, or use docker cp + eval-file to attach programmatically
+
+2. **Optimize the image**
+   - Go to `/wp-admin/admin.php?page=image-optimizer`
+   - Optimize the product image — this creates the `.webp` file
+   - **Critical:** without the `.webp`, the plugin exits early and the bug path is never hit
+
+3. **Enable Cheque payment**
+   ```bash
+   npx wp-env run cli wp wc payment_gateway update cheque --enabled=true --user=1
+   ```
+
+4. **Place a test order**
+   - Add the product to cart → checkout → pay with Cheque
+   - Cheque calls `payment_complete()` immediately, triggering the WC order email and the `wp_get_attachment_image()` call with array `$size`
+
+5. **Check the debug log**
+   ```bash
+   npx wp-env run cli wp eval "echo file_exists(WP_CONTENT_DIR . '/debug.log') ? file_get_contents(WP_CONTENT_DIR . '/debug.log') : 'no debug.log';"
+   ```
+   - No debug.log or empty log = no PHP errors = fix confirmed
+
+### When to use local vs prod smoke test
+
+| Scenario | Use |
+|---|---|
+| Pre-merge fix verification | Local wp-env |
+| Bug requires specific WC state (order emails, checkout) | Local wp-env |
+| Post-merge smoke test with real data | Prod (with snapshot taken first) |
+| Bug only surfaces with real uploaded images | Prod |
+
+---
+
 ## Integration Testing (Requires WordPress)
 
 ### Test 1: Frontend Page Load
