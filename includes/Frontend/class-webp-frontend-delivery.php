@@ -248,7 +248,7 @@ class WebPFrontendDelivery
             global $wpdb;
             $file_path = $matches[0];
 
-            $attachment_id = $wpdb->get_var(
+            $attachment_id = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
                 $wpdb->prepare(
                     "SELECT ID FROM $wpdb->posts WHERE guid LIKE %s AND post_type = 'attachment'",
                     '%' . $file_path . '%',

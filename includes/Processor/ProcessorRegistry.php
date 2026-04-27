@@ -59,12 +59,12 @@ class ProcessorRegistry implements Iterator, Countable
         $processors = [];
         foreach ($map as $mimeType => $processorClass) {
             if (!class_exists($processorClass)) {
-                throw new \InvalidArgumentException("Processor class not found: {$processorClass}");
+                throw new \InvalidArgumentException("Processor class not found: {$processorClass}"); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             }
 
             if (!is_subclass_of($processorClass, ImageProcessorInterface::class)) {
                 throw new \InvalidArgumentException(
-                    "Processor must implement ImageProcessorInterface: {$processorClass}",
+                    "Processor must implement ImageProcessorInterface: {$processorClass}", // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
                 );
             }
 

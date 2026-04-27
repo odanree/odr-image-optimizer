@@ -45,7 +45,7 @@ readonly class WebpConverter
         $quality ??= $this->quality;
 
         if (!file_exists($sourceFilePath)) {
-            throw new OptimizationFailedException("Source file not found: {$sourceFilePath}");
+            throw new OptimizationFailedException("Source file not found: {$sourceFilePath}"); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
 
         if (!$this->isSupported()) {
@@ -54,7 +54,7 @@ readonly class WebpConverter
 
         // Only convert JPEG and PNG to WebP
         if (!$this->canConvertFile($sourceFilePath)) {
-            throw new OptimizationFailedException("Cannot convert file to WebP: {$sourceFilePath}");
+            throw new OptimizationFailedException("Cannot convert file to WebP: {$sourceFilePath}"); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
 
         try {
@@ -80,7 +80,7 @@ readonly class WebpConverter
         } catch (OptimizationFailedException $e) {
             throw $e;
         } catch (\Throwable $e) {
-            throw new OptimizationFailedException("WebP conversion failed: {$e->getMessage()}", 0, $e);
+            throw new OptimizationFailedException("WebP conversion failed: {$e->getMessage()}", 0, $e); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
     }
 

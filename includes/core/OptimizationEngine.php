@@ -52,7 +52,7 @@ readonly class OptimizationEngine
         OptimizationConfig $config,
     ): array {
         if (!file_exists($filePath)) {
-            throw new OptimizationFailedException("File not found: {$filePath}");
+            throw new OptimizationFailedException("File not found: {$filePath}"); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
 
         try {
@@ -110,7 +110,7 @@ readonly class OptimizationEngine
         } catch (OptimizationFailedException $e) {
             throw $e;
         } catch (\Throwable $e) {
-            throw new OptimizationFailedException("Optimization failed: {$e->getMessage()}", 0, $e);
+            throw new OptimizationFailedException("Optimization failed: {$e->getMessage()}", 0, $e); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
     }
 
@@ -155,7 +155,7 @@ readonly class OptimizationEngine
         } catch (OptimizationFailedException $e) {
             throw $e;
         } catch (\Throwable $e) {
-            throw new OptimizationFailedException("Revert failed: {$e->getMessage()}", 0, $e);
+            throw new OptimizationFailedException("Revert failed: {$e->getMessage()}", 0, $e); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
     }
 

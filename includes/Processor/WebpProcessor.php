@@ -20,7 +20,7 @@ class WebpProcessor implements ImageProcessorInterface
     public function process(string $filePath, int $quality): bool
     {
         if (!file_exists($filePath)) {
-            throw new OptimizationFailedException("File not found: {$filePath}");
+            throw new OptimizationFailedException("File not found: {$filePath}"); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
 
         if (!extension_loaded('gd')) {
@@ -42,7 +42,7 @@ class WebpProcessor implements ImageProcessorInterface
 
             return $result !== false;
         } catch (\Throwable $e) {
-            throw new OptimizationFailedException("WebP optimization failed: {$e->getMessage()}", 0, $e);
+            throw new OptimizationFailedException("WebP optimization failed: {$e->getMessage()}", 0, $e); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
     }
 

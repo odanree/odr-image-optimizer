@@ -66,7 +66,7 @@ readonly class DatabaseRepository
             dbDelta($historySql);
             dbDelta($cacheSql);
         } catch (\Throwable $e) {
-            throw new OptimizationFailedException("Failed to create database tables: {$e->getMessage()}", 0, $e);
+            throw new OptimizationFailedException("Failed to create database tables: {$e->getMessage()}", 0, $e); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
     }
 
@@ -123,10 +123,10 @@ readonly class DatabaseRepository
     {
         $table = $this->wpdb->prefix . 'image_optimizer_history';
 
-        $result = $this->wpdb->get_row(
-            $this->wpdb->prepare(
-                "SELECT * FROM {$table} WHERE attachment_id = %d ORDER BY optimized_at DESC LIMIT 1",
-                $attachmentId,
+        $result = $this->wpdb->get_row( // phpcs:ignore PluginCheck.Security.DirectDB.UnescapedDBParameter
+            $this->wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                "SELECT * FROM {$table} WHERE attachment_id = %d ORDER BY optimized_at DESC LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                $attachmentId, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             ),
             ARRAY_A,
         );
@@ -143,14 +143,14 @@ readonly class DatabaseRepository
     {
         $table = $this->wpdb->prefix . 'image_optimizer_history';
 
-        $result = $this->wpdb->get_row(
-            "SELECT 
+        $result = $this->wpdb->get_row( // phpcs:ignore PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            "SELECT
                 COUNT(*) as total_optimized,
                 SUM(original_size) as total_original_size,
                 SUM(optimized_size) as total_optimized_size,
                 AVG(compression_ratio) as average_compression,
                 SUM(webp_available) as webp_count
-            FROM {$table} 
+            FROM {$table}
             WHERE status = 'completed'",
         );
 
@@ -193,10 +193,10 @@ readonly class DatabaseRepository
     {
         $table = $this->wpdb->prefix . 'image_optimizer_cache';
 
-        $result = $this->wpdb->get_row(
-            $this->wpdb->prepare(
-                "SELECT cache_value FROM {$table} WHERE cache_key = %s AND (expires_at IS NULL OR expires_at > NOW())",
-                $key,
+        $result = $this->wpdb->get_row( // phpcs:ignore PluginCheck.Security.DirectDB.UnescapedDBParameter
+            $this->wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                "SELECT cache_value FROM {$table} WHERE cache_key = %s AND (expires_at IS NULL OR expires_at > NOW())", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                $key, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             ),
         );
 

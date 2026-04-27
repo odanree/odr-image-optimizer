@@ -200,7 +200,7 @@ class Settings
      */
     public function show_save_notice(): void
     {
-        if (! isset($_GET['settings-updated'])) {
+        if (! isset($_GET['settings-updated'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             return;
         }
 

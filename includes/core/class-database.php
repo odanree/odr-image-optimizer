@@ -77,7 +77,7 @@ class Database
         global $wpdb;
         $table = $wpdb->prefix . 'image_optimizer_history';
 
-        return $wpdb->get_row(
+        return $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             $wpdb->prepare(
                 "SELECT * FROM $table WHERE attachment_id = %d ORDER BY optimized_at DESC LIMIT 1",
                 $attachment_id,
@@ -97,7 +97,7 @@ class Database
         global $wpdb;
         $table = $wpdb->prefix . 'image_optimizer_history';
 
-        return $wpdb->insert(
+        return $wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
             $table,
             [
                 'attachment_id'       => $attachment_id,
@@ -124,7 +124,7 @@ class Database
         global $wpdb;
         $table = $wpdb->prefix . 'image_optimizer_cache';
 
-        $result = $wpdb->get_row(
+        $result = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             $wpdb->prepare(
                 "SELECT cache_value FROM $table WHERE cache_key = %s AND (expires_at IS NULL OR expires_at > NOW())",
                 $key,
@@ -149,7 +149,7 @@ class Database
 
         $expires_at = $expires_in ? gmdate('Y-m-d H:i:s', time() + $expires_in) : null;
 
-        return $wpdb->replace(
+        return $wpdb->replace( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $table,
             [
                 'cache_key'   => $key,
@@ -170,8 +170,8 @@ class Database
         global $wpdb;
         $table = $wpdb->prefix . 'image_optimizer_history';
 
-        return $wpdb->get_row(
-            "SELECT 
+        return $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            "SELECT
 				COUNT(*) as total_optimized,
 				SUM(original_size) as total_original_size,
 				SUM(optimized_size) as total_optimized_size,

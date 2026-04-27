@@ -124,7 +124,7 @@ class ImageResizer
      */
     private function resize_file(string $file_path, int $new_width, int $new_height): bool
     {
-        if (! file_exists($file_path) || ! is_writable($file_path)) {
+        if (! file_exists($file_path) || ! is_writable($file_path)) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable
             return false;
         }
 

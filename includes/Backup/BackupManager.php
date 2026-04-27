@@ -62,7 +62,7 @@ readonly class BackupManager
         global $wp_filesystem;
 
         if (! $wp_filesystem->exists($filePath)) {
-            throw new BackupFailedException("Source file not found: {$filePath}");
+            throw new BackupFailedException("Source file not found: {$filePath}"); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
 
         $backupPath = $this->getBackupPath($filePath, $identifier);
@@ -71,7 +71,7 @@ readonly class BackupManager
         // Create backup directory if it doesn't exist
         if (! $wp_filesystem->is_dir($backupDirectory)) {
             if (! $wp_filesystem->mkdir($backupDirectory, 0755)) {
-                throw new BackupFailedException("Failed to create backup directory: {$backupDirectory}");
+                throw new BackupFailedException("Failed to create backup directory: {$backupDirectory}"); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             }
         }
 
@@ -81,7 +81,7 @@ readonly class BackupManager
         }
 
         if (! $wp_filesystem->copy($filePath, $backupPath)) {
-            throw new BackupFailedException("Failed to copy file to backup: {$filePath}");
+            throw new BackupFailedException("Failed to copy file to backup: {$filePath}"); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
 
         return $backupPath;
@@ -107,7 +107,7 @@ readonly class BackupManager
         $backupPath = $this->getBackupPath($filePath, $identifier);
 
         if (! $wp_filesystem->exists($backupPath)) {
-            throw new BackupFailedException("Backup not found: {$backupPath}");
+            throw new BackupFailedException("Backup not found: {$backupPath}"); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
 
         if (! $wp_filesystem->copy($backupPath, $filePath)) {

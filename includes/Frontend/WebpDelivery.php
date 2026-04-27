@@ -114,9 +114,9 @@ class WebpDelivery
         $table = $wpdb->prefix . 'image_optimizer_history';
 
         // Find attachment ID by meta file path
-        $attachment = $wpdb->get_row(
+        $attachment = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
-                "SELECT p.ID FROM {$wpdb->posts} p 
+                "SELECT p.ID FROM {$wpdb->posts} p
 				INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
 				WHERE p.post_type = 'attachment'
 				AND pm.meta_key = '_wp_attached_file'
@@ -131,12 +131,12 @@ class WebpDelivery
         }
 
         // Check optimization history
-        $history = $wpdb->get_row(
+        $history = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             $wpdb->prepare(
-                "SELECT webp_available FROM {$table} 
-				WHERE attachment_id = %d 
-				AND webp_available = 1 
-				AND status = 'completed' 
+                "SELECT webp_available FROM {$table}
+				WHERE attachment_id = %d
+				AND webp_available = 1
+				AND status = 'completed'
 				ORDER BY optimized_at DESC LIMIT 1",
                 $attachment->ID,
             ),

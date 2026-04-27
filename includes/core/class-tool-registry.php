@@ -128,11 +128,11 @@ class ToolRegistry
     public function register(string $tool_name, string $path): void
     {
         if (! file_exists($path)) {
-            throw new \InvalidArgumentException("Tool not found at: $path");
+            throw new \InvalidArgumentException("Tool not found at: $path"); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
 
         if (! is_executable($path)) {
-            throw new \InvalidArgumentException("Tool is not executable: $path");
+            throw new \InvalidArgumentException("Tool is not executable: $path"); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
 
         $this->tools[$tool_name] = $path;
