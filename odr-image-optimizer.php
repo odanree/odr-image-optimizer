@@ -156,9 +156,10 @@ add_action('admin_init', function () {
  * Add plugin admin menu
  */
 add_action('admin_menu', function () {
-    add_options_page(
-        'Image Optimizer Settings',
-        'Image Optimizer',
+    add_submenu_page(
+        'image-optimizer',
+        'Performance Toggles',
+        'Performance Toggles',
         'manage_options',
         'odr-optimizer',
         function () {
@@ -177,7 +178,7 @@ add_action('admin_menu', function () {
             <?php
         },
     );
-});
+}, 20);
 
 /**
  * Initialize performance optimizations (before content renders)
