@@ -137,9 +137,9 @@ class ImageResizer
             // Fall back to GD
             return $this->resize_gd($file_path, $new_width, $new_height);
         } catch (\Exception $e) {
-            if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
                 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-                error_log( 'ImageOptimizer Resizer Error: ' . $e->getMessage() );
+                error_log('ImageOptimizer Resizer Error: ' . $e->getMessage());
             }
             return false;
         }

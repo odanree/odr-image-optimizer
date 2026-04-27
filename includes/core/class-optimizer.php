@@ -872,9 +872,9 @@ class Optimizer implements OptimizerInterface
                 }
             } catch (\Exception $e) {
                 // Log error but continue with other subsizes
-                if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                if (defined('WP_DEBUG') && WP_DEBUG) {
                     // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-                    error_log( "Failed to optimize subsize {$size_name}: " . $e->getMessage() );
+                    error_log("Failed to optimize subsize {$size_name}: " . $e->getMessage());
                 }
             }
         }
