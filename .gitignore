@@ -41,3 +41,13 @@ build/
 *.tmp
 temp/
 *.zip
+
+# Python virtualenv (created locally for ad-hoc tooling, never shipped)
+.venv/
+__pycache__/
+*.pyc
+
+# Local Claude indexer artifacts
+.lla-embeddings.json
+.lla-index.json
+.lla-profile.json
