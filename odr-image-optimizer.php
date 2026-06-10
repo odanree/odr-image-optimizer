@@ -22,7 +22,7 @@ declare(strict_types=1);
  * Domain Path:       /languages
  * Requires at least: 6.0
  * Requires PHP:      8.1
- * Tested up to:      6.9
+ * Tested up to:      7.0
  * Stable tag:        1.0.8
  * Tags:              images, performance, webp, lcp, speed, optimizer
  */
