@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.9] - 2026-06-10
+
+### Fixed
+
+- **Docs:** Listing copy on WordPress.org corrected. Admin menu location (top-level, not under Settings), FAQ toggle list aligned with `register_setting` in `class-settings.php`, missing 1.0.1 changelog entry restored, 1.0.8 upgrade notice added.
+- **Docs:** Performance results table now hedged as "reference test site" rather than read as a universal guarantee.
+- **Docs:** Removed personal email from the Credits block to reduce scraping. Removed `== Screenshots ==` section until banner/icon/screenshots are produced in `.wordpress-org/`.
+- **CI:** `deploy-to-wp-org.yml` now resolves the SVN tag from `Stable tag:` in `readme.txt` instead of inferring from `GITHUB_REF`. Previous behaviour created paths like `tags/refs/heads/main` on `workflow_dispatch` runs and aborted before committing to trunk.
+
 ## [1.0.8] - 2026-06-10
 
 ### Fixed
