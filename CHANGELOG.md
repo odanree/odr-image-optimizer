@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Directory listing assets:** `.wordpress-org/icon-128x128.png`, `icon-256x256.png`, `banner-772x250.png`, `banner-1544x500.png`, `screenshot-1.png`, `screenshot-2.png`. Icons and banners are generated from the brand palette (`#003a5c` → `#0073aa` with a `#27ae60` accent). Screenshots reuse the existing `assets/images/desktop.png` and `mobile.png` — both are real Lighthouse audit dashboards already shipped with the plugin.
-- **Hedged screenshot captions:** the mobile audit displays 91 Performance (not 100). Caption acknowledges that explicitly — keeps the listing internally consistent with the "results vary by theme, hosting, content" hedge added in 1.0.10.
+- **Directory listing assets:** `.wordpress-org/icon-128x128.png`, `icon-256x256.png`, `banner-772x250.png`, `banner-1544x500.png`, `screenshot-1.png`. Icons and banners are generated from the brand palette (`#003a5c` → `#0073aa` with a `#27ae60` accent). The screenshot reuses the existing `assets/images/desktop.png` — a real Lighthouse audit dashboard already shipped with the plugin.
+- The original `assets/images/mobile.png` (which shows 91 Performance on the same audit) is intentionally not promoted to a screenshot — it would contradict the "100/100 Lighthouse" headline. Anyone who wants a hedge can read the existing "results vary by theme, hosting, content" caveat in the Description block.
 
 ### Notes
 
