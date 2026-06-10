@@ -1,0 +1,32 @@
+name: Deploy to WordPress.org
+
+# Pushes a tagged release to the WordPress.org SVN repo:
+#   https://plugins.svn.wordpress.org/odr-image-optimizer
+#
+# Requires repo secrets:
+#   WPORG_SVN_USERNAME  — WordPress.org username (case-sensitive: odanree)
+#   WPORG_SVN_PASSWORD  — SVN password from wordpress.org "Account & Security"
+#
+# Tag must match the version in readme.txt's "Stable tag:" — the action reads
+# that value to know which SVN tag to create.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to WordPress.org SVN
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: WordPress Plugin Deploy
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        env:
+          SVN_USERNAME: ${{ secrets.WPORG_SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.WPORG_SVN_PASSWORD }}
+          SLUG: odr-image-optimizer
