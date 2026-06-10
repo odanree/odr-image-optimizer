@@ -1,11 +1,36 @@
-/.github
+# Files & folders not shipped to the WordPress.org plugin directory.
+# Used by 10up/action-wordpress-plugin-deploy when syncing trunk/ on tag push.
+
+# VCS
 /.git
 /.gitignore
+/.gitattributes
+/.distignore
+
+# GitHub
+/.github
+/.wordpress-org
+
+# IDE / Editor
+/.vscode
+/.idea
+/.editorconfig
+/.prettierrc
+
+# Local Claude indexer + Python venv (dev artifacts)
+/.lla-embeddings.json
+/.lla-index.json
+/.lla-profile.json
+/.venv
+
+# Build & static-analysis configs
 /.php-cs-fixer.cache
 /.php-cs-fixer.php
 /.phpunit.result.cache
+/phpstan.neon
+/phpunit.xml
 
-# Development & Documentation
+# Documentation & dev notes (not for end users)
 /CASE_STUDY.md
 /CHANGELOG.md
 /CONTRIBUTING.md
@@ -13,38 +38,28 @@
 /SECURITY.md
 /PROJECT_STRUCTURE.md
 /README.md
+/SUBMISSION.md
+/docs
 
 # Tests
-/phpunit.xml
 /tests
 
-# Dependencies
+# PHP dependencies
 composer.json
 composer.lock
 /vendor
 
-# Node
+# Node dependencies
 package.json
 package-lock.json
 /node_modules
 
-# Build & Scripts
-/fix_config_injection.sed
-
-# Documentation folder (optional - keep for reference but not required)
-/docs
-
-# IDE & Editor Config (if present)
-.editorconfig
-.prettierrc
-.vscode
-.idea
-
-# OS files
-.DS_Store
-Thumbs.db
-
 # Build artifacts
+/fix_config_injection.sed
+*.zip
 *.cache
 *.log
 
+# OS metadata
+.DS_Store
+Thumbs.db
