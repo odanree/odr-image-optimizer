@@ -16,17 +16,19 @@ ODR Image Optimizer is a professional-grade performance suite built on SOLID pri
 
 Achieve a deterministic 100/100 Lighthouse score on mobile. By decoupling image processing from delivery policy, this plugin reduces Largest Contentful Paint (LCP) by optimizing how the browser prioritizes assets.
 
-**Performance Results:**
+**Performance Results (reference test site, mobile Lighthouse):**
 - Largest Contentful Paint (LCP): 1.4s (↓ 1.0s improvement)
 - First Contentful Paint (FCP): 1.0s
 - Total Blocking Time (TBT): 0ms
 - Cumulative Layout Shift (CLS): 0
 
+Real-world numbers will vary based on theme, hosting, and content.
+
 == Installation ==
 
 1. Upload the `odr-image-optimizer` folder to the `/wp-content/plugins/` directory.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
-3. Configure your Speed Boosters under Settings > ODR Image Optimizer.
+3. Open the new **ODR Image Optimizer** entry in the WordPress admin sidebar and configure your toggles under the **Settings** submenu.
 
 == Features ==
 
@@ -43,11 +45,14 @@ Achieve a deterministic 100/100 Lighthouse score on mobile. By decoupling image 
 No. ODR Image Optimizer adds minimal overhead (~2KB to the page) and removes competing resources. The net result is faster perceived performance and better Lighthouse scores.
 
 = Can I disable specific optimizations? =
-Yes. Navigate to Settings > ODR Image Optimizer to toggle individual features:
-- Preload Theme Fonts
-- Kill Bloat (remove Interactivity API/Emojis)
-- Inline Critical CSS
-- Lazy Load Delivery
+Yes. Open **ODR Image Optimizer → Settings** in the WordPress admin sidebar. From there you can:
+- Pick a compression level (low / medium / high)
+- Enable or disable WebP conversion
+- Choose a lazy-load strategy (native / hybrid / off)
+- Toggle auto-optimize on upload
+- Toggle "Preload Theme Fonts"
+- Toggle "Kill Bloat" (removes the Interactivity API and Emoji scripts)
+- Toggle "Inline Critical CSS"
 
 = Is this compatible with other image plugins? =
 ODR works best as the only image optimization plugin. Having multiple optimization plugins can cause conflicts. Disable any other image optimization plugins before activating ODR.
@@ -57,12 +62,6 @@ WordPress 6.0+. Requires PHP 8.1+.
 
 = Do I need to re-optimize existing images? =
 No. ODR works on all images, new and existing. Simply activate and the plugin handles optimization automatically.
-
-== Screenshots ==
-
-1. Unified Performance Dashboard
-2. Settings Configuration Interface
-3. Lighthouse 100/100 Achievement
 
 == Changelog ==
 
@@ -103,6 +102,9 @@ No. ODR works on all images, new and existing. Simply activate and the plugin ha
 * Refactor: All WordPress hooks prefixed with `odr_` for global namespace safety
 * Docs: Enhanced documentation for WordPress.org submission
 
+= 1.0.1 =
+* Polish: Enhanced plugin header metadata for WordPress.org consistency (description, PHP requirement aligned to 8.1, refreshed tags, Plugin URI now points to GitHub).
+
 = 1.0.0 =
 * Initial release.
 * Added Priority Service for LCP optimization.
@@ -117,6 +119,9 @@ No. ODR works on all images, new and existing. Simply activate and the plugin ha
 
 == Upgrade Notice ==
 
+= 1.0.8 =
+Image backups have moved out of the plugin folder. Existing backups continue to work; new optimizations write to wp-content/uploads/odr-image-optimizer/backups/ for WordPress.org guideline compliance.
+
 = 1.0.0 =
 Initial release. No upgrades needed.
 
@@ -130,7 +135,6 @@ For issues, feature requests, or documentation:
 == Credits ==
 
 **Author:** Danh Le
-**Email:** danhle@danhle.net
 **Website:** https://danhle.net
 
 Built with SOLID principles and modern PHP practices. Inspired by the methodologies of enterprise performance optimization.
