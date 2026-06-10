@@ -22,17 +22,12 @@ use ImageOptimizer\Repository\DatabaseRepository;
 
 class OptimizationEngineFactory
 {
-    /**
-     * Create an OptimizationEngine with default processors and WebP converter
-     *
-     * @return OptimizationEngine
-     */
     public static function create(): OptimizationEngine
     {
         global $wpdb;
 
         return new OptimizationEngine(
-            new BackupManager('.backups'),
+            self::defaultBackupManager(),
             new DatabaseRepository($wpdb),
             ProcessorRegistry::default(),
             new WebpConverter(),
@@ -40,17 +35,17 @@ class OptimizationEngineFactory
     }
 
     /**
-     * Create with custom backup directory
+     * Create with a custom backup base directory (absolute path).
      *
-     * @param string $backupDir
-     * @return OptimizationEngine
+     * Used by tests and integrators who need to direct backups outside
+     * the default uploads/odr-image-optimizer/backups location.
      */
-    public static function createWithBackupDir(string $backupDir): OptimizationEngine
+    public static function createWithBackupDir(string $backupBaseDir): OptimizationEngine
     {
         global $wpdb;
 
         return new OptimizationEngine(
-            new BackupManager($backupDir),
+            new BackupManager($backupBaseDir, self::uploadsBaseDir()),
             new DatabaseRepository($wpdb),
             ProcessorRegistry::default(),
             new WebpConverter(),
@@ -58,31 +53,20 @@ class OptimizationEngineFactory
     }
 
     /**
-     * Create with custom ProcessorRegistry (Morph Map)
-     *
-     * @param array<string, class-string<ImageProcessorInterface>> $mimeTypeMap MIME type → Processor class
-     * @return OptimizationEngine
+     * @param array<string, class-string<ImageProcessorInterface>> $mimeTypeMap
      */
     public static function createWithProcessors(array $mimeTypeMap): OptimizationEngine
     {
         global $wpdb;
 
         return new OptimizationEngine(
-            new BackupManager('.backups'),
+            self::defaultBackupManager(),
             new DatabaseRepository($wpdb),
             ProcessorRegistry::fromMorphMap($mimeTypeMap),
             new WebpConverter(),
         );
     }
 
-    /**
-     * Create with fully custom configuration
-     *
-     * @param ProcessorRegistry $registry
-     * @param BackupManager|null $backupManager
-     * @param WebpConverter|null $webpConverter
-     * @return OptimizationEngine
-     */
     public static function createCustom(
         ProcessorRegistry $registry,
         ?BackupManager $backupManager = null,
@@ -91,10 +75,25 @@ class OptimizationEngineFactory
         global $wpdb;
 
         return new OptimizationEngine(
-            $backupManager ?? new BackupManager('.backups'),
+            $backupManager ?? self::defaultBackupManager(),
             new DatabaseRepository($wpdb),
             $registry,
             $webpConverter ?? new WebpConverter(),
         );
+    }
+
+    private static function defaultBackupManager(): BackupManager
+    {
+        $uploadsBase = self::uploadsBaseDir();
+        return new BackupManager($uploadsBase . '/odr-image-optimizer/backups', $uploadsBase);
+    }
+
+    private static function uploadsBaseDir(): string
+    {
+        $uploads = wp_upload_dir(null, false);
+        if (is_array($uploads) && empty($uploads['error']) && ! empty($uploads['basedir'])) {
+            return (string) $uploads['basedir'];
+        }
+        return WP_CONTENT_DIR . '/uploads';
     }
 }

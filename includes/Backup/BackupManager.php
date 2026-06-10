@@ -7,6 +7,10 @@ declare(strict_types=1);
  *
  * Uses WordPress Filesystem API for proper permission handling and security.
  *
+ * Backups are written under a dedicated root (the uploads directory in
+ * production) so that nothing is ever written inside the plugin folder,
+ * per the WordPress.org plugin guidelines.
+ *
  * @package ImageOptimizer\Backup
  */
 
@@ -21,15 +25,19 @@ readonly class BackupManager
 {
     private const BACKUP_SUFFIX = '-backup';
 
+    /**
+     * @param string $backupBaseDir Absolute root for backup files
+     *                              (e.g. wp_upload_dir()['basedir'] . '/odr-image-optimizer/backups').
+     * @param string $sourceBaseDir Absolute root containing source media
+     *                              (e.g. wp_upload_dir()['basedir']). Used to mirror the
+     *                              relative path of each file under $backupBaseDir so
+     *                              attachments at different uploads subfolders don't collide.
+     */
     public function __construct(
-        private string $backupDir = '.backups',
+        private string $backupBaseDir,
+        private string $sourceBaseDir = '',
     ) {}
 
-    /**
-     * Initialize WordPress Filesystem API
-     *
-     * @return bool True if filesystem is initialized
-     */
     private function init_filesystem(): bool
     {
         if (! function_exists('WP_Filesystem')) {
@@ -45,12 +53,6 @@ readonly class BackupManager
     }
 
     /**
-     * Create a backup of an image file
-     *
-     * @param string $filePath Path to the original file
-     * @param string $identifier Unique identifier for the backup
-     * @return string Path to the backup file
-     *
      * @throws BackupFailedException
      */
     public function createBackup(string $filePath, string $identifier): string
@@ -68,14 +70,12 @@ readonly class BackupManager
         $backupPath = $this->getBackupPath($filePath, $identifier);
         $backupDirectory = dirname($backupPath);
 
-        // Create backup directory if it doesn't exist
         if (! $wp_filesystem->is_dir($backupDirectory)) {
-            if (! $wp_filesystem->mkdir($backupDirectory, 0755)) {
+            if (! wp_mkdir_p($backupDirectory)) {
                 throw new BackupFailedException("Failed to create backup directory: {$backupDirectory}"); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             }
         }
 
-        // Don't overwrite existing backup
         if ($wp_filesystem->exists($backupPath)) {
             return $backupPath;
         }
@@ -88,12 +88,6 @@ readonly class BackupManager
     }
 
     /**
-     * Restore a file from its backup
-     *
-     * @param string $filePath Path to the file to restore
-     * @param string $identifier Unique identifier for the backup
-     * @return bool True on success
-     *
      * @throws BackupFailedException
      */
     public function restore(string $filePath, string $identifier): bool
@@ -117,13 +111,6 @@ readonly class BackupManager
         return true;
     }
 
-    /**
-     * Check if a backup exists
-     *
-     * @param string $filePath Path to the original file
-     * @param string $identifier Unique identifier for the backup
-     * @return bool
-     */
     public function hasBackup(string $filePath, string $identifier): bool
     {
         if (! $this->init_filesystem()) {
@@ -135,13 +122,6 @@ readonly class BackupManager
         return $wp_filesystem->exists($this->getBackupPath($filePath, $identifier));
     }
 
-    /**
-     * Delete a backup file
-     *
-     * @param string $filePath Path to the original file
-     * @param string $identifier Unique identifier for the backup
-     * @return bool True on success
-     */
     public function deleteBackup(string $filePath, string $identifier): bool
     {
         if (! $this->init_filesystem()) {
@@ -153,26 +133,45 @@ readonly class BackupManager
         $backupPath = $this->getBackupPath($filePath, $identifier);
 
         if (! $wp_filesystem->exists($backupPath)) {
-            return true; // Already deleted
+            return true;
         }
 
         return $wp_filesystem->delete($backupPath);
     }
 
-    /**
-     * Get the backup file path
-     *
-     * @param string $filePath Path to the original file
-     * @param string $identifier Unique identifier
-     * @return string
-     */
-    private function getBackupPath(string $filePath, string $identifier): string
+    public function getBackupPath(string $filePath, string $identifier): string
     {
         $pathinfo = pathinfo($filePath);
-        $backupDirectory = dirname($filePath) . '/' . $this->backupDir;
         $extension = $pathinfo['extension'] ?? '';
-        $filename = $pathinfo['filename'] . self::BACKUP_SUFFIX . '-' . $identifier . '.' . $extension;
+        $filename = $pathinfo['filename'] . self::BACKUP_SUFFIX . '-' . $identifier
+            . ($extension !== '' ? '.' . $extension : '');
 
-        return $backupDirectory . '/' . $filename;
+        $relative = $this->relativeToSource($pathinfo['dirname'] ?? '');
+        $base = rtrim(str_replace('\\', '/', $this->backupBaseDir), '/');
+
+        return $relative === ''
+            ? $base . '/' . $filename
+            : $base . '/' . $relative . '/' . $filename;
+    }
+
+    private function relativeToSource(string $dir): string
+    {
+        $normalized = str_replace('\\', '/', $dir);
+
+        if ($this->sourceBaseDir === '') {
+            return 'external/' . substr(hash('sha1', $normalized), 0, 12);
+        }
+
+        $base = rtrim(str_replace('\\', '/', $this->sourceBaseDir), '/');
+
+        if ($normalized === $base) {
+            return '';
+        }
+
+        if (str_starts_with($normalized, $base . '/')) {
+            return substr($normalized, strlen($base) + 1);
+        }
+
+        return 'external/' . substr(hash('sha1', $normalized), 0, 12);
     }
 }

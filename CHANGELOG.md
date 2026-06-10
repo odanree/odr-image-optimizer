@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.8] - 2026-06-10
+
+### Fixed
+
+- **WordPress.org compliance:** Image backups are no longer written inside the plugin folder structure. The legacy `.backups/` directory next to each media file has been replaced with `wp-content/uploads/odr-image-optimizer/backups/<relative path>/`, mirroring each attachment's location under the uploads basedir. Reverting an image optimized on an older version still falls back to the legacy path so existing backups remain usable.
+- **Distribution hygiene:** Removed development-only files (`fix_config_injection.sed`, build-artifact zips) from the plugin root.
+
+### Added
+
+- `uninstall.php` cleanup that removes plugin options and the uploads backup directory when the plugin is deleted from the WordPress admin.
+
 ## [1.0.1] - 2026-02-21
 
 ### Changed

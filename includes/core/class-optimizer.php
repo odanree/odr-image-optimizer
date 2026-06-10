@@ -793,27 +793,76 @@ class Optimizer implements OptimizerInterface
      */
     private function create_backup($file_path, $attachment_id)
     {
-        $backup_dir = dirname($file_path) . '/.backups';
+        $backup_file = $this->resolve_backup_path($file_path, (int) $attachment_id);
+        if ($backup_file === '') {
+            return '';
+        }
 
+        $backup_dir = dirname($backup_file);
         if (! wp_mkdir_p($backup_dir)) {
             return '';
         }
 
-        $file_info = pathinfo($file_path);
-        $backup_file = $backup_dir . '/' . $file_info['filename'] . '-' . $attachment_id . '-backup.' . $file_info['extension'];
-
-        // Only create backup if it doesn't already exist
         if (! file_exists($backup_file)) {
             if (! copy($file_path, $backup_file)) {
                 return '';
             }
 
-            // Fix permissions so www-data can read the backup during revert
-            // Use 0644 (readable by all, writable by owner only)
             @chmod($backup_file, 0644); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_chmod
         }
 
         return $backup_file;
+    }
+
+    /**
+     * Compute the compliant backup path for a given source file.
+     *
+     * Backups live under wp_upload_dir()/odr-image-optimizer/backups, mirroring
+     * the file's relative path under the uploads basedir. The plugin folder is
+     * never written to, per WordPress.org plugin guidelines.
+     */
+    private function resolve_backup_path(string $file_path, int $attachment_id): string
+    {
+        $info = pathinfo($file_path);
+        if (! isset($info['filename']) || ! isset($info['extension'])) {
+            return '';
+        }
+
+        $uploads = wp_upload_dir(null, false);
+        $uploads_base = is_array($uploads) && empty($uploads['error']) && ! empty($uploads['basedir'])
+            ? (string) $uploads['basedir']
+            : WP_CONTENT_DIR . '/uploads';
+
+        $source_dir = str_replace('\\', '/', $info['dirname']);
+        $base = rtrim(str_replace('\\', '/', $uploads_base), '/');
+
+        if ($source_dir === $base) {
+            $relative = '';
+        } elseif (str_starts_with($source_dir, $base . '/')) {
+            $relative = substr($source_dir, strlen($base) + 1);
+        } else {
+            $relative = 'external/' . substr(hash('sha1', $source_dir), 0, 12);
+        }
+
+        $filename = $info['filename'] . '-' . $attachment_id . '-backup.' . $info['extension'];
+        $backup_root = $base . '/odr-image-optimizer/backups';
+
+        return $relative === ''
+            ? $backup_root . '/' . $filename
+            : $backup_root . '/' . $relative . '/' . $filename;
+    }
+
+    /**
+     * Legacy path used before backups moved into the uploads folder.
+     * Read-only; only consulted as a fallback when reverting older optimizations.
+     */
+    private function legacy_backup_path(string $file_path, int $attachment_id): string
+    {
+        $info = pathinfo($file_path);
+        if (! isset($info['filename']) || ! isset($info['extension'])) {
+            return '';
+        }
+        return dirname($file_path) . '/.backups/' . $info['filename'] . '-' . $attachment_id . '-backup.' . $info['extension'];
     }
 
     /**
@@ -902,13 +951,23 @@ class Optimizer implements OptimizerInterface
                 return Result::failure('File not found: ' . ($file ?: 'no path'));
             }
 
-            // Get backup file path
-            $file_info = pathinfo($file);
-            $backup_dir = dirname($file) . '/.backups';
-            $backup_file = $backup_dir . '/' . $file_info['filename'] . '-' . $attachment_id . '-backup.' . $file_info['extension'];
-
-            if (! file_exists($backup_file)) {
-                return Result::failure('No backup found: ' . $backup_file);
+            // Get backup file path (new uploads-based location, with legacy fallback).
+            // clearstatcache forces a fresh stat in case the same PHP worker created
+            // the file earlier in the request lifecycle but it has since been moved.
+            $backup_file = $this->resolve_backup_path($file, (int) $attachment_id);
+            if ($backup_file !== '') {
+                clearstatcache(true, $backup_file);
+            }
+            if ($backup_file === '' || ! file_exists($backup_file)) {
+                $legacy = $this->legacy_backup_path($file, (int) $attachment_id);
+                if ($legacy !== '') {
+                    clearstatcache(true, $legacy);
+                }
+                if ($legacy !== '' && file_exists($legacy)) {
+                    $backup_file = $legacy;
+                } else {
+                    return Result::failure('No backup found: ' . ($backup_file ?: $legacy));
+                }
             }
 
             // Check file permissions before attempting restore

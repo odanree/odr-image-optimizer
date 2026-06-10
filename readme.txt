@@ -4,7 +4,7 @@ Tags: images, performance, webp, speed, optimizer
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.0.7
+Stable tag: 1.0.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -65,6 +65,11 @@ No. ODR works on all images, new and existing. Simply activate and the plugin ha
 3. Lighthouse 100/100 Achievement
 
 == Changelog ==
+
+= 1.0.8 =
+* Fix: Move image backups out of the plugin folder. Backups now live under `wp-content/uploads/odr-image-optimizer/backups/<relative path>/` instead of a `.backups` directory next to each media file, per WordPress.org plugin guidelines. Reverts of images optimized on older versions still read from the legacy location as a one-time fallback.
+* Chore: Remove non-permitted distribution files (development sed script, build-artifact zips) from the plugin root.
+* Chore: Add `uninstall.php` to remove the plugin's options and backup folder on uninstall.
 
 = 1.0.7 =
 * Fix: Move phpcs:ignore for InterpolatedNotPrepared to the SQL string lines; use phpcs:disable/enable blocks for multi-line queries (class-database, WebpDelivery, DatabaseRepository)
