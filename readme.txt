@@ -4,7 +4,7 @@ Tags: images, performance, webp, speed, optimizer
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.0.8
+Stable tag: 1.0.10
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -65,6 +65,11 @@ No. ODR works on all images, new and existing. Simply activate and the plugin ha
 
 == Changelog ==
 
+= 1.0.10 =
+* Docs: Listing copy accuracy pass — admin menu location, FAQ toggle list, missing 1.0.1 entry, 1.0.8 upgrade notice, hedged performance numbers, removed personal email from credits, removed Screenshots section pending real screenshots.
+* CI: Deploy workflow resolves the SVN tag from `Stable tag:` in `readme.txt`, so `workflow_dispatch` runs no longer try to create `tags/refs/heads/...` from the branch ref.
+* Note: 1.0.9 was created as an SVN tag but never actually shipped — the stacked PR carrying the version bump merged into its base branch instead of `main`, so its `Stable tag` value came out wrong. 1.0.10 is the real ship vehicle.
+
 = 1.0.8 =
 * Fix: Move image backups out of the plugin folder. Backups now live under `wp-content/uploads/odr-image-optimizer/backups/<relative path>/` instead of a `.backups` directory next to each media file, per WordPress.org plugin guidelines. Reverts of images optimized on older versions still read from the legacy location as a one-time fallback.
 * Chore: Remove non-permitted distribution files (development sed script, build-artifact zips) from the plugin root.
@@ -118,6 +123,9 @@ No. ODR works on all images, new and existing. Simply activate and the plugin ha
 * PSR-12 formatting enforced via CI/CD.
 
 == Upgrade Notice ==
+
+= 1.0.10 =
+Documentation-only release. The listing copy on WordPress.org now matches the actual settings UI; no plugin code changes. (Skipped 1.0.9 — the tag exists in SVN but was built from an orphan merge commit.)
 
 = 1.0.8 =
 Image backups have moved out of the plugin folder. Existing backups continue to work; new optimizations write to wp-content/uploads/odr-image-optimizer/backups/ for WordPress.org guideline compliance.
