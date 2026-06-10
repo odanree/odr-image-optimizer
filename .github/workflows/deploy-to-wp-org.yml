@@ -7,8 +7,18 @@ name: Deploy to WordPress.org
 #   WPORG_SVN_USERNAME  — WordPress.org username (case-sensitive: odanree)
 #   WPORG_SVN_PASSWORD  — SVN password from wordpress.org "Account & Security"
 #
-# Tag must match the version in readme.txt's "Stable tag:" — the action reads
-# that value to know which SVN tag to create.
+# Triggers:
+#   - push to a v* tag    → ships a new release; the tag must match
+#     "Stable tag:" in readme.txt (the `v` prefix is git-only).
+#   - workflow_dispatch   → re-syncs main → SVN trunk/ without cutting a
+#     new release. Useful for readme polish on top of an existing tag.
+#
+# Version resolution:
+#   The 10up action's default version derivation breaks under
+#   workflow_dispatch (GITHUB_REF=refs/heads/main, which it tries to
+#   write to tags/refs/heads/...). We always read "Stable tag:" from
+#   readme.txt and pass it explicitly so both triggers land on the
+#   correct SVN tag.
 
 on:
   push:
@@ -24,9 +34,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Read Stable tag from readme.txt
+        id: stable
+        shell: bash
+        run: |
+          version="$(grep -E '^Stable tag:' readme.txt | head -1 | sed -E 's/^Stable tag: *//' | tr -d '\r ')"
+          if [ -z "$version" ]; then
+            echo "Could not parse 'Stable tag:' from readme.txt" >&2
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Resolved Stable tag: $version"
+
       - name: WordPress Plugin Deploy
         uses: 10up/action-wordpress-plugin-deploy@stable
         env:
           SVN_USERNAME: ${{ secrets.WPORG_SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.WPORG_SVN_PASSWORD }}
           SLUG: odr-image-optimizer
+          VERSION: ${{ steps.stable.outputs.version }}
