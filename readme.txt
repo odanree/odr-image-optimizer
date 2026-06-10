@@ -4,7 +4,7 @@ Tags: images, performance, webp, speed, optimizer
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.0.11
+Stable tag: 1.0.12
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,7 +63,15 @@ WordPress 6.0+. Requires PHP 8.1+.
 = Do I need to re-optimize existing images? =
 No. ODR works on all images, new and existing. Simply activate and the plugin handles optimization automatically.
 
+== Screenshots ==
+
+1. Lighthouse audit on the reference test site, desktop: 100 Performance / 97 Accessibility / 96 Best Practices / 100 SEO.
+2. Lighthouse audit on the reference test site, mobile: Performance varies with theme and network conditions; this audit captured 91. Accessibility, Best Practices, and SEO remained 100 / 96 / 100.
+
 == Changelog ==
+
+= 1.0.12 =
+* Docs: Added directory listing assets — icon, banner (772x250 + 1544x500 retina), and two Lighthouse audit screenshots (desktop + mobile). The mobile screenshot caption hedges the 91 Performance number against the "100/100" headline so the listing is internally consistent.
 
 = 1.0.11 =
 * Docs: Renamed "Cleanup Service" to "Kill Bloat" in the Features list to match the actual toggle name in the settings UI.
@@ -126,6 +134,9 @@ No. ODR works on all images, new and existing. Simply activate and the plugin ha
 * PSR-12 formatting enforced via CI/CD.
 
 == Upgrade Notice ==
+
+= 1.0.12 =
+Adds directory listing assets (icon, banner, screenshots). No plugin code changes.
 
 = 1.0.11 =
 Documentation-only release. No plugin code changes.

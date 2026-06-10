@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.12] - 2026-06-10
+
+### Added
+
+- **Directory listing assets:** `.wordpress-org/icon-128x128.png`, `icon-256x256.png`, `banner-772x250.png`, `banner-1544x500.png`, `screenshot-1.png`, `screenshot-2.png`. Icons and banners are generated from the brand palette (`#003a5c` → `#0073aa` with a `#27ae60` accent). Screenshots reuse the existing `assets/images/desktop.png` and `mobile.png` — both are real Lighthouse audit dashboards already shipped with the plugin.
+- **Hedged screenshot captions:** the mobile audit displays 91 Performance (not 100). Caption acknowledges that explicitly — keeps the listing internally consistent with the "results vary by theme, hosting, content" hedge added in 1.0.10.
+
+### Notes
+
+- Asset files in `.wordpress-org/` are synced to SVN's `assets/` sibling folder by the deploy workflow. They are not shipped inside the plugin zip.
+
 ## [1.0.11] - 2026-06-10
 
 ### Changed
