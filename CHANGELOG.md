@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.9] - 2026-06-10
+## [1.0.10] - 2026-06-10
 
 ### Fixed
 
@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Docs:** Performance results table now hedged as "reference test site" rather than read as a universal guarantee.
 - **Docs:** Removed personal email from the Credits block to reduce scraping. Removed `== Screenshots ==` section until banner/icon/screenshots are produced in `.wordpress-org/`.
 - **CI:** `deploy-to-wp-org.yml` now resolves the SVN tag from `Stable tag:` in `readme.txt` instead of inferring from `GITHUB_REF`. Previous behaviour created paths like `tags/refs/heads/main` on `workflow_dispatch` runs and aborted before committing to trunk.
+
+### Notes
+
+- 1.0.9 was created as an SVN tag (`tags/1.0.9/`) but its contents were wrong: the stacked PR that bumped the version was merged into its base branch (`docs/readme-accuracy-pass`) instead of `main`, so the merge commit was orphaned when the base branch got deleted. The `v1.0.9` git tag pointed at the previous commit and shipped trunk with `Stable tag: 1.0.8`. 1.0.10 cherry-picks the orphan changes and ships them properly. Don't reuse the 1.0.9 SVN tag — it stays as inert cruft in the directory.
 
 ## [1.0.8] - 2026-06-10
 
