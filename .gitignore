@@ -51,3 +51,6 @@ __pycache__/
 .lla-embeddings.json
 .lla-index.json
 .lla-profile.json
+
+# Private notes / drafts (never committed, never shipped)
+.private/
