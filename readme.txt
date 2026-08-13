@@ -2,9 +2,9 @@
 Contributors: odanree
 Tags: images, performance, webp, speed, optimizer
 Requires at least: 6.0
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.0.12
+Stable tag: 1.0.13
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -68,6 +68,9 @@ No. ODR works on all images, new and existing. Simply activate and the plugin ha
 1. Lighthouse audit on the reference test site, desktop: 100 Performance / 97 Accessibility / 96 Best Practices / 100 SEO.
 
 == Changelog ==
+
+= 1.0.13 =
+* Compat: Verified against WordPress 7.1. Server-side upload pipeline (`wp_handle_upload`, `wp_generate_attachment_metadata`) unaffected by 7.1's new client-side media processing.
 
 = 1.0.12 =
 * Docs: Added directory listing assets — icon, banner (772x250 + 1544x500 retina), and a desktop Lighthouse audit screenshot.
@@ -133,6 +136,9 @@ No. ODR works on all images, new and existing. Simply activate and the plugin ha
 * PSR-12 formatting enforced via CI/CD.
 
 == Upgrade Notice ==
+
+= 1.0.13 =
+Compatibility bump for WordPress 7.1. No plugin code changes.
 
 = 1.0.12 =
 Adds directory listing assets (icon, banner, screenshots). No plugin code changes.

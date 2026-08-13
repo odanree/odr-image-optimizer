@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.13] - 2026-08-13
+
+### Changed
+
+- **Compat:** Verified against WordPress 7.1-RC3 in a sandbox (wp-playground CLI, PHP 8.3). Server-side upload pipeline works unchanged — `wp_handle_upload` and `wp_generate_attachment_metadata` filters still fire with the expected shapes, and all ODR-registered sub-sizes (`odr_content_optimized`, `odr_content_retina`, `odr_mobile_optimized`, `odr_tablet_optimized`) are generated correctly. WP 7.1's new client-side media processing does not alter the server-side contract this plugin depends on. Bumped `Tested up to` in `readme.txt` and the plugin header to 7.1.
+
 ## [1.0.12] - 2026-06-10
 
 ### Added
